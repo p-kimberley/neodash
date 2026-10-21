@@ -187,3 +187,29 @@ test('help > examples render', async ({ page }) => {
   expect(await dialog.getByText(/can not be visualized|Query returned no data/).count()).toBe(0);
   await expectNoErrors(page, errors);
 });
+
+test('graph: right-click menu, nested submenu and inspect', async ({ page }) => {
+  const errors = trackErrors(page);
+  // The Kitchen Sink graph with exploration on, so the menu has the nested "Expand..." submenu.
+  await openPage(page, SINK, 4);
+  const graph = card(page, 'Electronics supply graph');
+  await graph.getByLabel('fit graph to view').click();
+  await page.waitForTimeout(800);
+  const box = await graph.locator('canvas').first().boundingBox();
+  const menu = page.locator('#basic-menu');
+  let opened = false;
+  for (let y = box.y + 30; y < box.y + box.height - 30 && !opened; y += 12) {
+    for (let x = box.x + 30; x < box.x + box.width - 30 && !opened; x += 12) {
+      await page.mouse.click(x, y, { button: 'right' });
+      opened = (await menu.count()) > 0;
+    }
+  }
+  expect(opened, 'no context menu opened').toBe(true);
+  await expect(menu.getByText('Inspect')).toBeVisible();
+  await menu.getByText('Expand...').hover();
+  // The submenu is its own popover, listing the node's relationship types.
+  await expect(page.locator('.MuiPopover-paper table:visible').first()).toBeVisible();
+  await menu.getByText('Inspect').click();
+  await expect(page.locator('.nd-graph-info')).toBeVisible();
+  await expectNoErrors(page, errors);
+});

@@ -9,6 +9,7 @@ import {
   valueIsPath,
   valueIsRelationship,
 } from '../chart/ChartUtils';
+import { textColorForBackground } from '../extensions/styling/StyleRuleEvaluator';
 // import DOMPurify from 'dompurify';
 
 /**
@@ -186,6 +187,8 @@ export function RenderRelationshipChip(text, direction = undefined, color = 'lig
     <Chip
       style={{
         background: color,
+        // Text readable on the chip's (light) colour, whatever the app's appearance.
+        color: textColorForBackground(color),
         borderRadius: 0,
         paddingRight: 5,
         height: 21,

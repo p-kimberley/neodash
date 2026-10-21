@@ -1,8 +1,9 @@
-import { createStore, combineReducers, applyMiddleware } from 'redux';
+// Redux 5 marks createStore as legacy in favour of Redux Toolkit; the plain store is all this app needs.
+import { legacy_createStore as createStore, combineReducers, applyMiddleware } from 'redux';
 import { persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
-import thunk from 'redux-thunk';
+import { thunk } from 'redux-thunk';
 import { composeWithDevTools } from '@redux-devtools/extension';
 import { dashboardReducer } from './dashboard/DashboardReducer';
 import { applicationReducer } from './application/ApplicationReducer';
