@@ -539,3 +539,23 @@ body {
 .nd-card-title .MuiInput-underline:after {
   border-bottom: 2px solid var(--nd-primary) !important;
 }
+
+/* Report cards: their container provides the surface, so the inner MUI card is transparent. */
+.nd-report-card .MuiCard-root {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none !important;
+}
+
+/* Floating menus drawn by charts (e.g. the graph right-click menu). */
+.nd-floating-menu {
+  min-width: 220px;
+  box-shadow: var(--nd-shadow-raised) !important;
+  color: var(--nd-text);
+}
+
+.nd-floating-menu .MuiCardHeader-title {
+  font-size: var(--nd-text-lg);
+  font-weight: 650;
+}

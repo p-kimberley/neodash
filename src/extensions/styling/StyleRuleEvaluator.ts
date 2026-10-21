@@ -1,4 +1,5 @@
 import { makeStyles } from '@mui/styles';
+import { getContrastRatio } from '@mui/material/styles';
 import { EntityType } from '../../chart/Utils';
 
 /**
@@ -185,26 +186,46 @@ const evaluateCondition = (realValue, condition, ruleValue) => {
  * Uses the mui `makeStyles` functionality to generate classes for each of the rules.
  * This is used for styling table rows and columns.
  */
+/**
+ * A readable text colour for a background chosen by a style rule: dark text on light colours and
+ * white on dark ones, so a highlighted row stays legible in both light and dark mode.
+ * Returns undefined if the colour can't be parsed (the theme's text colour is kept).
+ */
+export const textColorForBackground = (background: string): string | undefined => {
+  if (typeof background !== 'string' || background.trim() === '') {
+    return undefined;
+  }
+  let normalised = background.trim();
+  if (!/^(#|rgb|hsl)/i.test(normalised) && typeof document !== 'undefined') {
+    // Named colours ("gold", "lightgreen"): let the browser resolve them to hex.
+    const context = document.createElement('canvas').getContext('2d');
+    if (context) {
+      context.fillStyle = '#010203';
+      context.fillStyle = normalised;
+      normalised = context.fillStyle === '#010203' ? '' : context.fillStyle;
+    }
+  }
+  try {
+    return getContrastRatio(normalised, '#ffffff') >= getContrastRatio(normalised, '#151e29') ? '#ffffff' : '#151e29';
+  } catch (e) {
+    return undefined;
+  }
+};
+
 export const generateClassDefinitionsBasedOnRules = (rules) => {
   const classes = {};
+  // Background rules first, each with a readable text colour; text-colour rules are added after
+  // them so that, when both apply to a cell, the author's explicit text colour wins.
   rules.forEach((rule, i) => {
-    if (rule.customization == 'cell color') {
+    if (rule.customization == 'cell color' || rule.customization == 'row color') {
       classes[`& .rule${i}`] = {
         backgroundColor: rule.customizationValue,
+        color: textColorForBackground(rule.customizationValue),
       };
     }
-    if (rule.customization == 'cell text color') {
-      classes[`& .rule${i}`] = {
-        color: rule.customizationValue,
-        fontWeight: 'bold',
-      };
-    }
-    if (rule.customization == 'row color') {
-      classes[`& .rule${i}`] = {
-        backgroundColor: rule.customizationValue,
-      };
-    }
-    if (rule.customization == 'row text color') {
+  });
+  rules.forEach((rule, i) => {
+    if (rule.customization == 'cell text color' || rule.customization == 'row text color') {
       classes[`& .rule${i}`] = {
         color: rule.customizationValue,
         fontWeight: 'bold',

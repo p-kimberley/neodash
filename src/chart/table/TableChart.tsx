@@ -25,6 +25,39 @@ import { extensionEnabled } from '../../utils/ReportUtils';
 import { getCheckboxes, hasCheckboxes, updateCheckBoxes } from './TableActionsHelper';
 
 const TABLE_ROW_HEIGHT = 52;
+const DEFAULT_PAGE_SIZE = 25;
+const PAGE_SIZE_STORAGE_PREFIX = 'neodash.table.pageSize.';
+
+/** The rows-per-page this browser chose for a table, if it was chosen under the table's current setting. */
+const readStoredPageSize = (reportId: string | undefined, configured: number): number | undefined => {
+  if (!reportId) {
+    return undefined;
+  }
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(PAGE_SIZE_STORAGE_PREFIX + reportId) ?? 'null');
+    return stored && stored.configured === configured && stored.pageSize > 0 ? stored.pageSize : undefined;
+  } catch (e) {
+    // Storage blocked or unreadable: fall back to the report's setting.
+    return undefined;
+  }
+};
+
+/** Remembers (or with no size, forgets) this browser's rows-per-page for a table. */
+const storePageSize = (reportId: string | undefined, configured: number, pageSize: number | undefined) => {
+  if (!reportId) {
+    return;
+  }
+  try {
+    const key = PAGE_SIZE_STORAGE_PREFIX + reportId;
+    if (pageSize === undefined || pageSize === configured) {
+      window.localStorage.removeItem(key);
+    } else {
+      window.localStorage.setItem(key, JSON.stringify({ pageSize, configured }));
+    }
+  } catch (e) {
+    // Storage blocked: the choice simply isn't remembered.
+  }
+};
 const HIDDEN_COLUMN_PREFIX = '__';
 const fallbackRenderer = (value) => {
   return JSON.stringify(value);
@@ -154,6 +187,36 @@ export const NeoTableChart = (props: ChartProps) => {
         );
       });
 
+  // Rows per page: the report's setting (default 25), unless this browser picked another size for this
+  // table, which is remembered in localStorage until the report's setting changes.
+  const configuredPageSize =
+    props.settings && Number(props.settings.pageSize) > 0
+      ? Math.floor(Number(props.settings.pageSize))
+      : DEFAULT_PAGE_SIZE;
+  const [paginationModel, setPaginationModel] = React.useState(() => ({
+    pageSize: readStoredPageSize(props.id, configuredPageSize) ?? configuredPageSize,
+    page: 0,
+  }));
+  const pageSizeOptions = Array.from(new Set([10, 25, 50, 100, configuredPageSize, paginationModel.pageSize])).sort(
+    (a, b) => a - b
+  );
+  const isFirstRender = React.useRef(true);
+  useEffect(() => {
+    // The author changed the setting: it replaces any size remembered for this table.
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    storePageSize(props.id, configuredPageSize, undefined);
+    setPaginationModel({ pageSize: configuredPageSize, page: 0 });
+  }, [configuredPageSize]);
+  const onPaginationModelChange = (model) => {
+    if (model.pageSize !== paginationModel.pageSize) {
+      storePageSize(props.id, configuredPageSize, model.pageSize);
+    }
+    setPaginationModel(model);
+  };
+
   useEffect(() => {
     const hiddenColumns = Object.assign(
       {},
@@ -209,15 +272,9 @@ export const NeoTableChart = (props: ChartProps) => {
     rowHeight: tableRowHeight,
     rows: rows,
     columns: columns,
-    pageSizeOptions: [5, 10, 25, 50, 100],
-    initialState: {
-      pagination: {
-        paginationModel: {
-          pageSize: 5,
-          pageIndex: 0,
-        },
-      },
-    },
+    pageSizeOptions: pageSizeOptions,
+    paginationModel: paginationModel,
+    onPaginationModelChange: onPaginationModelChange,
     columnVisibilityModel: columnVisibilityModel,
     onColumnVisibilityModelChange: (newModel) => setColumnVisibilityModel(newModel),
     onCellClick: (e) => performActionOnElement(e, actionsRules, { ...props, pageNames: pageNames }, 'Click', 'Table'),

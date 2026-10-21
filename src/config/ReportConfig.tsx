@@ -34,6 +34,11 @@ const _REPORT_TYPES = {
     useReturnValuesAsFields: true,
     maxRecords: 1000,
     settings: {
+      pageSize: {
+        label: 'Rows per page',
+        type: SELECTION_TYPES.NUMBER,
+        default: 25,
+      },
       transposed: {
         label: 'Transpose Rows & Columns',
         type: SELECTION_TYPES.LIST,

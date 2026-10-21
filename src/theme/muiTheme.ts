@@ -34,8 +34,11 @@ export function createAppTheme(mode: Mode) {
         styleOverrides: { root: { backgroundImage: 'none' } },
       },
       MuiCard: {
-        // Report cards sit inside the design-system card container, which provides the surface.
-        styleOverrides: { root: { backgroundColor: 'transparent', boxShadow: 'none' } },
+        // Floating cards (graph context menu and tooltip) use the raised surface. Report cards are
+        // made transparent in components.css, as their container provides the surface.
+        styleOverrides: {
+          root: { backgroundColor: p.surfaceRaised, border: `1px solid ${p.border}`, borderRadius: 10 },
+        },
       },
       MuiPopover: {
         styleOverrides: {

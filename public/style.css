@@ -187,12 +187,13 @@ div:has(> .table-small-header) {
   left: 0;
   right: 0;
   bottom: 0;
-  background: white;
+  /* Follows the light/dark appearance (was a fixed white). */
+  background: rgb(var(--palette-neutral-bg-weak));
   z-index: 1299;
 }
 
 .force-graph-container .graph-tooltip {
-  color: black !important;
+  color: var(--nd-text) !important;
   background: none !important;
 }
 

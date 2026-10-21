@@ -42,10 +42,10 @@ export const GraphChartContextMenu = (props: GraphChartVisualizationProps) => {
         left: props.interactivity.clickPosition.x,
       }}
     >
-      <Card id='basic-menu'>
+      <Card id='basic-menu' className='nd-floating-menu'>
         <CardHeader
           className='-n-mx-1'
-          style={{ color: 'black' }}
+          style={{ color: 'var(--nd-text)' }}
           action={
             <IconButton aria-label='close' className='n-p-1 n-ml-5 n-mt-1' onClick={handleClose} clean>
               <XMarkIconOutline />
