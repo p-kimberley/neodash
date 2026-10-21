@@ -1,5 +1,5 @@
 /**
- * Utility function to reverse engineer, from an event on a Nivo bar chart, what the original Neo4j record was the data came from.
+ * Utility function to reverse engineer, from a click on a bar, what the original Neo4j record was the data came from.
  * Once we have this record, we can pass it to the action rule handler, so that users can define report actions on any variable
  * in their return statement.
  * @param e the click event on the bar chart.
@@ -7,7 +7,7 @@
  * @param selection the selection made by the user (category, index, group*) - where group is optional.
  * @returns
  */
-export function getOriginalRecordForNivoClickEvent(e, records, selection) {
+export function getOriginalRecordForBarClick(e, records, selection) {
   // TODO - rewrite this to be more optimal (using list comprehensions, etc.)
   const usesGroups = Object.keys(e.data).length > 2;
   const group = e.id;

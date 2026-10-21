@@ -38,6 +38,6 @@ reports:
 - https://github.com/vasturiano/react-force-graph[react-force-graph
 (Graph)] 
 - https://mui.com/components/data-grid/[@mui/datagrid (Table)]
-- https://nivo.rocks/[@nivo (Bar, Line, Pie charts)] 
+- https://echarts.apache.org/[Apache ECharts] (bar, line, pie, radar, sankey, sunburst, treemap, circle packing and choropleth charts)
 - https://leafletjs.com/[leaflet (Map)] 
 - https://github.com/remarkjs/react-markdown[react-markdown (Markdown)]

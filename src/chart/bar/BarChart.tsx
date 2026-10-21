@@ -11,7 +11,7 @@ import { ChartProps } from '../Chart';
 import { convertRecordObjectToString, recordToNative } from '../ChartUtils';
 import { extensionEnabled } from '../../utils/ReportUtils';
 import { getPageNumbersAndNamesList, getRule, performActionOnElement } from '../../extensions/advancedcharts/Utils';
-import { getOriginalRecordForNivoClickEvent } from './util';
+import { getOriginalRecordForBarClick } from './util';
 
 echarts.use([BarChart, GridComponent, LegendComponent, TooltipComponent]);
 
@@ -130,7 +130,7 @@ const NeoBarChart = (props: ChartProps) => {
   // Function to call from BarComponent. Conducts necessary logic for Report Action.
   const handleBarClick = (e) => {
     // Get the original record that was used to draw this bar (or a group in a bar).
-    const record = getOriginalRecordForNivoClickEvent(e, records, selection);
+    const record = getOriginalRecordForBarClick(e, records, selection);
 
     // If there's a record, check if there are any rules assigned to each of the fields (columns).
     if (record) {

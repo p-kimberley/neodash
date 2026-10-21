@@ -69,8 +69,8 @@ export const NeoAboutModal = ({ open, handleClose, getDebugState }) => {
                   the Neo4j JavaScript driver
                 </TextLink>
                 , It uses{' '}
-                <TextLink target='_blank' href='https://github.com/neo4j-labs/charts'>
-                  charts
+                <TextLink target='_blank' href='https://echarts.apache.org/'>
+                  Apache ECharts
                 </TextLink>{' '}
                 to power some of the visualizations, and&nbsp;
                 <TextLink target='_blank' href='https://www.openstreetmap.org/'>
