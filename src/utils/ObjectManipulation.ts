@@ -1,7 +1,7 @@
-import merge from 'lodash.merge';
+import merge from 'lodash/merge';
 
 /**
- * Merges two objects using lodash.merge and returns the result.
+ * Merges two objects using lodash's merge and returns the result.
  * @param a - The first object to merge.
  * @param b - The second object to merge.
  * @returns A new object representing the merged result.

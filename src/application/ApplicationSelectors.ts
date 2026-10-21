@@ -1,5 +1,5 @@
 import { initialState } from '../dashboard/DashboardReducer';
-import isEqual from 'lodash.isequal';
+import isEqual from 'lodash/isEqual';
 
 /**
  * Selectors define a way to retrieve parts of the global application state for a sub-component.

@@ -36,9 +36,13 @@
   "author": "Neo4j Contrib",
   "dependencies": {
     "@azure/openai": "^1.0.0-beta.2",
+    "@babel/runtime": "^7.29.0",
     "@codemirror/lang-markdown": "^6.1.1",
     "@dnd-kit/core": "^6.0.8",
     "@dnd-kit/sortable": "^7.0.2",
+    "@dnd-kit/utilities": "^3.2.1",
+    "@emotion/react": "^11.7.1",
+    "@emotion/styled": "^11.6.0",
     "@fontsource/fira-code": "5.3.0",
     "@fontsource/nunito-sans": "5.3.0",
     "@fontsource/roboto": "5.3.0",
@@ -60,6 +64,9 @@
     "@nivo/scatterplot": "^0.83.0",
     "@nivo/sunburst": "^0.83.0",
     "@nivo/treemap": "^0.83.0",
+    "@react-spring/web": "9.7.2",
+    "@redux-devtools/extension": "^3.2.3",
+    "@tanstack/react-table": "^8.9.3",
     "babel-runtime": "^6.26.0",
     "chroma-js": "^2.4.2",
     "classnames": "^2.3.1",
@@ -68,10 +75,10 @@
     "dom-to-image": "^2.6.0",
     "dompurify": "^3.1.0",
     "leaflet": "^1.7.1",
-    "lodash.isequal": "^4.5.0",
-    "lodash.merge": "^4.6.2",
+    "lodash": "^4.18.1",
     "mui-color": "^2.0.0-beta.2",
     "mui-nested-menu": "^3.2.1",
+    "neo4j-driver": "~4.4.10",
     "openai": "^3.3.0",
     "postcss": "^8.4.21",
     "postcss-loader": "^7.2.4",
@@ -91,6 +98,7 @@
     "react-redux": "^7.2.6",
     "react-show-more-text": "^1.6.2",
     "react-use-error-boundary": "^3.0.0",
+    "redux": "^4.2.1",
     "redux-persist": "^6.0.0",
     "redux-thunk": "^2.4.1",
     "remark-gfm": "^3.0.1",
@@ -109,10 +117,7 @@
     "@babel/preset-react": "^7.16.7",
     "@babel/preset-typescript": "^7.16.7",
     "@cypress/code-coverage": "^3.10.8",
-    "@emotion/react": "^11.7.1",
-    "@emotion/styled": "^11.6.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.10",
-    "@redux-devtools/extension": "^3.2.3",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
     "babel-loader": "^8.2.3",
@@ -136,6 +141,8 @@
     "webpack-dev-server": "^4.7.3"
   },
   "resolutions": {
-    "@neo4j-cypher/react-codemirror": "1.0.4"
+    "@neo4j-cypher/react-codemirror": "1.0.4",
+    "neo4j-driver": "4.4.11",
+    "lodash": "4.18.1"
   }
 }

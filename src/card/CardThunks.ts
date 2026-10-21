@@ -14,7 +14,7 @@ import {
 } from './CardActions';
 import { createNotificationThunk } from '../page/PageThunks';
 import { getReportTypes } from '../extensions/ExtensionUtils';
-import isEqual from 'lodash.isequal';
+import isEqual from 'lodash/isEqual';
 import { SELECTION_TYPES } from '../config/CardConfig';
 import { getSelectionBasedOnFields } from '../chart/ChartUtils';
 

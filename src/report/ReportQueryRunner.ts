@@ -1,5 +1,5 @@
 import { extractNodePropertiesFromRecords, extractNodeAndRelPropertiesFromRecords } from './ReportRecordProcessing';
-import isEqual from 'lodash.isequal';
+import isEqual from 'lodash/isEqual';
 import { isApiDriver } from '../api/ApiDriver';
 
 export enum QueryStatus {

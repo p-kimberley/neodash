@@ -1,6 +1,6 @@
 import { useConnection } from 'use-neo4j';
 import React from 'react';
-import isEqual from 'lodash.isequal';
+import isEqual from 'lodash/isEqual';
 /**
  * Updates the Neo4j context when noticing an update in the global connection state.
  * TODO - there's probably a better way to do this, but I'm not sure how at the moment.
