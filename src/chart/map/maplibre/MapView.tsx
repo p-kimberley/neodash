@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // Emitted as a file by webpack (see webpack.config.js), so the worker is served by NeoDash itself.
@@ -66,12 +66,14 @@ export const openReactPopup = (
   options: maplibregl.PopupOptions = {}
 ) => {
   const container = document.createElement('div');
-  ReactDOM.render(content, container);
+  const root = createRoot(container);
+  root.render(content);
   const popup = new maplibregl.Popup({ maxWidth: '360px', className: 'nd-map-popup', ...options })
     .setLngLat(lngLat)
     .setDOMContent(container)
     .addTo(map);
-  popup.on('close', () => ReactDOM.unmountComponentAtNode(container));
+  // Unmount after the current render pass (unmounting synchronously from a React event is not allowed).
+  popup.on('close', () => setTimeout(() => root.unmount()));
   return popup;
 };
 

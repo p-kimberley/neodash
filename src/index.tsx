@@ -1,6 +1,6 @@
 import React from 'react';
 import './fonts';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { Provider as ReduxProvider } from 'react-redux';
 import { configureStore } from './store';
 import { persistStore } from 'redux-persist';
@@ -32,4 +32,4 @@ const provider = (
   </ReduxProvider>
 );
 
-ReactDOM.render(<React.StrictMode>{provider}</React.StrictMode>, document.getElementById('root'));
+createRoot(document.getElementById('root') as HTMLElement).render(<React.StrictMode>{provider}</React.StrictMode>);

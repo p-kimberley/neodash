@@ -65,6 +65,9 @@ export default class ReactGantt extends Component {
       return this.ganttInstance;
     }
 
+    if (!this.ganttRef) {
+      return undefined;
+    }
     this.ganttInstance = new Gantt(this.ganttRef, this.props.tasks, this.getOptions());
     this.ganttInstance.change_view_mode(this.props.viewMode);
     return this.ganttInstance;
@@ -89,7 +92,8 @@ export default class ReactGantt extends Component {
    * Clear reference when the component unmounts.
    */
   componentWillUnmount() {
-    this.ganttRef = undefined;
+    // The ref itself is cleared by the ref callback on a real unmount. Clearing it here broke React 18
+    // StrictMode's simulated unmount/remount (development), which doesn't re-run ref callbacks.
     this.ganttInstance = undefined;
   }
 
@@ -100,7 +104,7 @@ export default class ReactGantt extends Component {
         key={this.key}
         style={{ height: '100%' }}
         ref={(node) => {
-          this.ganttRef = node;
+          this.ganttRef = node || undefined;
         }}
       />
     );

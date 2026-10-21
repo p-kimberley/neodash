@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useRef } from 'react';
 import { connect, useStore } from 'react-redux';
 import { startUrlSync } from './UrlState';
 import {
@@ -50,19 +50,26 @@ const Application = ({
   onReportHelpModalClose,
   themeMode,
 }) => {
-  const [initialized, setInitialized] = React.useState(false);
   const store = useStore();
+  // Start-up runs once per page load. A ref (not state) guards it: React 18's StrictMode runs effects
+  // twice in development, and a second start-up installed a second URL sync, which pushed every
+  // history entry twice (so Back seemed to do nothing).
+  const startup = useRef<Promise<unknown>>();
 
   useEffect(() => {
-    if (!initialized) {
-      setInitialized(true);
-      // Once signed in and the first dashboard is open, keep the URL and title in step with it.
-      let stopUrlSync;
-      Promise.resolve(initializeApplication()).then(() => {
+    startup.current ??= Promise.resolve(initializeApplication());
+    // Once signed in and the first dashboard is open, keep the URL and title in step with it.
+    let cancelled = false;
+    let stopUrlSync: (() => void) | undefined;
+    startup.current.then(() => {
+      if (!cancelled) {
         stopUrlSync = startUrlSync(store as any);
-      });
-      return () => stopUrlSync && stopUrlSync();
-    }
+      }
+    });
+    return () => {
+      cancelled = true;
+      stopUrlSync && stopUrlSync();
+    };
   }, []);
 
   // Follow the operating system's light/dark setting for the "Match system" appearance.
