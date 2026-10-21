@@ -16,10 +16,15 @@ before loading data. Follow it with `docker compose -f dev/compose.yaml logs -f 
 | ---------------- | -------------------------------------- | --------------------------------------------------------------- |
 | `neo4j`          | http://localhost:7474, bolt://localhost:7687 | Neo4j 5.26 Community + APOC. User `neo4j`, password `devpassword` |
 | `keycloak`       | http://localhost:8080                  | Realm `neodash`. Admin console: `admin` / `admin`                |
+| `backend`        | http://localhost:3000                  | New backend ([`server/`](../server)). Sign in at `/auth/login`; API under `/api` |
 | `neodash-legacy` | http://localhost:5005                  | NeoDash 2.4.11, unchanged                                        |
 | `seed`           | –                                      | One-off job; exits after loading data and checking dashboards    |
 
-The new backend and frontend are added to this stack as they are built.
+The new frontend is added to this stack once it talks to the backend.
+
+To try the backend directly, sign in at http://localhost:3000/auth/login as one of the test users
+below, then open http://localhost:3000/api/me or http://localhost:3000/api/dashboards in the same
+browser. Audit lines: `docker compose -f dev/compose.yaml logs backend | grep '"audit":true'`.
 
 ### Opening a dashboard in legacy NeoDash
 
@@ -102,9 +107,10 @@ docker compose -f dev/compose.yaml down -v
 
 ## Secrets
 
-`secrets/neo4j-auth.txt` holds the dev Neo4j credentials and is mounted as a Docker secret
-(`NEO4J_AUTH_FILE`), the same pattern the Kubernetes deployment uses with a Secret. These are
-throwaway local credentials; never reuse them elsewhere.
+`secrets/` holds the dev Neo4j credentials, the backend's session secret and the OIDC client secret.
+They are mounted as Docker secrets and read through `*_FILE` variables, the same pattern the
+Kubernetes deployment uses with Secrets. These are throwaway local values; never reuse them
+elsewhere.
 
 ## Legacy quirks found while building the fixtures
 
