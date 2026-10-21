@@ -21,7 +21,9 @@ import { deleteSessionStoragePrepopulationReportFunction } from '../extensions/s
 import { updateFieldsThunk } from '../card/CardThunks';
 import { getDashboardTheme } from '../dashboard/DashboardSelectors';
 
-export const REPORT_LOADING_ICON = <LoadingSpinner size='large' className='centered' style={{ marginTop: '-30px' }} />;
+export const REPORT_LOADING_ICON = (
+  <LoadingSpinner size='large' className='centered nd-report-loading' style={{ marginTop: '-30px' }} />
+);
 
 export const NeoReport = ({
   pagenumber = '', // page number that the report is on.

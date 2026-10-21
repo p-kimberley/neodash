@@ -15,9 +15,16 @@ export default tseslint.config(
       'gallery/**',
       'packages/**/dist/**',
       'packages/**/coverage/**',
+      'dev/e2e/report/**',
+      'dev/e2e/test-results/**',
+      'dev/e2e/node_modules/**',
     ],
   },
   js.configs.recommended,
+  // Dev scripts (seed data, the browser regression suite) run in Node.
+  { files: ['dev/**/*.{js,mjs}'], languageOptions: { globals: { ...globals.node } } },
+  // Browser-side callbacks (page.evaluate) in the regression suite.
+  { files: ['dev/e2e/tests/**/*.mjs'], languageOptions: { globals: { ...globals.browser } } },
   ...tseslint.configs.recommended,
   prettier,
   {

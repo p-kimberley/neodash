@@ -2,3 +2,6 @@ coverage
 dist
 node_modules
 docs
+dev/e2e/report
+dev/e2e/test-results
+dev/e2e/.auth
