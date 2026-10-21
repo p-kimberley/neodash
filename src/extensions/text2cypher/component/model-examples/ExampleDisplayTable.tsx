@@ -7,7 +7,7 @@ import {
   ChevronDoubleRightIconOutline,
   ChevronRightIconOutline,
 } from '@neo4j-ndl/react/icons';
-import ShowMoreText from 'react-show-more-text';
+import ShowMoreText from '../../../../component/text/ShowMoreText';
 import {
   createColumnHelper,
   flexRender,

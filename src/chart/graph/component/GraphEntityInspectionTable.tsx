@@ -1,5 +1,5 @@
 import React from 'react';
-import ShowMoreText from 'react-show-more-text';
+import ShowMoreText from '../../../component/text/ShowMoreText';
 import { Checkbox, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { TextLink } from '@neo4j-ndl/react';
 // import DOMPurify from 'dompurify';

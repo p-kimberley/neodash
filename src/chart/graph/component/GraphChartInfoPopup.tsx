@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { ClickAwayListener, Popper } from '@mui/material';
 import { IconButton } from '@neo4j-ndl/react';
 import { XMarkIconOutline } from '@neo4j-ndl/react/icons';
@@ -23,6 +23,19 @@ export const NeoGraphChartInfoPopup = (props: GraphChartVisualizationProps) => {
     [clickPosition?.x, clickPosition?.y]
   );
 
+  // Re-placed when its content changes size (e.g. "Show more"), so it stays inside the window. A
+  // callback ref, because Popper mounts the content (through a portal) after this component.
+  const popperRef = useRef<{ update: () => void } | null>(null);
+  const observer = useRef<ResizeObserver | null>(null);
+  const contentRef = useCallback((el: HTMLDivElement | null) => {
+    observer.current?.disconnect();
+    observer.current = null;
+    if (el) {
+      observer.current = new ResizeObserver(() => popperRef.current?.update());
+      observer.current.observe(el);
+    }
+  }, []);
+
   useEffect(() => {
     if (!open) {
       return undefined;
@@ -43,6 +56,7 @@ export const NeoGraphChartInfoPopup = (props: GraphChartVisualizationProps) => {
     <Popper
       open
       anchorEl={anchor}
+      popperRef={popperRef as any}
       placement='right-start'
       // Above maximised reports (dialogs) as well as the dashboard.
       style={{ zIndex: 1400 }}
@@ -54,7 +68,7 @@ export const NeoGraphChartInfoPopup = (props: GraphChartVisualizationProps) => {
     >
       {/* Mouse-down, so a click on another node closes this popup before that node's click opens it again. */}
       <ClickAwayListener mouseEvent='onMouseDown' onClickAway={() => setPropertyInspectorOpen(false)}>
-        <div className='nd-floating-menu nd-graph-info' role='dialog' aria-label='Properties'>
+        <div ref={contentRef} className='nd-floating-menu nd-graph-info' role='dialog' aria-label='Properties'>
           <div className='nd-graph-info-header'>
             <span className='nd-graph-info-title'>{getEntityHeader(selectedEntity, props?.engine?.selection)}</span>
             <IconButton aria-label='close' size='small' clean onClick={() => setPropertyInspectorOpen(false)}>

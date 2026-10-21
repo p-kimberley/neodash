@@ -915,3 +915,18 @@ body {
 .nd-color-popover {
   padding: 10px;
 }
+
+/* "Show more" / "Show less" under clamped text (ShowMoreText). */
+.nd-show-more {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--nd-primary);
+  font: inherit;
+  font-size: var(--nd-text-sm);
+  cursor: pointer;
+}
+
+.nd-show-more:hover {
+  text-decoration: underline;
+}
