@@ -255,7 +255,8 @@ Nothing in the running system needs internet access:
 - The image contains the UI, fonts and backend, and makes no outbound requests. The chart uses no
   other images (`helm test` reuses the NeoDash image).
 - Sign-in only talks to your identity provider.
-- Map reports draw no background tiles unless you set `maps.tileUrl` to an internal tile server.
+- Map reports (drawn with MapLibre GL, which needs a WebGL2-capable browser, as all current
+  browsers are) draw no background tiles unless you set `maps.tileUrl` to an internal tile server.
 - Choropleth and area-map reports load country and region shapes from the image itself
   (`/maps`, about 8 MB, sent compressed at under 1 MB). Set `maps.dataUrl` only to serve them
   from elsewhere.

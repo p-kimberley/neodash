@@ -1,4 +1,15 @@
-## Unreleased
+## NeoDash 3.1.0 - Up-to-date dependencies, maps, graph and widget improvements
+Existing dashboards keep working unchanged. Chart 2.2.0.
+
+**Dependencies.** Every deprecated or unmaintained library is upgraded or replaced:
+- React 17 -> 18 (react-redux 8), react-markdown 10, MUI date pickers 8, MUI 5.18 / data grid 7.29, react-force-graph 1.29 with three.js 0.186.
+- Leaflet and its React plugins -> MapLibre GL; mui-color -> react-colorful; the deprecated @mui/styles -> MUI's sx.
+- The text-to-Cypher OpenAI / Azure OpenAI SDKs (openai 3, @azure/openai beta) -> direct REST calls; use-neo4j -> a small internal context; Sentry, the Neo4j SSO client and other unused packages removed.
+- Security fixes from refreshed dependencies (dompurify, lodash, yaml, postcss, Babel, axios no longer bundled).
+- Build and dev tooling: webpack-cli 6, webpack-dev-server 5, Babel loader 10, ESLint 9 with typescript-eslint 8, TypeScript 5.9, Prettier 3; React Fast Refresh in development.
+- The production bundle no longer contains test-coverage instrumentation (12.3 MB -> 10.6 MB of JavaScript, served compressed).
+
+**Features and fixes.**
 - **Map data bundled**: choropleth and area map reports work out of the box and offline (country and region shapes served from `/maps`).
 - UI assets, including the map data, are sent Brotli/gzip-compressed (about 19 MB down to 2 MB).
 - Every report has a **maximise** button (the "Fullscreen enabled" setting is gone); a maximised report fills the window and Escape restores it.
