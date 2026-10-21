@@ -1,4 +1,3 @@
-import { makeStyles } from '@mui/styles';
 import { getContrastRatio } from '@mui/material/styles';
 import { EntityType } from '../../chart/Utils';
 
@@ -183,10 +182,6 @@ const evaluateCondition = (realValue, condition, ruleValue) => {
 };
 
 /**
- * Uses the mui `makeStyles` functionality to generate classes for each of the rules.
- * This is used for styling table rows and columns.
- */
-/**
  * A readable text colour for a background chosen by a style rule: dark text on light colours and
  * white on dark ones, so a highlighted row stays legible in both light and dark mode.
  * Returns undefined if the colour can't be parsed (the theme's text colour is kept).
@@ -212,7 +207,12 @@ export const textColorForBackground = (background: string): string | undefined =
   }
 };
 
-export const generateClassDefinitionsBasedOnRules = (rules) => {
+/**
+ * Styles for the table rule classes (`.rule0`, `.rule1`, ... set on matching rows and cells), as an
+ * MUI `sx` object for the table's container. (This replaced @mui/styles' makeStyles, which is
+ * deprecated; the selectors and their order are the same.)
+ */
+export const generateSxBasedOnRules = (rules): Record<string, any> => {
   const classes = {};
   // Background rules first, each with a readable text colour; text-colour rules are added after
   // them so that, when both apply to a cell, the author's explicit text colour wins.
@@ -232,9 +232,7 @@ export const generateClassDefinitionsBasedOnRules = (rules) => {
       };
     }
   });
-  return makeStyles({
-    root: classes,
-  });
+  return classes;
 };
 
 export const identifyStyleRuleParameters = (rules) => {

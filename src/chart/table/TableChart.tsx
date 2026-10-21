@@ -4,10 +4,10 @@ import { ChartProps } from '../Chart';
 import {
   evaluateRulesOnDict,
   evaluateSingleRuleOnDict,
-  generateClassDefinitionsBasedOnRules,
+  generateSxBasedOnRules,
   useStyleRules,
 } from '../../extensions/styling/StyleRuleEvaluator';
-import { Tooltip, Snackbar } from '@mui/material';
+import { Box, Tooltip, Snackbar } from '@mui/material';
 import { downloadCSV } from '../ChartUtils';
 import { getRendererForValue, rendererForType, RenderSubValue } from '../../report/ReportRecordProcessing';
 
@@ -114,8 +114,7 @@ export const NeoTableChart = (props: ChartProps) => {
   const [notificationOpen, setNotificationOpen] = React.useState(false);
   const [columnVisibilityModel, setColumnVisibilityModel] = React.useState<GridColumnVisibilityModel>({});
 
-  const useStyles = generateClassDefinitionsBasedOnRules(styleRules);
-  const classes = useStyles();
+  const ruleStyles = React.useMemo(() => generateSxBasedOnRules(styleRules), [styleRules]);
   const tableRowHeight = compact ? TABLE_ROW_HEIGHT / 2 : TABLE_ROW_HEIGHT;
 
   const columnWidthsType =
@@ -334,7 +333,7 @@ export const NeoTableChart = (props: ChartProps) => {
 
   return (
     <>
-      <div className={classes.root} style={{ height: '100%', width: '100%', position: 'relative' }}>
+      <Box sx={{ ...ruleStyles, height: '100%', width: '100%', position: 'relative' }}>
         <Snackbar
           anchorOrigin={{
             vertical: 'bottom',
@@ -388,7 +387,7 @@ export const NeoTableChart = (props: ChartProps) => {
         ) : (
           <DataGrid {...commonGridProps} sx={customStyles} />
         )}
-      </div>
+      </Box>
     </>
   );
 };

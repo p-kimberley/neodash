@@ -1,7 +1,6 @@
 import React from 'react';
 import { Chip, Tooltip } from '@mui/material';
 import { GraphLabel, TextLink } from '@neo4j-ndl/react';
-import { withStyles } from '@mui/styles';
 import {
   getRecordType,
   toNumber,
@@ -121,13 +120,10 @@ export function saveNodeAndRelPropertiesToDictionary(field, fieldsDict) {
 }
 
 /* HELPER FUNCTIONS FOR RENDERING A FIELD BASED ON TYPE */
-const HtmlTooltip = withStyles(() => ({
-  tooltip: {
-    color: 'white',
-    fontSize: 12,
-    border: '1px solid #fcfffa',
-  },
-}))(Tooltip);
+const HTML_TOOLTIP_STYLE = { color: 'white', fontSize: 12, border: '1px solid #fcfffa' };
+const HtmlTooltip = (props: React.ComponentProps<typeof Tooltip>) => (
+  <Tooltip {...props} componentsProps={{ tooltip: { sx: HTML_TOOLTIP_STYLE } }} />
+);
 
 function addDirection(relationship, start) {
   relationship.direction = relationship.start.low == start.identity.low;
