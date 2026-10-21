@@ -71,10 +71,12 @@ services:
     volumes:
       - ./keycloak:/opt/keycloak/data/import:ro
 
-  # The new backend: OIDC login, role-based queries, dashboard storage, audit log.
-  # Sign in at http://localhost:3000/auth/login; the API is under http://localhost:3000/api.
+  # The new NeoDash: the UI and its backend in one container (root Dockerfile).
+  # Open http://localhost:3000 and sign in as one of the test users. API under /api.
   backend:
-    build: ../server
+    build:
+      context: ..
+      dockerfile: Dockerfile
     ports:
       - '3000:3000'
     depends_on:
@@ -82,6 +84,8 @@ services:
         condition: service_healthy
     environment:
       PUBLIC_URL: http://localhost:3000
+      # The webpack dev server (yarn dev) proxies to this backend from port 5173.
+      ADDITIONAL_ORIGINS: http://localhost:5173
       NEO4J_URI: neo4j://neo4j:7687
       NEO4J_AUTH_FILE: /run/secrets/neo4j_auth
       # Browsers see Keycloak on localhost:8080; the backend fetches its metadata in-network.

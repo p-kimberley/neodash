@@ -83,8 +83,18 @@ export function rolesFrom(claims: Record<string, unknown> | undefined, path: str
   return [];
 }
 
-/** Only same-site relative paths, so the login redirect can't be turned into an open redirect. */
-export function safeReturnTo(value: unknown): string {
-  if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return '/';
-  return value;
+/**
+ * Only relative paths, or absolute URLs on one of our own origins, so the login redirect can't be
+ * turned into an open redirect.
+ */
+export function safeReturnTo(value: unknown, allowedOrigins: string[] = []): string {
+  if (typeof value !== 'string' || value.includes('\\')) return '/';
+  if (value.startsWith('/') && !value.startsWith('//')) return value;
+  try {
+    const url = new URL(value);
+    if (allowedOrigins.includes(url.origin)) return url.href;
+  } catch {
+    // Not a URL.
+  }
+  return '/';
 }

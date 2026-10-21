@@ -3,47 +3,24 @@ import NeoPage from '../page/Page';
 import NeoDashboardHeader from './header/DashboardHeader';
 import NeoDashboardTitle from './header/DashboardTitle';
 import NeoDashboardHeaderPageList from './header/DashboardHeaderPageList';
-import { createDriver, Neo4jProvider } from 'use-neo4j';
+import { Neo4jProvider } from 'use-neo4j';
 import { applicationGetConnection, applicationGetStandaloneSettings } from '../application/ApplicationSelectors';
-import { connect } from 'react-redux';
-import NeoDashboardConnectionUpdateHandler from '../component/misc/DashboardConnectionUpdateHandler';
-import { forceRefreshPage } from '../page/PageActions';
-import { getPageNumber } from '../settings/SettingsSelectors';
-import { createNotificationThunk } from '../page/PageThunks';
-import { version } from '../modal/AboutModal';
+import { connect, useStore } from 'react-redux';
 import NeoDashboardSidebar from './sidebar/DashboardSidebar';
+import { ApiDriver } from '../api/ApiDriver';
 
 const Dashboard = ({
-  pagenumber,
   connection,
   standaloneSettings,
-  onConnectionUpdate,
   onDownloadDashboardAsImage,
   onAboutModalOpen,
   resetApplication,
 }) => {
-  const [driver, setDriver] = React.useState(undefined);
-
-  // If no driver is yet instantiated, create a new one.
-  if (driver == undefined) {
-    const newDriver = createDriver(
-      connection.protocol,
-      connection.url,
-      connection.port,
-      connection.username,
-      connection.password,
-      { userAgent: `neodash/v${version}` }
-    );
-    setDriver(newDriver);
-  }
+  const store = useStore();
+  // All queries go through the backend; the driver only needs to know which dashboard is open.
+  const [driver] = React.useState(() => new ApiDriver({ getDashboard: () => (store.getState() as any).dashboard }));
   const content = (
-    <Neo4jProvider driver={driver}>
-      <NeoDashboardConnectionUpdateHandler
-        pagenumber={pagenumber}
-        connection={connection}
-        onConnectionUpdate={onConnectionUpdate}
-      />
-
+    <Neo4jProvider driver={driver as any}>
       {/* Navigation Bar */}
       <div
         className='n-w-screen n-flex n-flex-row n-items-center n-bg-neutral-bg-weak n-border-b'
@@ -78,16 +55,7 @@ const Dashboard = ({
               <div className='n-absolute n-inset-0 page-spacing'>
                 <div className='page-spacing-overflow'>
                   {/* The main content of the page */}
-
                   <div>
-                    {standaloneSettings.standalonePassword &&
-                    standaloneSettings.standalonePasswordWarningHidden !== true ? (
-                      <div style={{ textAlign: 'center', color: 'red', paddingTop: 60, marginBottom: -50 }}>
-                        Warning: NeoDash is running with a plaintext password in config.json.
-                      </div>
-                    ) : (
-                      <></>
-                    )}
                     <NeoDashboardTitle />
                     <NeoDashboardHeaderPageList />
                     <NeoPage></NeoPage>
@@ -105,20 +73,7 @@ const Dashboard = ({
 
 const mapStateToProps = (state) => ({
   connection: applicationGetConnection(state),
-  pagenumber: getPageNumber(state),
   standaloneSettings: applicationGetStandaloneSettings(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  onConnectionUpdate: (pagenumber) => {
-    dispatch(
-      createNotificationThunk(
-        'Connection Updated',
-        'You have updated your Neo4j connection, your reports have been reloaded.'
-      )
-    );
-    dispatch(forceRefreshPage(pagenumber));
-  },
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);
+export default connect(mapStateToProps)(Dashboard);

@@ -2,87 +2,42 @@ import React from 'react';
 import { Checkbox, Dialog, TextLink } from '@neo4j-ndl/react';
 
 /**
- * Configures setting the current Neo4j database connection for the dashboard.
+ * Shows a link to a saved dashboard on this NeoDash deployment. Links never carry credentials:
+ * whoever opens one signs in, and their role decides what they can do.
  */
-export const NeoDashboardSidebarShareModal = ({
-  uuid,
-  dashboardDatabase,
-  connection,
-  open,
-  onLegacyShareClicked,
-  handleClose,
-}) => {
-  const shareBaseURL = 'http://neodash.graphapp.io';
-  const shareBaseURLAlternative = 'https://neodash.graphapp.io';
-  const shareLocalURL = window.location.origin.startsWith('file') ? shareBaseURL : window.location.origin;
-  const [selfHosted, setSelfHosted] = React.useState(false);
-  const [standalone, setStandalone] = React.useState(false);
-  const [includeCredentials, setIncludeCredentials] = React.useState(false);
+export const NeoDashboardSidebarShareModal = ({ uuid, open, onLegacyShareClicked, handleClose }) => {
+  const [includeView, setIncludeView] = React.useState(true);
 
   function getShareURL() {
-    const prefix = selfHosted ? shareLocalURL : shareBaseURL;
-    const id = encodeURIComponent(uuid);
-    const db = encodeURIComponent(dashboardDatabase);
-    const suffix1 = includeCredentials
-      ? `&credentials=${encodeURIComponent(
-          `${connection.protocol}://${connection.username}:${connection.password}@${connection.database}:${connection.url}:${connection.port}`
-        )}`
-      : '';
-    const suffix2 = standalone ? `&standalone=Yes` : '';
-    return `${prefix}/?share&type=database&id=${id}&dashboardDatabase=${db}${suffix1}${suffix2}`;
+    const base = `${window.location.origin}/dashboards/${encodeURIComponent(uuid)}`;
+    // The address bar already holds the current page and filter values (see UrlState.ts).
+    const current =
+      window.location.pathname === `/dashboards/${encodeURIComponent(uuid)}` ? window.location.search : '';
+    return includeView ? `${base}${current}` : base;
   }
 
   return (
     <Dialog size='small' open={open == true} onClose={handleClose} aria-labelledby='form-dialog-title'>
       <Dialog.Header id='form-dialog-title'>Share Dashboard</Dialog.Header>
       <Dialog.Subtitle>
-        This screen lets you create a one-off, direct link for your dashboard. Click{' '}
-        <TextLink onClick={onLegacyShareClicked}>here</TextLink> to use legacy file-sharing instead.
+        Anyone with access to NeoDash can open this link after signing in. Click{' '}
+        <TextLink onClick={onLegacyShareClicked}>here</TextLink> to share the dashboard as a file instead.
       </Dialog.Subtitle>
       <Dialog.Content>
-        {shareLocalURL !== shareBaseURL && shareLocalURL !== shareBaseURLAlternative ? (
-          <Checkbox
-            label='Self-hosted'
-            style={{ fontSize: 'small' }}
-            checked={selfHosted}
-            name='enable'
-            onClick={() => {
-              setSelfHosted(!selfHosted);
-            }}
-          />
-        ) : (
-          <></>
-        )}
         <Checkbox
-          label='Hide Editor UI'
+          label='Include the current page and filter values'
           style={{ fontSize: 'small' }}
-          checked={standalone}
-          name='enable'
-          onClick={() => {
-            setStandalone(!standalone);
-          }}
+          checked={includeView}
+          name='include-view'
+          onClick={() => setIncludeView(!includeView)}
         />
-
-        <Checkbox
-          label={'Include credentials ⚠️'}
-          style={{ fontSize: 'small' }}
-          checked={includeCredentials}
-          name='enable'
-          onClick={() => {
-            setIncludeCredentials(!includeCredentials);
-          }}
-        />
-
         <br />
-        <span>Your Temporary Link:</span>
+        <span>Link:</span>
         <br />
         <span style={{ display: 'block', width: '100%', overflow: 'hidden' }}>
           <TextLink href={getShareURL()} externalLink>
-            {' '}
-            {getShareURL()}{' '}
+            {getShareURL()}
           </TextLink>
-          <br />
-          {includeCredentials ? <i>Caution: this link embeds your current database credentials.</i> : <></>}
         </span>
       </Dialog.Content>
     </Dialog>

@@ -39,10 +39,16 @@ describe('roles', () => {
 });
 
 describe('safeReturnTo', () => {
-  it('only allows same-site relative paths', () => {
-    expect(safeReturnTo('/dashboards/abc?page=2')).toBe('/dashboards/abc?page=2');
-    for (const bad of ['https://evil.example', '//evil.example', '/\\evil.example', 'dashboards', undefined, 42]) {
-      expect(safeReturnTo(bad)).toBe('/');
+  const allowed = ['https://neodash.example', 'http://localhost:5173'];
+
+  it('allows relative paths and absolute URLs on our own origins', () => {
+    expect(safeReturnTo('/dashboards/abc?page=2', allowed)).toBe('/dashboards/abc?page=2');
+    expect(safeReturnTo('http://localhost:5173/dashboards/abc', allowed)).toBe('http://localhost:5173/dashboards/abc');
+  });
+
+  it('rejects everything else', () => {
+    for (const bad of ['https://evil.example', 'https://neodash.example.evil.com/', '//evil.example', '/\\evil.example', 'dashboards', 'javascript:alert(1)', undefined, 42]) {
+      expect(safeReturnTo(bad, allowed)).toBe('/');
     }
   });
 });

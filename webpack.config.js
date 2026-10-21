@@ -1,6 +1,7 @@
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
-const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
+const os = require('os');
 
 const circularPlugin = new CircularDependencyPlugin({
   // exclude detection of files based on a RegExp
@@ -22,7 +23,9 @@ const rules = [
     exclude: /(node_modules)/,
     loader: 'babel-loader',
     options: {
-      presets: ['@babel/env'],
+      // preset-typescript here (not only in .babelrc) so shared files outside src/, such as
+      // server/src/codec.ts, are compiled too.
+      presets: ['@babel/env', '@babel/preset-typescript'],
       //plugins: [isDevelopment && require.resolve('react-refresh/babel')].filter(Boolean),
     },
   },
@@ -56,6 +59,11 @@ module.exports = (env) => {
     },
     entry: ['./src/index.tsx'],
     mode: production ? 'production' : 'development',
+    // Minifying with one worker per core (the default) runs out of memory on many-core build
+    // machines and in Docker, so cap the workers.
+    optimization: production
+      ? { minimizer: [new TerserPlugin({ parallel: Math.min(4, Math.max(1, os.cpus().length - 1)) })] }
+      : undefined,
     devtool: production ? 'source-map' : 'eval-cheap-module-source-map',
     module: {
       rules: rules,
@@ -65,23 +73,27 @@ module.exports = (env) => {
       filename: 'bundle.js',
     },
     devServer: {
-      port: 3000,
+      // The backend (server/) listens on 3000; the dev server proxies its routes so the app is
+      // same-origin, exactly as in production.
+      port: 5173,
       hot: true,
       compress: true,
+      historyApiFallback: true,
+      proxy: [
+        {
+          context: ['/api', '/auth', '/healthz', '/readyz'],
+          target: process.env.BACKEND_URL || 'http://localhost:3000',
+        },
+      ],
       client: {
         overlay: {
           warnings: false,
         },
       },
     },
+    // The upstream build uploaded source maps to Neo4j's Sentry; this fork does not report anywhere.
     plugins: production
-      ? [
-          sentryWebpackPlugin({
-            authToken: process.env.SENTRY_AUTH_TOKEN,
-            org: 'neo4j-inc',
-            project: 'neodash',
-          }),
-        ]
+      ? []
       : [new ReactRefreshWebpackPlugin(), ...(circularValidation ? [circularPlugin] : [])],
     ignoreWarnings: [/Failed to parse source map/],
   };

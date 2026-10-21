@@ -110,7 +110,7 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
 
   app.get('/auth/login', async (request, reply) => {
     const { returnTo } = request.query as { returnTo?: string };
-    const { url, state } = await oidc.startLogin(safeReturnTo(returnTo));
+    const { url, state } = await oidc.startLogin(safeReturnTo(returnTo, config.allowedOrigins));
     reply.setCookie(LOGIN_COOKIE, logins.seal(state), { ...cookieBase, maxAge: 600 });
     return reply.redirect(url.href);
   });
@@ -193,7 +193,7 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
     // pages: JSON bodies can't be sent cross-site without a CORS preflight, and Origin must match.
     if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
       const origin = request.headers.origin;
-      if (origin && origin !== publicUrl.origin) return deny(request, reply, 'Cross-origin request rejected');
+      if (origin && !config.allowedOrigins.includes(origin)) return deny(request, reply, 'Cross-origin request rejected');
       const type = request.headers['content-type'] ?? '';
       if (request.method !== 'DELETE' && !type.startsWith('application/json')) {
         return reply.code(415).send(errorBody('unsupported_media_type', 'Requests must be application/json'));

@@ -2,7 +2,7 @@ services:
   neodash:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.legacy
     ports:
       - "5005:5005"
     environment:

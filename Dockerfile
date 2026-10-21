@@ -1,47 +1,36 @@
-# build stage
-FROM node:lts-alpine3.18 AS build-stage
+# NeoDash: the UI and its backend in one image. The backend (server/) serves the built UI, handles
+# sign-in and runs every Neo4j query, so browsers never connect to Neo4j.
+# See server/README.md for configuration. The previous nginx-only image is Dockerfile.legacy.
 
-RUN yarn global add typescript jest
-WORKDIR /usr/local/src/neodash
+FROM node:22-alpine AS ui
+WORKDIR /app
+RUN corepack enable
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile --ignore-engines --network-timeout 600000
+COPY .babelrc webpack.config.js tsconfig.json postcss.config.js tailwind.config.js ./
+COPY public ./public
+COPY src ./src
+# The typed JSON codec is shared with the backend.
+COPY server/src/codec.ts ./server/src/codec.ts
+RUN yarn run build-minimal && rm -f dist/config.json
 
-# Pull source code if you have not cloned the repository
-#RUN apk add --no-cache git
-#RUN git clone https://github.com/neo4j-contrib/neodash.git /usr/local/src/neodash
+FROM node:22-alpine AS server
+WORKDIR /app
+COPY server/package.json server/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY server/tsconfig.json server/tsconfig.build.json ./
+COPY server/src ./src
+RUN npm run build && npm prune --omit=dev
 
-# Copy sources and install/build
-COPY ./package.json /usr/local/src/neodash/package.json
-COPY ./yarn.lock /usr/local/src/neodash/yarn.lock
-
-RUN yarn install
-COPY ./ /usr/local/src/neodash
-RUN yarn run build-minimal
-
-# production stage
-FROM nginx:alpine3.18 AS neodash
-RUN apk upgrade
-
-ENV NGINX_PORT=5005
-
-COPY --from=build-stage /usr/local/src/neodash/dist /usr/share/nginx/html
-COPY ./conf/default.conf.template /etc/nginx/templates/
-COPY ./scripts/config-entrypoint.sh /docker-entrypoint.d/config-entrypoint.sh
-COPY ./scripts/message-entrypoint.sh /docker-entrypoint.d/message-entrypoint.sh
-
-RUN chown -R nginx:nginx /var/cache/nginx && \
-    chown -R nginx:nginx /var/log/nginx && \
-    chown -R nginx:nginx /etc/nginx/conf.d && \
-    chown -R nginx:nginx /etc/nginx/templates && \
-    chown -R nginx:nginx /docker-entrypoint.d/config-entrypoint.sh && \
-    chmod +x /docker-entrypoint.d/config-entrypoint.sh  && \
-    chmod +x /docker-entrypoint.d/message-entrypoint.sh
-RUN touch /var/run/nginx.pid && \
-    chown -R nginx:nginx /var/run/nginx.pid
-RUN chown -R nginx:nginx /usr/share/nginx/html/
-
-## Launch webserver as non-root user.
-USER nginx
-
-EXPOSE $NGINX_PORT
-
-HEALTHCHECK cmd curl --fail "http://localhost:$NGINX_PORT" || exit 1
-LABEL version="2.4.11"
+FROM node:22-alpine
+ENV NODE_ENV=production \
+    STATIC_DIR=/app/public
+WORKDIR /app
+COPY --from=server /app/node_modules ./node_modules
+COPY --from=server /app/dist ./dist
+COPY server/package.json ./
+COPY --from=ui /app/dist ./public
+USER node
+EXPOSE 3000
+HEALTHCHECK --interval=10s --timeout=3s CMD wget -q -O /dev/null http://127.0.0.1:3000/healthz || exit 1
+CMD ["node", "dist/index.js"]

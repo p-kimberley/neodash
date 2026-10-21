@@ -83,6 +83,7 @@ All settings are environment variables. Secrets can be given as files instead, b
 | Variable | Default | |
 | --- | --- | --- |
 | `PUBLIC_URL` | required | URL users reach NeoDash on; used for redirects and cookie security |
+| `ADDITIONAL_ORIGINS` | – | Other origins the UI is served from (e.g. `http://localhost:5173` for the dev server); trusted for the Origin check and post-login redirects |
 | `NEO4J_URI` | `neo4j://localhost:7687` | |
 | `NEO4J_USERNAME` / `NEO4J_PASSWORD` | `neo4j` / required | |
 | `NEO4J_DATABASES` | `neo4j` | Comma-separated databases reports may query; first is the default |

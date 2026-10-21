@@ -21,6 +21,9 @@ const schema = z.object({
   // The URL users reach NeoDash on, e.g. https://neodash.example.com. Used for OIDC redirects,
   // cookie security and the Origin check on state-changing requests.
   PUBLIC_URL: z.string().url(),
+  // Other origins the UI may be served from, e.g. the webpack dev server (http://localhost:5173).
+  // Requests from these pass the Origin check, and sign-in may return to them.
+  ADDITIONAL_ORIGINS: csv.default(''),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   // Built frontend to serve. Leave unset when the frontend is served separately (e.g. dev server).
   STATIC_DIR: z.string().optional(),
@@ -95,6 +98,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env) {
     port: c.PORT,
     host: c.HOST,
     publicUrl,
+    allowedOrigins: [publicUrl.origin, ...c.ADDITIONAL_ORIGINS.map((o) => new URL(o).origin)],
     secureCookies: publicUrl.protocol === 'https:',
     logLevel: c.LOG_LEVEL,
     staticDir: c.STATIC_DIR,

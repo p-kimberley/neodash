@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+dist
+server/dist
+.git
+.idea
+cypress
+gallery
+docs
+dev
+k8s-deploy
+*.log

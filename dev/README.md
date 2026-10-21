@@ -16,15 +16,27 @@ before loading data. Follow it with `docker compose -f dev/compose.yaml logs -f 
 | ---------------- | -------------------------------------- | --------------------------------------------------------------- |
 | `neo4j`          | http://localhost:7474, bolt://localhost:7687 | Neo4j 5.26 Community + APOC. User `neo4j`, password `devpassword` |
 | `keycloak`       | http://localhost:8080                  | Realm `neodash`. Admin console: `admin` / `admin`                |
-| `backend`        | http://localhost:3000                  | New backend ([`server/`](../server)). Sign in at `/auth/login`; API under `/api` |
+| `backend`        | http://localhost:3000                  | **The new NeoDash**: UI and backend ([`server/`](../server)) in one container |
 | `neodash-legacy` | http://localhost:5005                  | NeoDash 2.4.11, unchanged                                        |
 | `seed`           | –                                      | One-off job; exits after loading data and checking dashboards    |
 
-The new frontend is added to this stack once it talks to the backend.
+Open http://localhost:3000 and sign in as one of the test users below. Dashboards have their own
+URLs, e.g. http://localhost:3000/dashboards/5a1e5000-0000-4000-8000-000000000000 for Sales
+Overview, and the page and filter values are kept in the URL, so links can be shared.
 
-To try the backend directly, sign in at http://localhost:3000/auth/login as one of the test users
-below, then open http://localhost:3000/api/me or http://localhost:3000/api/dashboards in the same
-browser. Audit lines: `docker compose -f dev/compose.yaml logs backend | grep '"audit":true'`.
+Audit lines: `docker compose -f dev/compose.yaml logs backend | grep '"audit":true'`.
+
+### Working on the UI with hot reload
+
+Rebuilding the container for every UI change is slow. Instead, keep the stack running and start
+the webpack dev server, which proxies `/api` and `/auth` to the backend on port 3000:
+
+```sh
+yarn install
+yarn dev        # http://localhost:5173
+```
+
+Sign-in works there too: the backend lists `http://localhost:5173` in `ADDITIONAL_ORIGINS`.
 
 ### Opening a dashboard in legacy NeoDash
 

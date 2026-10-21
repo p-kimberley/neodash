@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <!-- Client-side routes such as /dashboards/<uuid> must still load assets from the root. -->
+    <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Neo4j Dashboard Builder">
 
@@ -11,7 +13,7 @@
     <link rel="stylesheet" href="style.css"/>
     <link rel="manifest" href="manifest.json">
     <link rel="shortcut icon" href="favicon.ico">
-    <title>NeoDash - Neo4j Dashboard Builder</title>
+    <title>NeoDash</title>
     <!--
             manifest.json provides metadata used when your web app is installed on a
             user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/

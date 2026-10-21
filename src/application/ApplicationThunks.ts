@@ -48,6 +48,8 @@ import { applicationIsStandalone } from './ApplicationSelectors';
 import { applicationGetLoggingSettings } from './logging/LoggingSelectors';
 import { createLogThunk } from './logging/LoggingThunk';
 import { createUUID } from '../utils/uuid';
+import { api, session as apiSession } from '../api/client';
+import { applyUrlStateThunk, parseUrl } from './UrlState';
 
 /**
  * Application Thunks (https://redux.js.org/usage/writing-logic-thunks) handle complex state manipulations.
@@ -371,106 +373,73 @@ export const onConfirmLoadSharedDashboardThunk = () => (dispatch: any, getState:
 };
 
 /**
- * Initializes the NeoDash application.
+ * Initializes the NeoDash application against the NeoDash backend.
  *
- * This is a multi step process, starting with loading the runtime configuration.
- * This is present in the file located at /config.json on the URL where NeoDash is deployed.
- * Note: this does not work in Neo4j Desktop, so we revert to defaults.
+ * There is no Neo4j connection to configure any more: the backend decides who the user is (via
+ * OIDC) and what they may do. Viewers get NeoDash's read-only "standalone" mode; editors get the
+ * editor. The dashboard, page and parameters to show come from the URL (see UrlState.ts).
  */
 export const loadApplicationConfigThunk = () => async (dispatch: any, getState: any) => {
-  let config = {
-    ssoEnabled: false,
-    ssoProviders: [],
-    ssoDiscoveryUrl: 'http://example.com',
-    standalone: false,
-    standaloneProtocol: 'neo4j+s',
-    standaloneHost: 'localhost',
-    standalonePort: '7687',
-    standaloneDatabase: 'neo4j',
-    standaloneDashboardName: 'My Dashboard',
-    standaloneDashboardDatabase: 'dashboards',
-    standaloneDashboardURL: '',
-    loggingMode: '0',
-    loggingDatabase: 'logs',
-    logErrorNotification: '3',
-    standaloneAllowLoad: false,
-    standaloneLoadFromOtherDatabases: false,
-    standaloneMultiDatabase: false,
-    standaloneDatabaseList: 'neo4j',
-    customHeader: '',
-    deprecationNotice: false,
-  };
+  let me;
+  let config;
   try {
-    config = await (await fetch('config.json')).json();
-  } catch (e) {
-    // Config may not be found, for example when we are in Neo4j Desktop.
-    // eslint-disable-next-line no-console
-    console.log('No config file detected. Setting to safe defaults.');
+    [me, config] = await Promise.all([api.me(), api.config()]);
+  } catch (e: any) {
+    // 401 means we are already being redirected to sign in.
+    if (e?.status !== 401) {
+      dispatch(createNotificationThunk('Unable to reach the NeoDash server', e?.message ?? String(e)));
+    }
+    return;
   }
+  apiSession.me = me;
+  apiSession.config = config;
+  const viewer = me.role !== 'editor';
 
   try {
-    // Parse the URL parameters to see if there's any deep linking of parameters.
-    const state = getState();
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    if (state.application.waitForSSO) {
-      const paramsBeforeSSO = JSON.parse(sessionStorage.getItem('SSO_PARAMS_BEFORE_REDIRECT') || '{}');
-      Object.entries(paramsBeforeSSO).forEach(([key, value]) => {
-        urlParams.set(key, value);
-      });
-    }
-    const paramsToSetAfterConnecting = {};
-    Array.from(urlParams.entries()).forEach(([key, value]) => {
-      if (key.startsWith('neodash_')) {
-        paramsToSetAfterConnecting[key] = value;
-      }
-    });
-    sessionStorage.getItem('SSO_PARAMS_BEFORE_REDIRECT');
-    const page = urlParams.get('page');
-    if (page !== '' && page !== null) {
-      if (!isNaN(page)) {
-        dispatch(setPageNumberThunk(parseInt(page)));
-      }
-    }
-    dispatch(setSSOEnabled(config.ssoEnabled, state.application.cachedSSODiscoveryUrl));
-    dispatch(setSSOProviders(config.ssoProviders));
-
-    // Check if we are in standalone mode
-    const standalone = config.standalone || urlParams.get('standalone') == 'Yes';
-
-    // if a dashboard database was previously set, remember to use it.
-    const dashboardDatabase = state.application.standaloneDashboardDatabase;
+    dispatch(setSSOEnabled(false, ''));
+    dispatch(setSSOProviders([]));
     dispatch(
       setStandaloneEnabled(
-        standalone,
-        config.standaloneProtocol,
-        config.standaloneHost,
-        config.standalonePort,
-        config.standaloneDatabase,
-        config.standaloneDashboardName,
-        dashboardDatabase || config.standaloneDashboardDatabase,
-        config.standaloneDashboardURL,
-        config.standaloneUsername,
-        config.standalonePassword,
-        config.standalonePasswordWarningHidden,
-        config.standaloneAllowLoad,
-        config.standaloneLoadFromOtherDatabases,
-        config.standaloneMultiDatabase,
-        config.standaloneDatabaseList
+        viewer,
+        window.location.protocol.replace(':', ''),
+        window.location.host,
+        '',
+        config.defaultDatabase,
+        '',
+        config.dashboardDatabase,
+        '',
+        undefined,
+        undefined,
+        true,
+        // Viewers may browse all dashboards; database switching follows the backend's list.
+        true,
+        config.databases.length > 1,
+        config.databases.length > 1,
+        config.databases.join(',')
       )
     );
-
-    dispatch(setLoggingMode(config.loggingMode));
-    dispatch(setLoggingDatabase(config.loggingDatabase));
-    dispatch(setLogErrorNotification('3'));
-
-    dispatch(setConnectionModalOpen(false));
-    dispatch(setDeprecationNotice(config.deprecationNotice));
-    dispatch(setCustomHeader(config.customHeader));
+    dispatch(setStandaloneDashboardDatabase(config.dashboardDatabase));
+    // Audit logging happens on the backend; the browser no longer writes _Neodash_Log nodes.
+    dispatch(setLoggingMode('0'));
+    dispatch(setDeprecationNotice(false));
+    dispatch(setCustomHeader(''));
+    dispatch(
+      setConnectionProperties(
+        window.location.protocol.replace(':', ''),
+        window.location.host,
+        '',
+        config.defaultDatabase,
+        me.user.username,
+        ''
+      )
+    );
+    dispatch(updateSessionParameterThunk('session_uri', window.location.origin));
+    dispatch(updateSessionParameterThunk('session_database', config.defaultDatabase));
+    dispatch(updateSessionParameterThunk('session_username', me.user.username));
 
     // Auto-upgrade the dashboard version if an old version is cached.
+    const state = getState();
     if (state.dashboard && state.dashboard.version !== NEODASH_VERSION) {
-      // Attempt upgrade if dashboard version is outdated.
       while (VERSION_TO_MIGRATE[state.dashboard.version]) {
         const upgradedDashboard = upgradeDashboardVersion(
           state.dashboard,
@@ -479,106 +448,26 @@ export const loadApplicationConfigThunk = () => async (dispatch: any, getState: 
         );
         dispatch(setDashboard(upgradedDashboard));
         dispatch(setDraft(true));
-        dispatch(
-          createNotificationThunk(
-            'Successfully upgraded dashboard',
-            `Your old dashboard was migrated to version ${upgradedDashboard.version}. You might need to refresh this page and reactivate extensions.`
-          )
-        );
       }
     }
 
-    // SSO - specific case starts here.
-    if (state.application.waitForSSO) {
-      // We just got redirected from the SSO provider. Hide all windows and attempt the connection.
-      dispatch(setAboutModalOpen(false));
-      dispatch(setConnected(false));
-      dispatch(setWelcomeScreenOpen(false));
-      const success = await initializeSSO(state.application.cachedSSODiscoveryUrl, (credentials) => {
-        if (standalone) {
-          // Redirected from SSO and running in viewer mode, merge retrieved config with hardcoded credentials.
-          dispatch(
-            setConnectionProperties(
-              config.standaloneProtocol,
-              config.standaloneHost,
-              config.standalonePort,
-              config.standaloneDatabase,
-              credentials.username,
-              credentials.password
-            )
-          );
-          dispatch(
-            createConnectionThunk(
-              config.standaloneProtocol,
-              config.standaloneHost,
-              config.standalonePort,
-              config.standaloneDatabase,
-              credentials.username,
-              credentials.password
-            )
-          );
-        } else {
-          // Redirected from SSO and running in editor mode, merge retrieved config with existing details.
-          dispatch(
-            setConnectionProperties(
-              state.application.connection.protocol,
-              state.application.connection.url,
-              state.application.connection.port,
-              state.application.connection.database,
-              credentials.username,
-              credentials.password
-            )
-          );
-          dispatch(setConnected(true));
-        }
+    dispatch(setWelcomeScreenOpen(false));
+    dispatch(setConnectionModalOpen(false));
+    dispatch(setAboutModalOpen(false));
+    dispatch(setReportHelpModalOpen(false));
+    dispatch(clearNotification());
+    dispatch(assignDashboardUuidIfNotPresentThunk());
 
-        if (standalone) {
-          if (urlParams.get('id')) {
-            dispatch(setDashboardToLoadAfterConnecting(urlParams.get('id')));
-          } else if (config.standaloneDashboardURL !== undefined && config.standaloneDashboardURL.length > 0) {
-            dispatch(setDashboardToLoadAfterConnecting(config.standaloneDashboardURL));
-          } else {
-            dispatch(setDashboardToLoadAfterConnecting(`name:${config.standaloneDashboardName}`));
-          }
-          dispatch(setParametersToLoadAfterConnecting(paramsToSetAfterConnecting));
-        }
-        sessionStorage.removeItem('SSO_PARAMS_BEFORE_REDIRECT');
-      });
-
-      dispatch(setWaitForSSO(false));
-      if (!success) {
-        alert('Unable to connect using SSO. See the browser console for more details.');
-        dispatch(
-          createNotificationThunk(
-            'Unable to connect using SSO',
-            'Something went wrong. Most likely your credentials are incorrect...'
-          )
-        );
-      } else {
-        return;
-      }
-    } else if (state.application.ssoEnabled && !state.application.waitForSSO && urlParams) {
-      let paramsToStore = {};
-      urlParams.forEach((value, key) => {
-        paramsToStore[key] = value;
-      });
-      sessionStorage.setItem('SSO_PARAMS_BEFORE_REDIRECT', JSON.stringify(paramsToStore));
+    const target = parseUrl(window.location);
+    if (!target.uuid && viewer && getState().dashboard?.uuid) {
+      // A viewer without a link sees the last dashboard they opened, refreshed from the server.
+      target.uuid = getState().dashboard.uuid;
     }
-
-    if (standalone) {
-      dispatch(initializeApplicationAsStandaloneThunk(config, paramsToSetAfterConnecting));
-    } else {
-      dispatch(initializeApplicationAsEditorThunk(config, paramsToSetAfterConnecting));
-    }
+    await dispatch(applyUrlStateThunk(target, { fresh: true, keepDraft: !viewer }));
+    dispatch(setConnected(true));
   } catch (e) {
     console.log(e);
-    dispatch(setWelcomeScreenOpen(false));
-    dispatch(
-      createNotificationThunk(
-        'Unable to load application configuration',
-        'Do you have a valid config.json deployed with your application?'
-      )
-    );
+    dispatch(createNotificationThunk('Unable to start NeoDash', String(e)));
   }
 };
 

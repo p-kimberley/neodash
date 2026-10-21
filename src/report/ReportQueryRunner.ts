@@ -1,5 +1,6 @@
 import { extractNodePropertiesFromRecords, extractNodeAndRelPropertiesFromRecords } from './ReportRecordProcessing';
 import isEqual from 'lodash.isequal';
+import { isApiDriver } from '../api/ApiDriver';
 
 export enum QueryStatus {
   NO_QUERY, // No query specified
@@ -11,6 +12,54 @@ export enum QueryStatus {
   COMPLETE, // There is data returned, and we can visualize it all.
   COMPLETE_TRUNCATED, // There is data returned, but it's too much so we truncate it.
   ERROR, // Something broke, likely the cypher query is invalid.
+}
+
+/**
+ * runCypherQuery for the backend: same status/records/fields/schema callbacks, but the row limit and
+ * timeout are enforced server-side and truncation is reported rather than detected.
+ */
+async function runViaBackend(
+  driver,
+  database,
+  query,
+  parameters,
+  rowLimit,
+  setStatus,
+  setRecords,
+  setFields,
+  fields,
+  useNodePropsAsFields,
+  useReturnValuesAsFields,
+  queryTimeLimit,
+  setSchema
+) {
+  try {
+    const { keys, records, truncated } = await driver.run(query, parameters, {
+      database,
+      rowLimit,
+      timeoutSeconds: queryTimeLimit,
+    });
+    if (records.length == 0) {
+      setStatus(QueryStatus.NO_DATA);
+      return;
+    }
+    if (useReturnValuesAsFields) {
+      const newFields = keys.slice();
+      if (!isEqual(newFields, fields)) {
+        setFields(newFields);
+      }
+    } else if (useNodePropsAsFields) {
+      setFields(extractNodePropertiesFromRecords(records));
+    }
+    setSchema(extractNodeAndRelPropertiesFromRecords(records));
+    setStatus(truncated ? QueryStatus.COMPLETE_TRUNCATED : QueryStatus.COMPLETE);
+    setRecords(records);
+  } catch (e: any) {
+    const timedOut = String(e?.neo4jCode ?? '').includes('TransactionTimedOut');
+    setStatus(timedOut ? QueryStatus.TIMED_OUT : QueryStatus.ERROR);
+    setRecords([{ error: e?.message ?? String(e) }]);
+    return e?.message;
+  }
 }
 
 // TODO: create a readOnly version of this method or inject a property
@@ -64,6 +113,24 @@ export async function runCypherQuery(
   if (!driver) {
     setStatus(QueryStatus.ERROR);
     return;
+  }
+
+  if (isApiDriver(driver)) {
+    return runViaBackend(
+      driver,
+      database,
+      query,
+      parameters,
+      rowLimit,
+      setStatus,
+      setRecords,
+      setFields,
+      fields,
+      useNodePropsAsFields,
+      useReturnValuesAsFields,
+      queryTimeLimit,
+      setSchema
+    );
   }
 
   const session = database ? driver.session({ database: database }) : driver.session();
