@@ -1,3 +1,20 @@
+## NeoDash 3.2.0 - Charts on Apache ECharts
+Existing dashboards keep working unchanged: report types, settings and their defaults are the same. Chart 2.3.0.
+
+**Charts.** Every chart that used nivo now uses Apache ECharts: bar, line, pie, radar, sankey, sunburst, treemap, circle packing and choropleth. The nivo packages are removed.
+- Same colour schemes (including "nivo"), legends, margins, label settings, style rules and report actions (click a bar to set a parameter).
+- Line charts keep their time axis: Neo4j dates and date-times, `xAxisTimeFormat`, and `every N unit` tick spacing. Log scales, curves and point styles are unchanged.
+- Pie charts place outside labels without overlapping.
+- Sankey labels in the last column stay inside the chart.
+- Hierarchy charts (sunburst, treemap, circle packing) keep drill-down and reset.
+- The choropleth keeps nivo's Mercator projection, value buckets and `.2s` formatting. Numeric ISO codes (`iso_n3`) now match.
+- Tooltips follow the light/dark appearance.
+- Removed: the sankey's style-rule colouring. It turned every node grey whenever any rule existed, and had no settings UI.
+
+**Fixes.**
+- Help > Examples crashed on open; it works again. Only editors see it, because its examples run free-form queries.
+- Credits in About and the developer guide name Apache ECharts and MapLibre.
+
 ## NeoDash 3.1.0 - Up-to-date dependencies, maps, graph and widget improvements
 Existing dashboards keep working unchanged. Chart 2.2.0.
 
