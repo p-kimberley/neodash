@@ -11,7 +11,7 @@ name: Deploy
 #                                       (default: ubuntu-latest)
 #                         AUTO_DEPLOY_TEST  'true' to deploy every successful master build to "test"
 #
-# Air-gapped clusters that no runner can reach are installed from the offline bundle instead.
+# Air-gapped clusters that no runner can reach are installed from a mirrored image and chart instead.
 
 on:
   workflow_dispatch:

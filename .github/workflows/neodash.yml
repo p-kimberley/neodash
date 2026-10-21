@@ -8,8 +8,9 @@ name: NeoDash
 #            v* tags: <chart version>, defaulting to image <version>
 #
 # A v<version> tag must match appVersion in k8s-deploy/neodash/Chart.yaml, and the chart version
-# must not have been published before. Tags also create a GitHub Release with the offline
-# (air-gapped) install bundle. See docs/deployment.md.
+# must not have been published before, and changelog.md must have a "## NeoDash <version>"
+# section. Tags also create a GitHub Release with that section as its notes and the chart
+# package attached. See docs/deployment.md.
 
 on:
   push:
@@ -118,6 +119,10 @@ jobs:
             if [ "${GITHUB_REF_NAME#v}" != "$app" ]; then
               echo "::error::Tag $GITHUB_REF_NAME does not match appVersion $app in Chart.yaml"; exit 1
             fi
+            # Every release carries its changelog section as its notes; check before publishing anything.
+            if ! sh scripts/release-notes.sh "$app" > /dev/null; then
+              echo "::error::changelog.md has no '## NeoDash $app' section for this release"; exit 1
+            fi
           else
             # Development builds: a prerelease chart pointing at this commit's image.
             chart="$chart-dev.$GITHUB_RUN_NUMBER"
@@ -218,30 +223,26 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      packages: read
     steps:
       - uses: actions/checkout@v4
       - uses: azure/setup-helm@v4
         with:
           version: v3.19.0
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build the offline bundle from the published image
-        env:
-          SOURCE_IMAGE: ghcr.io/${{ github.repository_owner }}/neodash@${{ needs.image.outputs.digest }}
-        run: sh scripts/offline-bundle.sh
       - name: Create the GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.chart.outputs.app-version }}
           CHART_VERSION: ${{ needs.chart.outputs.version }}
         run: |
-          dir="neodash-offline-$VERSION"
-          tar czf "$dir.tar.gz" "$dir"
-          cat > notes.md <<EOF
+          helm package "$CHART_DIR" --version "$CHART_VERSION" --app-version "$VERSION" --destination dist
+          # The notes: this release's changelog section, then how to install it.
+          {
+            echo "## What's changed"
+            echo
+            sh scripts/release-notes.sh "$VERSION"
+            echo
+          } > notes.md
+          cat >> notes.md <<EOF
           ## Install
 
           \`\`\`sh
@@ -250,8 +251,8 @@ jobs:
 
           Image: \`ghcr.io/${{ github.repository_owner }}/neodash:$VERSION\` (\`${{ needs.image.outputs.digest }}\`)
 
-          **Air-gapped clusters:** download \`$dir.tar.gz\` (image, chart, checksums, INSTALL.md).
-          See [docs/deployment.md](https://github.com/${{ github.repository }}/blob/$GITHUB_REF_NAME/docs/deployment.md).
+          See [docs/deployment.md](https://github.com/${{ github.repository }}/blob/$GITHUB_REF_NAME/docs/deployment.md),
+          including how to build an install bundle for air-gapped clusters.
           EOF
           gh release create "$GITHUB_REF_NAME" --title "NeoDash $VERSION" --notes-file notes.md --verify-tag \
-            "$dir.tar.gz" "$dir/SHA256SUMS" "$dir/neodash-$CHART_VERSION.tgz"
+            "dist/neodash-$CHART_VERSION.tgz"

@@ -262,21 +262,14 @@ Nothing in the running system needs internet access:
   from elsewhere.
 - The optional text-to-Cypher extension calls an external LLM only if an editor configures it.
 
-Each release on GitHub has an offline bundle, `neodash-offline-<version>.tar.gz`, containing the
-image (`docker save`), the packaged chart, `SHA256SUMS` and `INSTALL.md`. To build one yourself, on a
-connected machine with Docker and Helm, run `scripts/offline-bundle.sh` from the repository root.
-To package an already-published image instead of rebuilding, set
-`SOURCE_IMAGE=ghcr.io/<owner>/neodash:<version>`.
-
-Then, inside the air gap:
+To install without internet access, copy the image and chart into registries the cluster can
+reach, for example with `skopeo` (or `docker pull` / `tag` / `push`) and `helm pull`, on a
+machine that can reach both sides:
 
 ```sh
-sha256sum -c SHA256SUMS
-docker load -i neodash-image-<version>.tar
-docker tag neodash:<version> registry.internal:5000/neodash:<version>
-docker push registry.internal:5000/neodash:<version>
-# or, without Docker:
-skopeo copy docker-archive:neodash-image-<version>.tar docker://registry.internal:5000/neodash:<version>
+skopeo copy docker://ghcr.io/<owner>/neodash:<version> docker://registry.internal:5000/neodash:<version>
+helm pull oci://ghcr.io/<owner>/charts/neodash --version <chart version>   # or take it from the GitHub Release
+helm push neodash-<chart version>.tgz oci://registry.internal:5000/charts   # or install from the .tgz
 
 helm install neodash neodash-<chart version>.tgz -n neodash -f my-values.yaml \
   --set global.imageRegistry=registry.internal:5000 --set image.repository=neodash
@@ -380,7 +373,7 @@ Two GitHub Actions workflows live in `.github/workflows/`.
 | `chart` | every push and PR | `helm lint`, render each `k8s-deploy/neodash/ci/*-values.yaml`, validate against Kubernetes schemas (kubeconform), check required values |
 | `image` | every push and PR (pushed only on push) | Builds the image; on push, publishes it with SBOM and provenance attestations |
 | `publish-chart` | pushes to `master` and `v*` tags | Packages the chart and pushes it to `oci://ghcr.io/<owner>/charts` |
-| `release` | `v*` tags | Builds the offline bundle from the published image and creates a GitHub Release |
+| `release` | `v*` tags | Creates a GitHub Release: the version's `changelog.md` section as notes, the packaged chart attached |
 
 What gets published:
 
@@ -397,10 +390,12 @@ The image's provenance can be checked with
 1. Set `appVersion` in `k8s-deploy/neodash/Chart.yaml` to the new NeoDash version, and bump
    `version` (the chart's own SemVer) if anything in the chart changed. CI refuses to publish a
    chart version twice.
-2. Merge to `master`, then tag: `git tag v<appVersion> && git push origin v<appVersion>`. The tag
+2. Add a `## NeoDash <appVersion>` section at the top of `changelog.md`. It becomes the release
+   notes; CI refuses to release a version without one. Preview it with
+   `scripts/release-notes.sh <appVersion>`.
+3. Merge to `master`, then tag: `git tag v<appVersion> && git push origin v<appVersion>`. The tag
    must equal `appVersion`.
-3. The workflow publishes the image and chart and creates the GitHub Release with the offline
-   bundle.
+4. The workflow publishes the image and chart and creates the GitHub Release.
 
 ### `deploy.yml`: deploy to a cluster (optional)
 
@@ -420,7 +415,7 @@ Set-up, per target (e.g. `test`, `production`), under *Settings → Environments
 
 Add required reviewers to the `production` environment so deployments wait for approval. The
 cluster must be able to pull from GHCR (see the pull secret above) or from a mirror set with
-`global.imageRegistry`. For air-gapped clusters that no runner can reach, use the offline bundle.
+`global.imageRegistry`. For air-gapped clusters that no runner can reach, mirror the image and chart (see above).
 
 ## Migrating from upstream NeoDash or chart 1.x
 

@@ -165,16 +165,9 @@ Nothing in the running system needs internet access:
 - Map charts use `maps.tileUrl` (an internal tile server, or none) and `maps.dataUrl`.
 - The optional text-to-Cypher extension calls an external LLM API only if an editor configures it.
 
-Each GitHub Release includes `neodash-offline-<version>.tar.gz`. To build one yourself, run this
-on a connected machine, from the repository root:
-
-```sh
-scripts/offline-bundle.sh
-```
-
-This writes `neodash-offline-<version>/` with the image (`docker save` tarball), the packaged chart,
-checksums and `INSTALL.md`. Transfer the folder, then load the image into your internal registry and
-install with `--set global.imageRegistry=<registry>`.
+To install without internet access, copy the image (`ghcr.io/<owner>/neodash:<version>`) and this
+chart into registries the cluster can reach, then install with
+`--set global.imageRegistry=<registry>`. See [docs/deployment.md](../../docs/deployment.md#air-gapped-clusters).
 
 ## Upgrading from chart 1.x
 
