@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChartProps } from '../Chart';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import URI from 'urijs';
 import { replaceDashboardParameters } from '../ChartUtils';
@@ -15,10 +15,11 @@ const transformUri = (uri: string): string | undefined => {
 };
 
 // Define custom components for Markdown elements
-const CustomTable = ({ _, ...props }) => <table {...props} className='markdown-table' />;
-const CustomTh = ({ _, ...props }) => <th {...props} className='markdown-th' />;
-const CustomTd = ({ _, ...props }) => <td {...props} className='markdown-td' />;
-const CustomATag = ({ _, href, ...props }) => (
+// react-markdown passes each element's syntax-tree `node`; it must not end up on the DOM element.
+const CustomTable = ({ node: _node, ...props }: any) => <table {...props} className='markdown-table' />;
+const CustomTh = ({ node: _node, ...props }: any) => <th {...props} className='markdown-th' />;
+const CustomTd = ({ node: _node, ...props }: any) => <td {...props} className='markdown-td' />;
+const CustomATag = ({ node: _node, href, ...props }: any) => (
   // Apply URI transformation right in the anchor element for additional security
   <a href={href ? transformUri(href) : undefined} {...props} rel='noopener noreferrer' target='_blank' />
 );
@@ -54,7 +55,8 @@ const NeoMarkdownChart = (props: ChartProps) => {
         children={modifiedMarkdown}
         remarkPlugins={[remarkGfm]}
         components={components}
-        transformLinkUri={transformUri}
+        // Links: http(s) only, as before; other URLs (images) get react-markdown's default safe handling.
+        urlTransform={(url, key) => (key === 'href' ? (transformUri(url) ?? '') : defaultUrlTransform(url))}
       />
     </div>
   );
