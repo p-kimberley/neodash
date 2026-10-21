@@ -122,7 +122,11 @@ function result(promise: Promise<{ keys: string[]; records: any[] }>) {
 class ApiTransaction {
   private open = true;
 
-  constructor(private driver: ApiDriver, private database?: string, private timeoutSeconds?: number) {}
+  constructor(
+    private driver: ApiDriver,
+    private database?: string,
+    private timeoutSeconds?: number
+  ) {}
 
   run(query: string, parameters: Record<string, unknown> = {}) {
     return result(this.driver.run(query, parameters, { database: this.database, timeoutSeconds: this.timeoutSeconds }));
@@ -149,7 +153,10 @@ class ApiTransaction {
 }
 
 class ApiSession {
-  constructor(private driver: ApiDriver, private database?: string) {}
+  constructor(
+    private driver: ApiDriver,
+    private database?: string
+  ) {}
 
   run(query: string, parameters: Record<string, unknown> = {}, config?: { timeout?: number }) {
     return result(

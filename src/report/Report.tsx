@@ -192,9 +192,12 @@ export const NeoReport = ({
       if (settings.refreshRate && settings.refreshRate > 0) {
         // @ts-ignore
         setTimer(
-          setInterval(() => {
-            populateReport(false);
-          }, Math.min(settings.refreshRate, 86400) * 1000.0)
+          setInterval(
+            () => {
+              populateReport(false);
+            },
+            Math.min(settings.refreshRate, 86400) * 1000.0
+          )
         );
       }
     }

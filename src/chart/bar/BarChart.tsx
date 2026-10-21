@@ -170,7 +170,7 @@ const NeoBarChart = (props: ChartProps) => {
   const getBarColor = (bar) => {
     // With several series (grouped / stacked bars), colour by series so bars match the legend;
     // a single series keeps one colour per bar.
-    let colorIndex = keys.length > 1 ? Math.max(0, keys.indexOf(bar.id)) : bar.index ?? 0;
+    let colorIndex = keys.length > 1 ? Math.max(0, keys.indexOf(bar.id)) : (bar.index ?? 0);
     if (colorIndex >= chartColorsByScheme.length) {
       colorIndex %= chartColorsByScheme.length;
     }

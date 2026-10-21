@@ -64,7 +64,7 @@ export function mergeNodePropsFieldsLists(oldFields: any[], newFields: any[]) {
       fields.push(newEntry);
     } else {
       newEntry.slice(1).forEach((element) => {
-        if (!element in existingEntry) {
+        if ((!element) in existingEntry) {
           existingEntry.push(element);
         }
       });

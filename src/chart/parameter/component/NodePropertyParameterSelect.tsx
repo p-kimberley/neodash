@@ -106,8 +106,8 @@ const NodePropertyParameterSelectComponent = (props: ParameterSelectProps) => {
       newValue = Array.isArray(valReference)
         ? [...valReference]
         : valReference && valReference !== null
-        ? [valReference]
-        : [];
+          ? [valReference]
+          : [];
       const newDisplayValue = [...newDisplay].slice(-1)[0];
       let val = extraRecords.filter((r) => r._fields[displayValueRowIndex].toString() == newDisplayValue)[0]._fields[
         realValueRowIndex

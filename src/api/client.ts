@@ -54,7 +54,12 @@ export interface QueryResponse {
 }
 
 export class ApiError extends Error {
-  constructor(public status: number, public code: string, message: string, public neo4jCode?: string) {
+  constructor(
+    public status: number,
+    public code: string,
+    message: string,
+    public neo4jCode?: string
+  ) {
     super(message);
   }
 }

@@ -189,7 +189,7 @@ export const loadDashboardFromNeo4jThunk = (_driver, _database, uuid, callback) 
     dispatch(
       createNotificationThunk(
         'Unable to load dashboard',
-        e?.status === 404 ? `A dashboard with UUID '${uuid}' does not exist.` : e?.message ?? String(e)
+        e?.status === 404 ? `A dashboard with UUID '${uuid}' does not exist.` : (e?.message ?? String(e))
       )
     );
   }

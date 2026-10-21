@@ -333,7 +333,7 @@ export const NeoCustomReportActionsModal = ({
   const td2Styling = (type) => ({ width: type === 'bar' ? '15%' : '30%' });
   const td2DropdownClassname = (type) => `n-align-middle n-pr-1 ${type === 'bar' ? 'n-w-full' : 'n-w-2/5'}`;
   const td2Autocomplete = (type, index, rule) =>
-    (type !== 'bar' && rule.condition !== 'rowCheck' ? (
+    type !== 'bar' && rule.condition !== 'rowCheck' ? (
       <Autocomplete
         className='n-align-middle n-inline-block n-w-/5'
         disableClearable={true}
@@ -364,7 +364,7 @@ export const NeoCustomReportActionsModal = ({
       />
     ) : (
       <></>
-    ));
+    );
   const td4Styling = (type) => ({ width: type === 'bar' ? '45%' : '40%' });
   const td4DropdownClassname = 'n-align-middle, n-w-1/3';
   const td6Styling = (type) => ({ width: type === 'bar' ? '30%' : '20%' });

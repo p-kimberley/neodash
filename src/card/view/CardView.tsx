@@ -175,8 +175,8 @@ const NeoCardView = ({
         ? '100%'
         : `calc(100% - ${CARD_FOOTER_HEIGHT}px)`
       : withoutFooter
-      ? `${reportHeight + CARD_FOOTER_HEIGHT - (reportTypeHasNoFooter ? 0 : 20)}px`
-      : `${reportHeight}px`,
+        ? `${reportHeight + CARD_FOOTER_HEIGHT - (reportTypeHasNoFooter ? 0 : 20)}px`
+        : `${reportHeight}px`,
     overflow: 'auto',
   };
   const reportContent = (

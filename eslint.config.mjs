@@ -85,7 +85,8 @@ export default tseslint.config(
       'no-await-in-loop': 'off',
       'no-buffer-constructor': 'error',
       'no-caller': 'error',
-      'no-confusing-arrow': 'error',
+      // Deprecated formatting rule that conflicts with Prettier 3 (which drops the parentheses it wants).
+      'no-confusing-arrow': 'off',
       'no-console': 'warn',
       'no-constructor-return': 'error',
       'no-constant-condition': 'error',

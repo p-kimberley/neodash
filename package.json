@@ -130,7 +130,7 @@
     "globals": "^17.13.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
-    "prettier": "^2.7.1",
+    "prettier": "^3.9.10",
     "react-refresh": "^0.14.0",
     "source-map-loader": "^5.0.0",
     "style-loader": "^4.0.0",

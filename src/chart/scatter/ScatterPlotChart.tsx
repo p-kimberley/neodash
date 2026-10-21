@@ -289,8 +289,8 @@ const NeoScatterPlot = (props: ChartProps) => {
           isTimeChart
             ? { format: parseFormat, type: 'time' }
             : xScale == 'linear'
-            ? { type: xScale, min: minXValue, max: maxXValue, stacked: false, reverse: false }
-            : { type: xScale, min: minXValue, max: maxXValue, constant: xScaleLogBase, base: xScaleLogBase }
+              ? { type: xScale, min: minXValue, max: maxXValue, stacked: false, reverse: false }
+              : { type: xScale, min: minXValue, max: maxXValue, constant: xScaleLogBase, base: xScaleLogBase }
         }
         xFormat={isTimeChart ? `time:${xAxisTimeFormat}` : xAxisFormat}
         margin={{ top: marginTop, right: marginRight, bottom: marginBottom, left: marginLeft }}
