@@ -6,6 +6,7 @@
 - **Graph reports**: a search box (matches highlighted, the rest dimmed; Enter steps through them and centres each), a 2D/3D toggle on every graph (each viewer's choice is remembered per report), and node/relationship properties in a popup next to the click instead of a modal dialog.
 - Report descriptions render GitHub-flavoured markdown (tables, autolinks); viewing a description or a markdown report no longer makes every link in the app open in a new tab.
 - **Maps on MapLibre GL** instead of Leaflet and its four unmaintained React plugins: GPU-drawn lines, heatmaps and area-map polygons, pins and clusters as before, themed popups and controls, a hover label on area maps, and no change to report settings or tile configuration.
+- The legacy "share as URL" dialog (links carrying connection details, which this version can't open) is gone; the Share dialog points to Export for sharing a file.
 - Map markers show their label on mouse-over instead of permanently (labels overlapped and hid the map).
 - Report settings use a cog icon; card corners are cleanly rounded (no square edges or corner handle sticking out).
 - The dashboards panel no longer leaves a collapsed rail: closed, the dashboard uses the full width. It closes with Escape, and its own expand button (duplicating the header menu button) is gone.

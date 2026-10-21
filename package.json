@@ -101,7 +101,6 @@
     "three": "^0.186.1",
     "three-spritetext": "^1.10.0",
     "urijs": "^1.19.11",
-    "use-neo4j": "^0.3.13",
     "yaml": "^2.2.1"
   },
   "devDependencies": {
@@ -138,7 +137,6 @@
   },
   "resolutions": {
     "@neo4j-cypher/react-codemirror": "1.0.4",
-    "neo4j-driver": "4.4.11",
     "lodash": "4.18.1",
     "three-forcegraph": "^1.43.6"
   }

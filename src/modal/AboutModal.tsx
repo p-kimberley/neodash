@@ -65,8 +65,8 @@ export const NeoAboutModal = ({ open, handleClose, getDebugState }) => {
               <SectionTitle>Extending NeoDash</SectionTitle>
               <SectionContent>
                 NeoDash is built with React and&nbsp;
-                <TextLink target='_blank' href='https://github.com/adam-cowley/use-neo4j'>
-                  use-neo4j
+                <TextLink target='_blank' href='https://github.com/neo4j/neo4j-javascript-driver'>
+                  the Neo4j JavaScript driver
                 </TextLink>
                 , It uses{' '}
                 <TextLink target='_blank' href='https://github.com/neo4j-labs/charts'>

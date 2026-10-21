@@ -6,7 +6,7 @@ import NeoCodeEditorComponent, {
 } from '../../../component/editor/CodeEditorComponent';
 import { getReportTypes } from '../../ExtensionUtils';
 import { queryTranslationThunk } from '../state/QueryTranslatorThunks';
-import { Neo4jContext, Neo4jContextState } from 'use-neo4j/dist/neo4j.context';
+import { Neo4jContext, Neo4jContextState } from '../../../api/Neo4jContext';
 import debounce from 'lodash/debounce';
 import { updateLastMessage } from '../state/QueryTranslatorActions';
 import { createNotification } from '../../../application/ApplicationActions';

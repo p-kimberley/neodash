@@ -1,12 +1,7 @@
 import React from 'react';
 import { Tooltip } from '@mui/material';
 import { Button, Dialog, TextLink } from '@neo4j-ndl/react';
-import {
-  BoltIconSolid,
-  ExclamationTriangleIconSolid,
-  BackspaceIconOutline,
-  PlayIconSolid,
-} from '@neo4j-ndl/react/icons';
+import { BoltIconSolid, BackspaceIconOutline, PlayIconSolid } from '@neo4j-ndl/react/icons';
 
 /**
  * Configures setting the current Neo4j database connection for the dashboard.

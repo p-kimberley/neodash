@@ -56,7 +56,6 @@ const NeoSankeyChart = (props: ChartProps) => {
   let nodes = {};
   let nodeLabels = {};
   let links = {};
-  let linkTypes = {};
 
   function extractGraphEntitiesFromField(value) {
     if (value == undefined) {

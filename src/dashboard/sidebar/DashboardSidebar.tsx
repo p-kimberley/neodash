@@ -35,7 +35,7 @@ import {
   loadDatabaseListFromNeo4jThunk,
   saveDashboardToNeo4jThunk,
 } from '../DashboardThunks';
-import { Neo4jContext, Neo4jContextState } from 'use-neo4j/dist/neo4j.context';
+import { Neo4jContext, Neo4jContextState } from '../../api/Neo4jContext';
 import NeoDashboardSidebarSaveModal from './modal/DashboardSidebarSaveModal';
 import { getDashboardJson } from '../../modal/ModalSelectors';
 import NeoDashboardSidebarCreateMenu from './menu/DashboardSidebarCreateMenu';
@@ -46,7 +46,6 @@ import NeoDashboardSidebarDeleteModal from './modal/DashboardSidebarDeleteModal'
 import NeoDashboardSidebarInfoModal from './modal/DashboardSidebarInfoModal';
 import NeoDashboardSidebarShareModal from './modal/DashboardSidebarShareModal';
 import NeoDashboardSidebarAccessModal from './modal/DashboardSidebarAccessModal';
-import LegacyShareModal from './modal/legacy/LegacyShareModal';
 import { NEODASH_VERSION } from '../DashboardReducer';
 
 // Which (small) pop-up menu is currently open for the sidebar.
@@ -64,7 +63,7 @@ enum Modal {
   EXPORT = 2,
   DELETE = 3,
   SHARE = 4,
-  SHARE_LEGACY = 5,
+
   INFO = 6,
   LOAD = 7,
   SAVE = 8,
@@ -223,11 +222,8 @@ export const NeoDashboardSidebar = ({
         onConfirm={() => {
           setModalOpen(Modal.NONE);
         }}
-        onLegacyShareClicked={() => setModalOpen(Modal.SHARE_LEGACY)}
         handleClose={() => setModalOpen(Modal.NONE)}
       />
-
-      <LegacyShareModal open={modalOpen == Modal.SHARE_LEGACY} handleClose={() => setModalOpen(Modal.NONE)} />
 
       <NeoDashboardSidebarCreateModal
         open={modalOpen == Modal.CREATE}

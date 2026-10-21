@@ -1,6 +1,5 @@
 import React from 'react';
 import { Menu, MenuItem, MenuItems } from '@neo4j-ndl/react';
-import { DocumentTextIconOutline, PlusCircleIconOutline } from '@neo4j-ndl/react/icons';
 
 /**
  * Configures setting the current Neo4j database connection for the dashboard.

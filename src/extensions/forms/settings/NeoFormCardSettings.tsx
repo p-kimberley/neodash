@@ -1,7 +1,7 @@
 // TODO: this file (in a way) belongs to chart/parameter/ParameterSelectionChart. It would make sense to move it there
 
 import React, { useCallback, useContext, useEffect } from 'react';
-import { Neo4jContext, Neo4jContextState } from 'use-neo4j/dist/neo4j.context';
+import { Neo4jContext, Neo4jContextState } from '../../../api/Neo4jContext';
 import NeoCodeEditorComponent, {
   DEFAULT_CARD_SETTINGS_HELPER_TEXT_STYLE,
 } from '../../../component/editor/CodeEditorComponent';

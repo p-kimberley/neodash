@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { IconButton, MenuItem } from '@neo4j-ndl/react';
+import { IconButton } from '@neo4j-ndl/react';
 import { UserCircleIconOutline } from '@neo4j-ndl/react/icons';
 import { RBACManagementMenu } from './RBACManagementMenu';
 

@@ -1,16 +1,13 @@
 import React from 'react';
 import { Menu, MenuItem, MenuItems } from '@neo4j-ndl/react';
 import {
-  ArchiveBoxIconOutline,
   ArrowUturnLeftIconOutline,
   CloudArrowUpIconOutline,
-  DocumentDuplicateIconOutline,
   DocumentTextIconOutline,
   InformationCircleIconOutline,
   ShareIconOutline,
   FingerPrintIconOutline,
   TrashIconOutline,
-  XMarkIconOutline,
 } from '@neo4j-ndl/react/icons';
 
 /**

@@ -12,7 +12,6 @@ import NeoParameterSelectionChart from '../chart/parameter/ParameterSelectionCha
 import NeoMarkdownChart from '../chart/markdown/MarkdownChart';
 import { SELECTION_TYPES } from './CardConfig';
 import NeoLineChart from '../chart/line/LineChart';
-import NeoScatterPlot from '../chart/scatter/ScatterPlotChart';
 import { objMerge, objectMap } from '../utils/ObjectManipulation';
 
 // TODO: make the reportConfig a interface with not self-documented code

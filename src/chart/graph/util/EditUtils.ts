@@ -35,7 +35,7 @@ export const handleNodeEdit = (
         return;
       }
       // const updatedNode = records[0]._fields[0];
-      const { nodes, links, nodesMap, linksMap } = injectNewRecordsIntoGraphVisualization(records, props);
+      const { nodes } = injectNewRecordsIntoGraphVisualization(records, props);
       const newNodes = [...props.data.nodes];
 
       // Iterate over the old nodes, and override the nodes object if it was changed.
@@ -138,7 +138,7 @@ export const handleRelationshipEdit = (
         return;
       }
 
-      const { nodes, links, nodesMap, linksMap } = injectNewRecordsIntoGraphVisualization(records, props);
+      const { links } = injectNewRecordsIntoGraphVisualization(records, props);
       const newLinks = [...props.data.links];
       // Iterate over the old links, and override the links object if it was changed.
       newLinks.forEach((n, i) => {

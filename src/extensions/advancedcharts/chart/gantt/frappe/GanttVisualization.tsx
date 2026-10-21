@@ -11,8 +11,6 @@ type GantRef = SVGSVGElement | undefined;
 const TASK_PADDING = 9;
 const HEADER_HEIGHT = 50;
 const STEP_SIZE = 8;
-const COLUMN_WIDTH = 30;
-const VIEW_MODE = 'Day';
 
 /**
  * React wrapper for the modified Frappe Gannt library.

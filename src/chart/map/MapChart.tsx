@@ -62,7 +62,6 @@ const NeoMapChart = (props: ChartProps) => {
   let nodes = {};
   let nodeLabels = {};
   let links = {};
-  let linkTypes = {};
 
   // Gets all graphy objects (nodes/relationships) from the complete set of return values.
   // TODO this should be in Utils.ts

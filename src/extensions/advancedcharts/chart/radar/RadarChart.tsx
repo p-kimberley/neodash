@@ -1,10 +1,8 @@
 import React from 'react';
 import { ChartProps } from '../../../../chart/Chart';
 import { ResponsiveRadar } from '@nivo/radar';
-import { evaluateRulesOnDict, useStyleRules } from '../../../styling/StyleRuleEvaluator';
 import { NoDrawableDataErrorMessage } from '../../../../component/editor/CodeViewerComponent';
 import { themeNivo } from '../../../../chart/Utils';
-import { extensionEnabled } from '../../../../utils/ReportUtils';
 
 /**
  * Embeds a RadarChart (from Charts) into NeoDash.
@@ -39,28 +37,8 @@ const NeoRadarChart = (props: ChartProps) => {
   const blendMode = settings.blendMode ? settings.blendMode : 'normal';
   const motionConfig = settings.motionConfig ? settings.motionConfig : 'gentle';
   const curve = settings.curve ? settings.curve : 'linearClosed';
-  const styleRules = useStyleRules(
-    extensionEnabled(props.extensions, 'styling'),
-    props.settings.styleRules,
-    props.getGlobalParameter
-  );
 
   const keys = selection.values;
-
-  // Compute slice color based on rules - overrides default color scheme completely.
-  const getCircleColor = (slice) => {
-    const data = {};
-    if (!props.selection) {
-      return 'grey';
-    }
-    data[props.selection.value] = slice.value;
-    data[props.selection.index] = slice.id;
-    const validRuleIndex = evaluateRulesOnDict(data, styleRules, ['slice color']);
-    if (validRuleIndex !== -1) {
-      return styleRules[validRuleIndex].customizationValue;
-    }
-    return 'grey';
-  };
 
   let valid = true;
   const data = records.map((r) => {

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { PlayIconSolid, DocumentPlusIconOutline } from '@neo4j-ndl/react/icons';
-import { Button, Checkbox, Dialog, Dropdown } from '@neo4j-ndl/react';
+import { Button, Dialog } from '@neo4j-ndl/react';
 import TextareaAutosize from '@mui/material/TextareaAutosize';
 
 export const NeoDashboardSidebarImportModal = ({ open, onImport, handleClose }) => {

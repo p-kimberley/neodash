@@ -53,7 +53,7 @@ export async function updatePrivileges(
             if (status == QueryStatus.NO_DATA || status == QueryStatus.COMPLETE) {
               //  TODO: Neo4j is very slow in updating after the previous query, even though it is technically a finished query.
               // We build in an artificial delay...
-              const timeout = setTimeout(() => {
+              setTimeout(() => {
                 // 3. Create the new privileges as specified in the `newLabels` list by the user.
                 if (newLabels.filter((l) => l !== '*').length > 0) {
                   runCypherQuery(

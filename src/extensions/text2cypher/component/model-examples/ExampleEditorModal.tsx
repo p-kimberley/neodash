@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { connect } from 'react-redux';
 import { Dialog, Button, Textarea } from '@neo4j-ndl/react';
 import { addModelExample, updateModelExample } from '../../state/QueryTranslatorActions';
-import { Neo4jContext, Neo4jContextState } from 'use-neo4j/dist/neo4j.context';
+import { Neo4jContext, Neo4jContextState } from '../../../../api/Neo4jContext';
 import { getDatabase } from '../../../../settings/SettingsSelectors';
 import { checkModelExampleAndSubmit } from './utils';
 import NeoCodeEditorComponent from '../../../../component/editor/CodeEditorComponent';

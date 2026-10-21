@@ -5,7 +5,7 @@ import { Checkbox, Dialog, TextLink } from '@neo4j-ndl/react';
  * Shows a link to a saved dashboard on this NeoDash deployment. Links never carry credentials:
  * whoever opens one signs in, and their role decides what they can do.
  */
-export const NeoDashboardSidebarShareModal = ({ uuid, open, onLegacyShareClicked, handleClose }) => {
+export const NeoDashboardSidebarShareModal = ({ uuid, open, handleClose }) => {
   const [includeView, setIncludeView] = React.useState(true);
 
   function getShareURL() {
@@ -20,8 +20,8 @@ export const NeoDashboardSidebarShareModal = ({ uuid, open, onLegacyShareClicked
     <Dialog size='small' open={open == true} onClose={handleClose} aria-labelledby='form-dialog-title'>
       <Dialog.Header id='form-dialog-title'>Share Dashboard</Dialog.Header>
       <Dialog.Subtitle>
-        Anyone with access to NeoDash can open this link after signing in. Click{' '}
-        <TextLink onClick={onLegacyShareClicked}>here</TextLink> to share the dashboard as a file instead.
+        Anyone with access to NeoDash can open this link after signing in. To share the dashboard as a file, use Export
+        in the dashboard's menu.
       </Dialog.Subtitle>
       <Dialog.Content>
         <Checkbox

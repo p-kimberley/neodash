@@ -2,7 +2,7 @@ import React from 'react';
 import NeoPage from '../page/Page';
 import NeoDashboardTitle from './header/DashboardTitle';
 import NeoDashboardHeaderPageList from './header/DashboardHeaderPageList';
-import { Neo4jContext } from 'use-neo4j/dist/neo4j.context';
+import { Neo4jContext } from '../api/Neo4jContext';
 import { applicationGetStandaloneSettings, applicationIsSidebarOpen } from '../application/ApplicationSelectors';
 import { setSidebarOpen } from '../application/ApplicationActions';
 import { connect, useStore } from 'react-redux';

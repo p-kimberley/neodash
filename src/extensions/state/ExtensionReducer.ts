@@ -6,8 +6,6 @@ export const INITIAL_EXTENSIONS_STATE = {
   activeReducers: [],
 };
 
-const update = (state, mutations) => Object.assign({}, state, mutations);
-
 export const extensionsReducer = (state = INITIAL_EXTENSIONS_STATE, action: { type: any; payload: any }) => {
   const { type, payload } = action;
 

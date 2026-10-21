@@ -2,12 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { debounce, List, ListItem } from '@mui/material';
 import { getModelClientObject, getQueryTranslatorDefaultConfig } from '../QueryTranslatorConfig';
-import {
-  QUERY_TRANSLATOR_HISTORY_PREFIX,
-  getHistory,
-  getModelClientSessionStorageKey,
-  getQueryTranslatorSettings,
-} from '../state/QueryTranslatorSelector';
+import { QUERY_TRANSLATOR_HISTORY_PREFIX, getQueryTranslatorSettings } from '../state/QueryTranslatorSelector';
 import NeoSetting from '../../../component/field/Setting';
 import {
   deleteAllMessageHistory,
@@ -25,11 +20,7 @@ import {
 import { Button, IconButton } from '@neo4j-ndl/react';
 import { modelClientInitializationThunk } from '../state/QueryTranslatorThunks';
 import { Status } from '../util/Status';
-import {
-  getSessionStorage,
-  getSessionStorageValue,
-  getSessionStorageValuesWithPrefix,
-} from '../../../sessionStorage/SessionStorageSelectors';
+import { getSessionStorageValuesWithPrefix } from '../../../sessionStorage/SessionStorageSelectors';
 
 const update = (state, mutations) => Object.assign({}, state, mutations);
 

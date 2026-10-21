@@ -13,7 +13,7 @@ export const evaluateRulesOnNeo4jRecord = (record, customization, defaultValue, 
   if (!record || !customization || !rules) {
     return defaultValue;
   }
-  for (const [index, rule] of rules.entries()) {
+  for (const rule of rules) {
     // Only look at rules relevant to the target customization.
     if (rule.customization == customization) {
       // if the row contains the specified field...
@@ -107,7 +107,7 @@ export const evaluateRules = (entity, customization, defaultValue, rules, entity
     return defaultValue;
   }
 
-  for (const [index, rule] of rules.entries()) {
+  for (const rule of rules) {
     // Only look at rules relevant to the target customization.
     if (rule.customization == customization) {
       // if the row contains the specified field...

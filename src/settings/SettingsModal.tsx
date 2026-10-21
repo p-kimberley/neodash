@@ -1,7 +1,7 @@
 import React from 'react';
 import NeoSetting from '../component/field/Setting';
 import { DASHBOARD_SETTINGS } from '../config/DashboardConfig';
-import { Dialog, IconButton, MenuItem } from '@neo4j-ndl/react';
+import { Dialog, IconButton } from '@neo4j-ndl/react';
 import { Cog6ToothIconOutline } from '@neo4j-ndl/react/icons';
 import Tooltip from '@mui/material/Tooltip/Tooltip';
 

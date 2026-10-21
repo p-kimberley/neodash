@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Badge, CardHeader, Dialog, DialogContent, DialogTitle, TextField, Tooltip } from '@mui/material';
+import { CardHeader, Dialog, DialogContent, DialogTitle, TextField, Tooltip } from '@mui/material';
 import debounce from 'lodash/debounce';
 import { useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';

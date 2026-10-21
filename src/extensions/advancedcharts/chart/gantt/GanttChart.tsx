@@ -29,9 +29,9 @@ const NeoGanttChart = (props: ChartProps) => {
    * This is where we store an in-memory graph from the Neo4j results.
    * We are essentially reconstructing the graph from the set of links, nodes, and paths returned in Cypher.
    */
-  const [data, setData] = useState({ nodes: [] as any[], links: [] as any[] });
+  const [, setData] = useState({ nodes: [] as any[], links: [] as any[] });
   const [tasks, setTasks] = useState([]);
-  const [key, setKey] = useState(createUUID());
+  const [key] = useState(createUUID());
   const [selectedTask, setSelectedTask] = useState(undefined);
   //
   const startDateProperty = settings.startDateProperty ? settings.startDateProperty : 'startDate';

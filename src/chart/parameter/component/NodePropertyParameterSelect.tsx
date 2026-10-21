@@ -5,7 +5,7 @@ import { ParameterSelectProps } from './ParameterSelect';
 import { RenderSubValue } from '../../../report/ReportRecordProcessing';
 import { SelectionConfirmationButton } from './SelectionConfirmationButton';
 import NeoCodeViewerComponent from '../../../component/editor/CodeViewerComponent';
-import { getRecordType, toNumber } from '../../ChartUtils';
+import { toNumber } from '../../ChartUtils';
 
 const NodePropertyParameterSelectComponent = (props: ParameterSelectProps) => {
   const suggestionsUpdateTimeout =

@@ -1,4 +1,3 @@
-import React from 'react';
 import { QUERY_TRANSLATOR_ACTION_PREFIX } from './text2cypher/state/QueryTranslatorActions';
 import { queryTranslatorReducer } from './text2cypher/state/QueryTranslatorReducer';
 import NeoOverrideCardQueryEditor from './text2cypher/component/OverrideCardQueryEditor';

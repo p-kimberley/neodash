@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { IconButton, Button, Dialog, TextInput } from '@neo4j-ndl/react';
 import { Menu, MenuItem, Chip } from '@mui/material';
-import { Neo4jContext, Neo4jContextState } from 'use-neo4j/dist/neo4j.context';
+import { Neo4jContext, Neo4jContextState } from '../../../api/Neo4jContext';
 import { PlusCircleIconOutline } from '@neo4j-ndl/react/icons';
 import { QueryStatus, runCypherQuery } from '../../../report/ReportQueryRunner';
 import { createNotificationThunk } from '../../../page/PageThunks';

@@ -20,7 +20,7 @@ import { updateGlobalParameterThunk } from '../settings/SettingsThunks';
 import useDimensions from 'react-cool-dimensions';
 import { setReportHelpModalOpen } from '../application/ApplicationActions';
 import { loadDatabaseListFromNeo4jThunk } from '../dashboard/DashboardThunks';
-import { Neo4jContext, Neo4jContextState } from 'use-neo4j/dist/neo4j.context';
+import { Neo4jContext, Neo4jContextState } from '../api/Neo4jContext';
 import { getDashboardExtensions } from '../dashboard/DashboardSelectors';
 import { downloadComponentAsImage } from '../chart/ChartUtils';
 import { Dialog } from '@neo4j-ndl/react';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Dialog, Menu, MenuItem, MenuItems } from '@neo4j-ndl/react';
+import { Menu, MenuItem, MenuItems } from '@neo4j-ndl/react';
 
 /**
  * Configures setting the current Neo4j database connection for the dashboard.

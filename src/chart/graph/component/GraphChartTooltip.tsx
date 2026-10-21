@@ -1,7 +1,7 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableRow, Card } from '@mui/material';
 import ReactDOMServer from 'react-dom/server';
-import { GraphEntity, Link } from '../GraphChartVisualization';
+import { Link } from '../GraphChartVisualization';
 import { Node } from '../GraphChartVisualization';
 
 /**

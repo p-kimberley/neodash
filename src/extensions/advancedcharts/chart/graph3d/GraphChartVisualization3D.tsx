@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import ForceGraph3D from 'react-force-graph-3d';
 import { GraphChartVisualizationProps } from '../../../../chart/graph/GraphChartVisualization';
 import { getNodeLabel } from '../../../../chart/graph/util/NodeUtils';

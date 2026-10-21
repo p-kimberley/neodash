@@ -37,7 +37,7 @@ export default tseslint.config(
         'error',
         {
           vars: 'all',
-          varsIgnorePattern: '^_*',
+          varsIgnorePattern: '^_',
           args: 'after-used',
           argsIgnorePattern: '^_',
           caughtErrors: 'none',
@@ -197,5 +197,10 @@ export default tseslint.config(
       yoda: 'error',
       'no-object-constructor': 'error',
     },
+  },
+  {
+    // Vendored, transpiled Frappe Gantt (see its README): not cleaned up line by line.
+    files: ['src/extensions/advancedcharts/chart/gantt/frappe/lib/**'],
+    rules: { '@typescript-eslint/no-unused-vars': 'off' },
   }
 );
