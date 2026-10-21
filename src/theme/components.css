@@ -722,25 +722,61 @@ body {
 
 /* A maximised report fills the window (minus a small margin); the report's restore button,
    Escape or a click on the backdrop shrink it back. */
+/* NDL centres dialogs with a full-height inline-block spacer; next to a block-level dialog it wraps
+   onto a second line, making the wrapper scrollable (the dialog scrolls away, and its scrollbar eats
+   the right-hand margin). The maximised dialog is positioned instead, so neither is needed. */
+.ndl-modal-wrapper:has(> .nd-maximised) {
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.ndl-modal-wrapper:has(> .nd-maximised)::after {
+  display: none;
+}
+
 .ndl-dialog.nd-maximised {
-  width: calc(100vw - 32px);
+  position: absolute;
+  inset: 16px;
+  width: auto;
   max-width: none;
-  height: calc(100vh - 32px);
+  height: auto;
   max-height: none;
-  margin: 16px;
+  margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
+/* Stretch NDL's inner dialog wrappers, and the card inside, so reports sized in percentages (tables,
+   charts) fill the dialog. */
+.ndl-dialog.nd-maximised > div,
+.ndl-dialog.nd-maximised > div > div {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 .ndl-dialog.nd-maximised .nd-maximised-content {
   position: relative;
   flex: 1;
   min-height: 0;
-  height: 100%;
   margin: 0;
   padding: 0;
+}
+
+.nd-maximised-content > .nd-report-card {
+  position: absolute;
+  inset: 0;
+  height: auto;
+}
+
+.nd-maximised-content .MuiCollapse-entered,
+.nd-maximised-content .MuiCollapse-entered > .MuiCollapse-wrapper,
+.nd-maximised-content .MuiCollapse-entered > .MuiCollapse-wrapper > .MuiCollapse-wrapperInner,
+.nd-maximised-content .card-view.expanded {
+  height: 100%;
 }
 
 /* ---------- Graph reports: search box and properties popup ---------- */

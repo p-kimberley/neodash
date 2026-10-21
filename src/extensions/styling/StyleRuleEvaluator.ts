@@ -222,6 +222,12 @@ export const generateSxBasedOnRules = (rules): Record<string, any> => {
         backgroundColor: rule.customizationValue,
         color: textColorForBackground(rule.customizationValue),
       };
+      // Hovered rows keep the rule's colour (the theme's translucent hover shade would leave the
+      // rule's text colour unreadable in dark mode), slightly shaded so the hover still shows.
+      classes[`& .MuiDataGrid-row.rule${i}:hover, & .MuiDataGrid-row.rule${i}.Mui-hovered`] = {
+        backgroundColor: rule.customizationValue,
+        boxShadow: 'inset 0 0 0 100vmax rgba(0, 0, 0, 0.06)',
+      };
     }
   });
   rules.forEach((rule, i) => {
