@@ -1,0 +1,82 @@
+# Local development stack for NeoDash.
+#
+#   docker compose -f dev/compose.yaml up -d --build
+#
+# See dev/README.md for URLs, test users and how to reset the data.
+
+name: neodash-dev
+
+secrets:
+  neo4j_auth:
+    file: ./secrets/neo4j-auth.txt
+
+services:
+  neo4j:
+    image: neo4j:5.26.2-community
+    ports:
+      - '7474:7474'
+      - '7687:7687'
+    environment:
+      # Read from a secret file rather than a plain-text env var.
+      NEO4J_AUTH_FILE: /run/secrets/neo4j_auth
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_server_memory_heap_max__size: 1G
+      NEO4J_server_memory_pagecache_size: 512M
+    secrets:
+      - neo4j_auth
+    volumes:
+      - neo4j-data:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q --spider http://localhost:7474 || exit 1']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  # One-off job: loads mock data and example dashboards, then exits.
+  # Safe to re-run; set SEED_RESET=true to wipe and reload everything.
+  seed:
+    build: ./seed
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    environment:
+      NEO4J_URI: neo4j://neo4j:7687
+      NEO4J_AUTH_FILE: /run/secrets/neo4j_auth
+      SEED_RESET: ${SEED_RESET:-false}
+    secrets:
+      - neo4j_auth
+    volumes:
+      - ./seed/dashboards:/seed/dashboards:ro
+      - ../scripts/docker-neo4j-initializer/movies.cypher:/seed/movies.cypher:ro
+    restart: 'no'
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.7
+    command: ['start-dev', '--import-realm']
+    ports:
+      - '8080:8080'
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      # Browsers see Keycloak at localhost:8080; containers reach it at keycloak:8080.
+      # Pinning the frontend URL keeps the token issuer identical for both.
+      KC_HOSTNAME: http://localhost:8080
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: 'true'
+      KC_HEALTH_ENABLED: 'true'
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro
+
+  # Unmodified NeoDash 2.4.11, for side-by-side comparison and as a
+  # compatibility check: dashboards saved by either version must open in both.
+  # Connect with neo4j://localhost:7687, user neo4j, password from secrets/neo4j-auth.txt.
+  neodash-legacy:
+    image: neo4jlabs/neodash:2.4.11
+    ports:
+      - '5005:5005'
+    environment:
+      ssoEnabled: 'false'
+      standalone: 'false'
+
+volumes:
+  neo4j-data:

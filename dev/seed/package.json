@@ -1,0 +1,12 @@
+{
+  "name": "neodash-dev-seed",
+  "private": true,
+  "type": "module",
+  "description": "Loads mock data and example dashboards into the local dev Neo4j.",
+  "scripts": {
+    "seed": "node seed.mjs"
+  },
+  "dependencies": {
+    "neo4j-driver": "5.27.0"
+  }
+}

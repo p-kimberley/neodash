@@ -1,0 +1,426 @@
+{
+  "uuid": "5a1e5000-0000-4000-8000-000000000000",
+  "title": "Sales Overview",
+  "version": "2.4",
+  "settings": {
+    "pagenumber": 0,
+    "editable": true,
+    "fullscreenEnabled": true,
+    "parameters": {
+      "neodash_region_name": null,
+      "neodash_from_date": null,
+      "neodash_to_date": null,
+      "neodash_customer_name": "Riley Mensah"
+    },
+    "theme": "light"
+  },
+  "pages": [
+    {
+      "title": "Overview",
+      "reports": [
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000001",
+          "title": "Region",
+          "query": "MATCH (n:`Region`) \nWHERE toLower(toString(n.`name`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`name` as value,  n.`name` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 6,
+          "height": 2,
+          "x": 0,
+          "y": 0,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Region",
+            "propertyType": "name",
+            "propertyTypeDisplay": "name",
+            "parameterName": "neodash_region_name",
+            "helperText": "Filter all reports by region"
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000002",
+          "title": "From",
+          "query": "RETURN true;",
+          "width": 4,
+          "height": 2,
+          "x": 6,
+          "y": 0,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Date Picker",
+            "entityType": "from_date",
+            "parameterName": "neodash_from_date"
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000003",
+          "title": "To",
+          "query": "RETURN true;",
+          "width": 4,
+          "height": 2,
+          "x": 10,
+          "y": 0,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Date Picker",
+            "entityType": "to_date",
+            "parameterName": "neodash_to_date"
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000004",
+          "title": "About",
+          "query": "**Acme Outfitters — sales**\n\nFilter by region and date range. Click a customer in *Top customers* to open them on the *Customer drill-down* page.",
+          "width": 10,
+          "height": 2,
+          "x": 14,
+          "y": 0,
+          "type": "text",
+          "selection": {},
+          "settings": {}
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000005",
+          "title": "Revenue",
+          "query": "MATCH (rg:Region)<-[:IN_REGION]-(co:Country)<-[:IN_COUNTRY]-(:City)<-[:LIVES_IN]-(cu:Customer)-[:PLACED]->(o:Order)\nWHERE o.status <> 'Cancelled'\n  AND (coalesce($neodash_region_name, '') = '' OR rg.name = $neodash_region_name)\n  AND ($neodash_from_date IS NULL OR $neodash_from_date = '' OR o.date >= $neodash_from_date)\n  AND ($neodash_to_date IS NULL OR $neodash_to_date = '' OR o.date <= $neodash_to_date)\nRETURN toInteger(sum(o.total)) AS Revenue",
+          "width": 6,
+          "height": 2,
+          "x": 0,
+          "y": 2,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "textAlign": "center"
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000006",
+          "title": "Orders",
+          "query": "MATCH (rg:Region)<-[:IN_REGION]-(co:Country)<-[:IN_COUNTRY]-(:City)<-[:LIVES_IN]-(cu:Customer)-[:PLACED]->(o:Order)\nWHERE o.status <> 'Cancelled'\n  AND (coalesce($neodash_region_name, '') = '' OR rg.name = $neodash_region_name)\n  AND ($neodash_from_date IS NULL OR $neodash_from_date = '' OR o.date >= $neodash_from_date)\n  AND ($neodash_to_date IS NULL OR $neodash_to_date = '' OR o.date <= $neodash_to_date)\nRETURN count(o) AS Orders",
+          "width": 6,
+          "height": 2,
+          "x": 6,
+          "y": 2,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "textAlign": "center"
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000007",
+          "title": "Average order value",
+          "query": "MATCH (rg:Region)<-[:IN_REGION]-(co:Country)<-[:IN_COUNTRY]-(:City)<-[:LIVES_IN]-(cu:Customer)-[:PLACED]->(o:Order)\nWHERE o.status <> 'Cancelled'\n  AND (coalesce($neodash_region_name, '') = '' OR rg.name = $neodash_region_name)\n  AND ($neodash_from_date IS NULL OR $neodash_from_date = '' OR o.date >= $neodash_from_date)\n  AND ($neodash_to_date IS NULL OR $neodash_to_date = '' OR o.date <= $neodash_to_date)\nRETURN round(avg(o.total), 2) AS AOV",
+          "width": 6,
+          "height": 2,
+          "x": 12,
+          "y": 2,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "textAlign": "center"
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000008",
+          "title": "Active customers",
+          "query": "MATCH (rg:Region)<-[:IN_REGION]-(co:Country)<-[:IN_COUNTRY]-(:City)<-[:LIVES_IN]-(cu:Customer)-[:PLACED]->(o:Order)\nWHERE o.status <> 'Cancelled'\n  AND (coalesce($neodash_region_name, '') = '' OR rg.name = $neodash_region_name)\n  AND ($neodash_from_date IS NULL OR $neodash_from_date = '' OR o.date >= $neodash_from_date)\n  AND ($neodash_to_date IS NULL OR $neodash_to_date = '' OR o.date <= $neodash_to_date)\nRETURN count(DISTINCT cu) AS Customers",
+          "width": 6,
+          "height": 2,
+          "x": 18,
+          "y": 2,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "textAlign": "center"
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000009",
+          "title": "Monthly revenue",
+          "query": "MATCH (rg:Region)<-[:IN_REGION]-(co:Country)<-[:IN_COUNTRY]-(:City)<-[:LIVES_IN]-(cu:Customer)-[:PLACED]->(o:Order)\nWHERE o.status <> 'Cancelled'\n  AND (coalesce($neodash_region_name, '') = '' OR rg.name = $neodash_region_name)\n  AND ($neodash_from_date IS NULL OR $neodash_from_date = '' OR o.date >= $neodash_from_date)\n  AND ($neodash_to_date IS NULL OR $neodash_to_date = '' OR o.date <= $neodash_to_date)\nRETURN date.truncate('month', o.date) AS Month, toInteger(sum(o.total)) AS Revenue\nORDER BY Month",
+          "width": 16,
+          "height": 4,
+          "x": 0,
+          "y": 4,
+          "type": "line",
+          "selection": {
+            "x": "Month",
+            "value": [
+              "Revenue"
+            ]
+          },
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "xTickTimeValues": "every 3 months",
+            "xAxisTimeFormat": "%b %Y",
+            "marginLeft": 70,
+            "curve": "monotoneX"
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000010",
+          "title": "Revenue by channel",
+          "query": "MATCH (rg:Region)<-[:IN_REGION]-(co:Country)<-[:IN_COUNTRY]-(:City)<-[:LIVES_IN]-(cu:Customer)-[:PLACED]->(o:Order)\nWHERE o.status <> 'Cancelled'\n  AND (coalesce($neodash_region_name, '') = '' OR rg.name = $neodash_region_name)\n  AND ($neodash_from_date IS NULL OR $neodash_from_date = '' OR o.date >= $neodash_from_date)\n  AND ($neodash_to_date IS NULL OR $neodash_to_date = '' OR o.date <= $neodash_to_date)\nRETURN o.channel AS Channel, toInteger(sum(o.total)) AS Revenue",
+          "width": 8,
+          "height": 4,
+          "x": 16,
+          "y": 4,
+          "type": "pie",
+          "selection": {
+            "index": "Channel",
+            "value": "Revenue",
+            "key": "(none)"
+          },
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "innerRadius": 0.5,
+            "colors": "set2"
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000011",
+          "title": "Revenue by category and region",
+          "query": "MATCH (rg:Region)<-[:IN_REGION]-(co:Country)<-[:IN_COUNTRY]-(:City)<-[:LIVES_IN]-(cu:Customer)-[:PLACED]->(o:Order)\nWHERE o.status <> 'Cancelled'\n  AND (coalesce($neodash_region_name, '') = '' OR rg.name = $neodash_region_name)\n  AND ($neodash_from_date IS NULL OR $neodash_from_date = '' OR o.date >= $neodash_from_date)\n  AND ($neodash_to_date IS NULL OR $neodash_to_date = '' OR o.date <= $neodash_to_date)\nMATCH (o)-[c:CONTAINS]->(:Product)-[:IN_CATEGORY]->(:Category)-[:SUBCATEGORY_OF]->(top:Category)\nRETURN top.name AS Category, rg.name AS Region, toInteger(sum(c.quantity * c.unitPrice)) AS Revenue\nORDER BY Category",
+          "width": 12,
+          "height": 4,
+          "x": 0,
+          "y": 8,
+          "type": "bar",
+          "selection": {
+            "index": "Category",
+            "value": "Revenue",
+            "key": "Region"
+          },
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "groupMode": "stacked",
+            "marginLeft": 70,
+            "marginBottom": 60,
+            "colors": "set2",
+            "legend": true
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000012",
+          "title": "Revenue by country",
+          "query": "MATCH (rg:Region)<-[:IN_REGION]-(co:Country)<-[:IN_COUNTRY]-(:City)<-[:LIVES_IN]-(cu:Customer)-[:PLACED]->(o:Order)\nWHERE o.status <> 'Cancelled'\n  AND (coalesce($neodash_region_name, '') = '' OR rg.name = $neodash_region_name)\n  AND ($neodash_from_date IS NULL OR $neodash_from_date = '' OR o.date >= $neodash_from_date)\n  AND ($neodash_to_date IS NULL OR $neodash_to_date = '' OR o.date <= $neodash_to_date)\nRETURN co.code AS code, toInteger(sum(o.total)) AS value",
+          "width": 12,
+          "height": 4,
+          "x": 12,
+          "y": 8,
+          "type": "choropleth",
+          "selection": {
+            "index": "code",
+            "value": "value",
+            "key": "code"
+          },
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "colors": "YlOrRd"
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000013",
+          "title": "Top products",
+          "query": "MATCH (rg:Region)<-[:IN_REGION]-(co:Country)<-[:IN_COUNTRY]-(:City)<-[:LIVES_IN]-(cu:Customer)-[:PLACED]->(o:Order)\nWHERE o.status <> 'Cancelled'\n  AND (coalesce($neodash_region_name, '') = '' OR rg.name = $neodash_region_name)\n  AND ($neodash_from_date IS NULL OR $neodash_from_date = '' OR o.date >= $neodash_from_date)\n  AND ($neodash_to_date IS NULL OR $neodash_to_date = '' OR o.date <= $neodash_to_date)\nMATCH (o)-[c:CONTAINS]->(p:Product)-[:IN_CATEGORY]->(sub:Category)\nWITH p, sub, sum(c.quantity) AS units, sum(c.quantity * c.unitPrice) AS revenue, sum(c.quantity * p.cost) AS cost\nRETURN p.name AS Product, sub.name AS Category, units AS Units, toInteger(revenue) AS Revenue,\n       round(100.0 * (revenue - cost) / revenue, 1) AS `Margin %`\nORDER BY Revenue DESC LIMIT 15",
+          "width": 12,
+          "height": 5,
+          "x": 0,
+          "y": 12,
+          "type": "table",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "compact": true,
+            "styleRules": [
+              {
+                "field": "Margin %",
+                "condition": "<",
+                "value": "35",
+                "customization": "row color",
+                "customizationValue": "#fde2e1"
+              }
+            ]
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000014",
+          "title": "Top customers",
+          "query": "MATCH (rg:Region)<-[:IN_REGION]-(co:Country)<-[:IN_COUNTRY]-(:City)<-[:LIVES_IN]-(cu:Customer)-[:PLACED]->(o:Order)\nWHERE o.status <> 'Cancelled'\n  AND (coalesce($neodash_region_name, '') = '' OR rg.name = $neodash_region_name)\n  AND ($neodash_from_date IS NULL OR $neodash_from_date = '' OR o.date >= $neodash_from_date)\n  AND ($neodash_to_date IS NULL OR $neodash_to_date = '' OR o.date <= $neodash_to_date)\nRETURN cu.name AS Customer, cu.segment AS Segment, co.name AS Country, count(o) AS Orders, toInteger(sum(o.total)) AS Revenue\nORDER BY Revenue DESC LIMIT 15",
+          "width": 12,
+          "height": 5,
+          "x": 12,
+          "y": 12,
+          "type": "table",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "compact": true,
+            "actionsRules": [
+              {
+                "condition": "Click",
+                "field": "Customer",
+                "value": "Customer",
+                "customization": "set variable",
+                "customizationValue": "customer_name"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Customer drill-down",
+      "reports": [
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000015",
+          "title": "Customer",
+          "query": "MATCH (n:`Customer`) \nWHERE toLower(toString(n.`name`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`name` as value,  n.`name` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 8,
+          "height": 2,
+          "x": 0,
+          "y": 0,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Customer",
+            "propertyType": "name",
+            "propertyTypeDisplay": "name",
+            "parameterName": "neodash_customer_name"
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000016",
+          "title": "Lifetime value",
+          "query": "MATCH (cu:Customer {name: $neodash_customer_name})-[:PLACED]->(o:Order) WHERE o.status <> 'Cancelled'\nRETURN toInteger(sum(o.total))",
+          "width": 4,
+          "height": 2,
+          "x": 8,
+          "y": 0,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000017",
+          "title": "Orders",
+          "query": "MATCH (cu:Customer {name: $neodash_customer_name})-[:PLACED]->(o:Order)\nRETURN count(o)",
+          "width": 4,
+          "height": 2,
+          "x": 12,
+          "y": 0,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000018",
+          "title": "Customer since",
+          "query": "MATCH (cu:Customer {name: $neodash_customer_name})\nRETURN toString(min(cu.joined))",
+          "width": 4,
+          "height": 2,
+          "x": 16,
+          "y": 0,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "fontSize": 36
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000019",
+          "title": "Segment",
+          "query": "MATCH (cu:Customer {name: $neodash_customer_name})\nRETURN head(collect(DISTINCT cu.segment))",
+          "width": 4,
+          "height": 2,
+          "x": 20,
+          "y": 0,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "fontSize": 36
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000020",
+          "title": "Recent orders",
+          "query": "MATCH (cu:Customer {name: $neodash_customer_name})-[:PLACED]->(o:Order)\nWITH cu, o ORDER BY o.date DESC LIMIT 8\nMATCH path = (cu)-[:PLACED]->(o)-[:CONTAINS]->(:Product)-[:IN_CATEGORY]->(:Category)\nRETURN path",
+          "width": 14,
+          "height": 6,
+          "x": 0,
+          "y": 2,
+          "type": "graph",
+          "selection": {
+            "Customer": "name",
+            "Order": "id",
+            "Product": "name",
+            "Category": "name"
+          },
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "nodePositions": {}
+          }
+        },
+        {
+          "id": "5a1e5000-0000-4000-8000-000000000021",
+          "title": "Order history",
+          "query": "MATCH (cu:Customer {name: $neodash_customer_name})-[:PLACED]->(o:Order)-[:SHIPPED_FROM]->(w:Warehouse)\nRETURN o.id AS Order, o.date AS Date, o.status AS Status, o.channel AS Channel, o.total AS Total, w.name AS Warehouse\nORDER BY Date DESC",
+          "width": 10,
+          "height": 6,
+          "x": 14,
+          "y": 2,
+          "type": "table",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "compact": true,
+            "styleRules": [
+              {
+                "field": "Status",
+                "condition": "=",
+                "value": "Returned",
+                "customization": "row color",
+                "customizationValue": "#fff4ce"
+              },
+              {
+                "field": "Status",
+                "condition": "=",
+                "value": "Cancelled",
+                "customization": "row color",
+                "customizationValue": "#eeeeee"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "parameters": {},
+  "extensions": {
+    "active": true,
+    "activeReducers": [],
+    "advanced-charts": {
+      "active": true
+    },
+    "styling": {
+      "active": true
+    },
+    "actions": {
+      "active": true
+    }
+  }
+}

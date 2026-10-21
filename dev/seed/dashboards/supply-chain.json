@@ -1,0 +1,290 @@
+{
+  "uuid": "5c4a1000-0000-4000-8000-000000000000",
+  "title": "Supply Chain",
+  "version": "2.4",
+  "settings": {
+    "pagenumber": 0,
+    "editable": true,
+    "fullscreenEnabled": true,
+    "parameters": {
+      "neodash_warehouse_name": null
+    },
+    "theme": "light"
+  },
+  "pages": [
+    {
+      "title": "Network",
+      "reports": [
+        {
+          "id": "5c4a1000-0000-4000-8000-000000000001",
+          "title": "About this page",
+          "query": "Twelve suppliers ship to six regional hubs, which serve five customer regions.\n\n- **Map**: supplier → hub lanes\n- **Sankey**: units shipped along each lane (from fulfilled orders)\n- **Table**: supplier scorecard; ratings under 3.5 are highlighted",
+          "width": 8,
+          "height": 6,
+          "x": 0,
+          "y": 0,
+          "type": "text",
+          "selection": {},
+          "settings": {}
+        },
+        {
+          "id": "5c4a1000-0000-4000-8000-000000000002",
+          "title": "Supplier lanes",
+          "query": "MATCH (s:Supplier)-[r:SHIPS_TO]->(w:Warehouse)\nRETURN s, r, w",
+          "width": 16,
+          "height": 6,
+          "x": 8,
+          "y": 0,
+          "type": "map",
+          "selection": {
+            "Supplier": "name",
+            "Warehouse": "name",
+            "SHIPS_TO": "(label)"
+          },
+          "settings": {
+            "defaultRelColor": "rgba(80,120,200,0.5)",
+            "defaultRelWidth": 3,
+            "defaultNodeSize": "medium",
+            "nodeColorScheme": "set2"
+          }
+        },
+        {
+          "id": "5c4a1000-0000-4000-8000-000000000003",
+          "title": "Units by lane",
+          "query": "// Units flowing supplier -> warehouse -> customer region\nMATCH (s:Supplier)-[r:SHIPS_TO]->(w:Warehouse)\nRETURN s AS source, r AS flow, w AS target\nUNION ALL\nMATCH (w:Warehouse)-[r:SERVES]->(g:Region)\nRETURN w AS source, r AS flow, g AS target",
+          "width": 24,
+          "height": 6,
+          "x": 0,
+          "y": 6,
+          "type": "sankey",
+          "selection": {
+            "Supplier": "name",
+            "Warehouse": "name",
+            "Region": "name"
+          },
+          "settings": {
+            "labelProperty": "units",
+            "labelPosition": "inside",
+            "layout": "horizontal",
+            "colors": "set2"
+          }
+        },
+        {
+          "id": "5c4a1000-0000-4000-8000-000000000004",
+          "title": "Supplier scorecard",
+          "query": "MATCH (s:Supplier)-[:LOCATED_IN]->(c:City)-[:IN_COUNTRY]->(co:Country)\nOPTIONAL MATCH (s)-[sup:SUPPLIES]->(p:Product)\nWITH s, c, co, count(p) AS products, round(avg(sup.leadTimeDays), 1) AS leadTime\nOPTIONAL MATCH (s)-[sh:SHIPS_TO]->()\nRETURN s.name AS Supplier, c.name + ', ' + co.name AS Location, products AS Products,\n       leadTime AS `Avg lead time (days)`, sum(sh.units) AS `Units shipped`, s.rating AS Rating\nORDER BY Rating ASC",
+          "width": 24,
+          "height": 5,
+          "x": 0,
+          "y": 12,
+          "type": "table",
+          "selection": {},
+          "settings": {
+            "compact": true,
+            "styleRules": [
+              {
+                "field": "Rating",
+                "condition": "<",
+                "value": "3.5",
+                "customization": "row color",
+                "customizationValue": "#fde2e1"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Delivery",
+      "reports": [
+        {
+          "id": "5c4a1000-0000-4000-8000-000000000005",
+          "title": "Warehouse",
+          "query": "MATCH (n:`Warehouse`) \nWHERE toLower(toString(n.`name`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`name` as value,  n.`name` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 6,
+          "height": 2,
+          "x": 0,
+          "y": 0,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Warehouse",
+            "propertyType": "name",
+            "propertyTypeDisplay": "name",
+            "parameterName": "neodash_warehouse_name"
+          }
+        },
+        {
+          "id": "5c4a1000-0000-4000-8000-000000000006",
+          "title": "Late deliveries",
+          "query": "MATCH (o:Order)-[:SHIPPED_FROM]->(w:Warehouse)\nWHERE o.onTime IS NOT NULL AND (coalesce($neodash_warehouse_name, '') = '' OR w.name = $neodash_warehouse_name) AND NOT o.onTime\nRETURN count(o)",
+          "width": 6,
+          "height": 2,
+          "x": 6,
+          "y": 0,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "textAlign": "center"
+          }
+        },
+        {
+          "id": "5c4a1000-0000-4000-8000-000000000007",
+          "title": "Average delay when late (days)",
+          "query": "MATCH (o:Order)-[:SHIPPED_FROM]->(w:Warehouse)\nWHERE o.onTime IS NOT NULL AND (coalesce($neodash_warehouse_name, '') = '' OR w.name = $neodash_warehouse_name) AND NOT o.onTime\nRETURN round(avg(o.delayDays), 1)",
+          "width": 6,
+          "height": 2,
+          "x": 12,
+          "y": 0,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "textAlign": "center"
+          }
+        },
+        {
+          "id": "5c4a1000-0000-4000-8000-000000000008",
+          "title": "On-time delivery %",
+          "query": "MATCH (o:Order)-[:SHIPPED_FROM]->(w:Warehouse)\nWHERE o.onTime IS NOT NULL AND (coalesce($neodash_warehouse_name, '') = '' OR w.name = $neodash_warehouse_name)\nRETURN toInteger(round(100.0 * sum(CASE WHEN o.onTime THEN 1 ELSE 0 END) / count(o)))",
+          "width": 6,
+          "height": 6,
+          "x": 18,
+          "y": 0,
+          "type": "gauge",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "nrOfLevels": 3,
+            "arcsLength": "0.8,0.1,0.1",
+            "arcColors": "#e15759,#f1ce63,#59a14f"
+          }
+        },
+        {
+          "id": "5c4a1000-0000-4000-8000-000000000009",
+          "title": "On-time % by hub",
+          "query": "MATCH (o:Order)-[:SHIPPED_FROM]->(w:Warehouse) WHERE o.onTime IS NOT NULL\nRETURN w.name AS Hub, round(100.0 * sum(CASE WHEN o.onTime THEN 1 ELSE 0 END) / count(o), 1) AS `On-time %`\nORDER BY `On-time %`",
+          "width": 18,
+          "height": 4,
+          "x": 0,
+          "y": 2,
+          "type": "bar",
+          "selection": {
+            "index": "Hub",
+            "value": "On-time %",
+            "key": "(none)"
+          },
+          "settings": {
+            "marginLeft": 60,
+            "styleRules": [
+              {
+                "field": "On-time %",
+                "condition": "<",
+                "value": "85",
+                "customization": "bar color",
+                "customizationValue": "#e15759"
+              }
+            ]
+          }
+        },
+        {
+          "id": "5c4a1000-0000-4000-8000-000000000010",
+          "title": "On-time % by month",
+          "query": "MATCH (o:Order)-[:SHIPPED_FROM]->(w:Warehouse)\nWHERE o.onTime IS NOT NULL AND (coalesce($neodash_warehouse_name, '') = '' OR w.name = $neodash_warehouse_name)\nRETURN date.truncate('month', o.date) AS Month, round(100.0 * sum(CASE WHEN o.onTime THEN 1 ELSE 0 END) / count(o), 1) AS `On-time %`\nORDER BY Month",
+          "width": 12,
+          "height": 5,
+          "x": 0,
+          "y": 6,
+          "type": "line",
+          "selection": {
+            "x": "Month",
+            "value": [
+              "On-time %"
+            ]
+          },
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "xTickTimeValues": "every 3 months",
+            "xAxisTimeFormat": "%b %Y",
+            "minYValue": 50,
+            "maxYValue": 100
+          }
+        },
+        {
+          "id": "5c4a1000-0000-4000-8000-000000000011",
+          "title": "Latest late deliveries",
+          "query": "MATCH (o:Order)-[:SHIPPED_FROM]->(w:Warehouse)\nWHERE o.onTime IS NOT NULL AND (coalesce($neodash_warehouse_name, '') = '' OR w.name = $neodash_warehouse_name) AND NOT o.onTime\nMATCH (cu:Customer)-[:PLACED]->(o)\nRETURN o.id AS Order, o.date AS Ordered, o.deliveredDate AS Delivered, o.delayDays AS `Delay (days)`, w.name AS Hub, cu.name AS Customer\nORDER BY Ordered DESC LIMIT 50",
+          "width": 12,
+          "height": 5,
+          "x": 12,
+          "y": 6,
+          "type": "table",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "compact": true,
+            "styleRules": [
+              {
+                "field": "Delay (days)",
+                "condition": ">",
+                "value": "7",
+                "customization": "row color",
+                "customizationValue": "#fde2e1"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Projects",
+      "reports": [
+        {
+          "id": "5c4a1000-0000-4000-8000-000000000012",
+          "title": "Operations roadmap",
+          "query": "MATCH (p:Project)-[:HAS_TASK]->(t:Task)\nOPTIONAL MATCH (t)-[n:NEXT]->(t2:Task)\nRETURN t, n, t2",
+          "width": 24,
+          "height": 6,
+          "x": 0,
+          "y": 0,
+          "type": "gantt",
+          "selection": {},
+          "settings": {
+            "viewMode": "Week",
+            "barColor": "#7aa6d8"
+          }
+        },
+        {
+          "id": "5c4a1000-0000-4000-8000-000000000013",
+          "title": "Tasks",
+          "query": "MATCH (p:Project)-[:HAS_TASK]->(t:Task)\nRETURN p.name AS Project, t.name AS Task, t.startDate AS Start, t.endDate AS End, duration.inDays(t.startDate, t.endDate).days AS Days\nORDER BY Project, Start",
+          "width": 24,
+          "height": 5,
+          "x": 0,
+          "y": 6,
+          "type": "table",
+          "selection": {},
+          "settings": {
+            "compact": true
+          }
+        }
+      ]
+    }
+  ],
+  "parameters": {},
+  "extensions": {
+    "active": true,
+    "activeReducers": [],
+    "advanced-charts": {
+      "active": true
+    },
+    "styling": {
+      "active": true
+    },
+    "actions": {
+      "active": true
+    }
+  }
+}

@@ -1,0 +1,706 @@
+{
+  "uuid": "c0ffee00-0000-4000-8000-000000000000",
+  "title": "Kitchen Sink — every report type",
+  "version": "2.4",
+  "settings": {
+    "pagenumber": 0,
+    "editable": true,
+    "fullscreenEnabled": true,
+    "parameters": {
+      "neodash_category_name": null,
+      "neodash_contains_discount": null,
+      "neodash_search": null,
+      "neodash_since": null,
+      "neodash_segment": null,
+      "neodash_country_name": []
+    },
+    "theme": "light"
+  },
+  "pages": [
+    {
+      "title": "Basics",
+      "reports": [
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000001",
+          "title": "What this dashboard is for",
+          "query": "# Kitchen sink\n\nEvery report and parameter type NeoDash 2.4 supports, on the mock retail dataset. Use it to compare the legacy and rebuilt UIs page by page.\n\n| Page | Covers |\n|---|---|\n| Basics | markdown, single value, table, raw JSON, iframe |\n| Charts | bar (grouped, stacked, horizontal), line, pie, radar, gauge |\n| Hierarchies & flows | treemap, sunburst, circle packing, Sankey |\n| Geo | point map, map with lanes, choropleth, area map |\n| Graphs | 2D graph, 3D graph, movies graph, Gantt |\n| Parameters | every parameter-select type, multi-select |",
+          "width": 12,
+          "height": 5,
+          "x": 0,
+          "y": 0,
+          "type": "text",
+          "selection": {},
+          "settings": {}
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000002",
+          "title": "Revenue (all time)",
+          "query": "MATCH (o:Order) WHERE o.status <> 'Cancelled' RETURN toInteger(sum(o.total))",
+          "width": 6,
+          "height": 2,
+          "x": 12,
+          "y": 0,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "textAlign": "center"
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000003",
+          "title": "Orders",
+          "query": "MATCH (o:Order) RETURN count(o)",
+          "width": 6,
+          "height": 2,
+          "x": 18,
+          "y": 0,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "textAlign": "center"
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000004",
+          "title": "Latest order date",
+          "query": "MATCH (o:Order) RETURN toString(max(o.date))",
+          "width": 6,
+          "height": 3,
+          "x": 12,
+          "y": 2,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "textAlign": "center",
+            "fontSize": 48
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000005",
+          "title": "Products",
+          "query": "MATCH (p:Product) RETURN count(p)",
+          "width": 6,
+          "height": 3,
+          "x": 18,
+          "y": 2,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "textAlign": "center"
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000006",
+          "title": "Product catalogue",
+          "query": "MATCH (p:Product)-[:IN_CATEGORY]->(sub:Category)-[:SUBCATEGORY_OF]->(top:Category)\nRETURN p.sku AS SKU, p.name AS Product, top.name AS Category, sub.name AS Subcategory, p.price AS Price, p.stock AS Stock, p.rating AS Rating, p.launched AS Launched\nORDER BY SKU",
+          "width": 16,
+          "height": 6,
+          "x": 0,
+          "y": 5,
+          "type": "table",
+          "selection": {},
+          "settings": {
+            "compact": true,
+            "styleRules": [
+              {
+                "field": "Stock",
+                "condition": "<",
+                "value": "50",
+                "customization": "row color",
+                "customizationValue": "#fff4ce"
+              }
+            ]
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000007",
+          "title": "Raw result (one order)",
+          "query": "MATCH (cu:Customer)-[:PLACED]->(o:Order {id: 'O-1'})-[c:CONTAINS]->(p:Product)\nRETURN cu {.id, .name, .segment} AS customer, o {.*, date: toString(o.date)} AS order, collect(p.name) AS products",
+          "width": 8,
+          "height": 6,
+          "x": 16,
+          "y": 5,
+          "type": "json",
+          "selection": {},
+          "settings": {}
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000008",
+          "title": "Embedded page (iframe)",
+          "query": "https://www.openstreetmap.org/export/embed.html?bbox=-10.5,35.5,30.5,60.5&layer=mapnik",
+          "width": 24,
+          "height": 4,
+          "x": 0,
+          "y": 11,
+          "type": "iframe",
+          "selection": {},
+          "settings": {}
+        }
+      ]
+    },
+    {
+      "title": "Charts",
+      "reports": [
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000009",
+          "title": "Revenue by category and segment (grouped)",
+          "query": "MATCH (cu:Customer)-[:PLACED]->(o:Order)-[c:CONTAINS]->(:Product)-[:IN_CATEGORY]->(:Category)-[:SUBCATEGORY_OF]->(top:Category)\nWHERE o.status <> 'Cancelled'\nRETURN top.name AS Category, cu.segment AS Segment, toInteger(sum(c.quantity * c.unitPrice)) AS Revenue\nORDER BY Category",
+          "width": 12,
+          "height": 4,
+          "x": 0,
+          "y": 0,
+          "type": "bar",
+          "selection": {
+            "index": "Category",
+            "value": "Revenue",
+            "key": "Segment"
+          },
+          "settings": {
+            "groupMode": "grouped",
+            "marginLeft": 70,
+            "marginBottom": 60,
+            "colors": "paired",
+            "legend": true
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000010",
+          "title": "Orders by year and channel (horizontal, stacked)",
+          "query": "MATCH (o:Order)\nRETURN toString(o.date.year) AS Year, o.channel AS Channel, count(o) AS Orders\nORDER BY Year",
+          "width": 12,
+          "height": 4,
+          "x": 12,
+          "y": 0,
+          "type": "bar",
+          "selection": {
+            "index": "Year",
+            "value": "Orders",
+            "key": "Channel"
+          },
+          "settings": {
+            "groupMode": "stacked",
+            "layout": "horizontal",
+            "marginLeft": 60,
+            "colors": "set2",
+            "legend": true
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000011",
+          "title": "Monthly revenue by channel (multi-series)",
+          "query": "MATCH (o:Order) WHERE o.status <> 'Cancelled'\nWITH date.truncate('month', o.date) AS Month, o.channel AS channel, sum(o.total) AS revenue\nWITH Month, collect([channel, revenue]) AS pairs\nRETURN Month,\n       toInteger(coalesce([p IN pairs WHERE p[0] = 'Web' | p[1]][0], 0)) AS `Web`,\n       toInteger(coalesce([p IN pairs WHERE p[0] = 'Mobile' | p[1]][0], 0)) AS `Mobile`,\n       toInteger(coalesce([p IN pairs WHERE p[0] = 'Store' | p[1]][0], 0)) AS `Store`,\n       toInteger(coalesce([p IN pairs WHERE p[0] = 'Partner' | p[1]][0], 0)) AS `Partner`\nORDER BY Month",
+          "width": 12,
+          "height": 4,
+          "x": 0,
+          "y": 4,
+          "type": "line",
+          "selection": {
+            "x": "Month",
+            "value": [
+              "Web",
+              "Mobile",
+              "Store",
+              "Partner"
+            ]
+          },
+          "settings": {
+            "xTickTimeValues": "every 3 months",
+            "xAxisTimeFormat": "%b %Y",
+            "marginLeft": 70,
+            "legend": true
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000012",
+          "title": "Customers by segment",
+          "query": "MATCH (cu:Customer) RETURN cu.segment AS Segment, count(cu) AS Customers",
+          "width": 6,
+          "height": 4,
+          "x": 12,
+          "y": 4,
+          "type": "pie",
+          "selection": {
+            "index": "Segment",
+            "value": "Customers",
+            "key": "(none)"
+          },
+          "settings": {
+            "colors": "pastel1"
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000013",
+          "title": "Orders by status (donut)",
+          "query": "MATCH (o:Order) RETURN o.status AS Status, count(o) AS Orders",
+          "width": 6,
+          "height": 4,
+          "x": 18,
+          "y": 4,
+          "type": "pie",
+          "selection": {
+            "index": "Status",
+            "value": "Orders",
+            "key": "(none)"
+          },
+          "settings": {
+            "innerRadius": 0.55,
+            "colors": "set3"
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000014",
+          "title": "Category health",
+          "query": "MATCH (top:Category)<-[:SUBCATEGORY_OF]-(:Category)<-[:IN_CATEGORY]-(p:Product)<-[c:CONTAINS]-(o:Order)\nWITH top.name AS category,\n     100.0 * sum(c.quantity * (c.unitPrice - p.cost)) / sum(c.quantity * c.unitPrice) AS margin,\n     avg(p.rating) * 20 AS rating,\n     100.0 * sum(CASE WHEN o.onTime THEN 1 ELSE 0 END) / count(o) AS onTime,\n     1000.0 * sum(CASE WHEN o.status = 'Returned' THEN 1 ELSE 0 END) / count(o) AS returns\nWITH collect({category: category, margin: margin, rating: rating, onTime: onTime, returns: returns}) AS rows\nUNWIND [['Margin %', 'margin'], ['Rating (x20)', 'rating'], ['On-time %', 'onTime'], ['Returns (per 1000)', 'returns']] AS m\nRETURN m[0] AS Metric,\n       round([r IN rows WHERE r.category = 'Electronics' | r[m[1]]][0], 1) AS `Electronics`,\n       round([r IN rows WHERE r.category = 'Home & Kitchen' | r[m[1]]][0], 1) AS `Home & Kitchen`,\n       round([r IN rows WHERE r.category = 'Sports & Outdoors' | r[m[1]]][0], 1) AS `Sports & Outdoors`,\n       round([r IN rows WHERE r.category = 'Books' | r[m[1]]][0], 1) AS `Books`,\n       round([r IN rows WHERE r.category = 'Fashion' | r[m[1]]][0], 1) AS `Fashion`",
+          "width": 12,
+          "height": 5,
+          "x": 0,
+          "y": 8,
+          "type": "radar",
+          "selection": {
+            "index": "Metric",
+            "values": [
+              "Electronics",
+              "Home & Kitchen",
+              "Sports & Outdoors",
+              "Books",
+              "Fashion"
+            ]
+          },
+          "settings": {
+            "colors": "set2",
+            "legend": true
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000015",
+          "title": "Average product rating (% of 5)",
+          "query": "MATCH (p:Product) RETURN toInteger(round(avg(p.rating) * 20))",
+          "width": 6,
+          "height": 5,
+          "x": 12,
+          "y": 8,
+          "type": "gauge",
+          "selection": {},
+          "settings": {}
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000016",
+          "title": "Return rate",
+          "query": "MATCH (o:Order) RETURN toString(round(100.0 * sum(CASE WHEN o.status = 'Returned' THEN 1 ELSE 0 END) / count(o), 2)) + ' %'",
+          "width": 6,
+          "height": 5,
+          "x": 18,
+          "y": 8,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "textAlign": "center",
+            "fontSize": 48,
+            "marginTop": 40
+          }
+        }
+      ]
+    },
+    {
+      "title": "Hierarchies & flows",
+      "reports": [
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000017",
+          "title": "Revenue treemap",
+          "query": "MATCH (top:Category)<-[:SUBCATEGORY_OF]-(sub:Category)<-[:IN_CATEGORY]-(p:Product)<-[c:CONTAINS]-(o:Order)\nWHERE o.status <> 'Cancelled'\nRETURN ['Revenue', top.name, sub.name, p.name] AS path, toInteger(sum(c.quantity * c.unitPrice)) AS value",
+          "width": 12,
+          "height": 6,
+          "x": 0,
+          "y": 0,
+          "type": "treeMap",
+          "selection": {
+            "index": "path",
+            "value": "value",
+            "key": "path"
+          },
+          "settings": {
+            "colors": "set2"
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000018",
+          "title": "Revenue sunburst",
+          "query": "MATCH (top:Category)<-[:SUBCATEGORY_OF]-(sub:Category)<-[:IN_CATEGORY]-(p:Product)<-[c:CONTAINS]-(o:Order)\nWHERE o.status <> 'Cancelled'\nRETURN ['Revenue', top.name, sub.name, p.name] AS path, toInteger(sum(c.quantity * c.unitPrice)) AS value",
+          "width": 12,
+          "height": 6,
+          "x": 12,
+          "y": 0,
+          "type": "sunburst",
+          "selection": {
+            "index": "path",
+            "value": "value",
+            "key": "path"
+          },
+          "settings": {
+            "colors": "set2"
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000019",
+          "title": "Revenue circle packing",
+          "query": "MATCH (top:Category)<-[:SUBCATEGORY_OF]-(sub:Category)<-[:IN_CATEGORY]-(p:Product)<-[c:CONTAINS]-(o:Order)\nWHERE o.status <> 'Cancelled'\nRETURN ['Revenue', top.name, sub.name, p.name] AS path, toInteger(sum(c.quantity * c.unitPrice)) AS value",
+          "width": 12,
+          "height": 6,
+          "x": 0,
+          "y": 6,
+          "type": "circlePacking",
+          "selection": {
+            "index": "path",
+            "value": "value",
+            "key": "path"
+          },
+          "settings": {
+            "colors": "set2"
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000020",
+          "title": "Supply flows",
+          "query": "// Units flowing supplier -> warehouse -> customer region\nMATCH (s:Supplier)-[r:SHIPS_TO]->(w:Warehouse)\nRETURN s AS source, r AS flow, w AS target\nUNION ALL\nMATCH (w:Warehouse)-[r:SERVES]->(g:Region)\nRETURN w AS source, r AS flow, g AS target",
+          "width": 12,
+          "height": 6,
+          "x": 12,
+          "y": 6,
+          "type": "sankey",
+          "selection": {
+            "Supplier": "name",
+            "Warehouse": "name",
+            "Region": "name"
+          },
+          "settings": {
+            "labelProperty": "units",
+            "labelPosition": "inside",
+            "layout": "horizontal"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Geo",
+      "reports": [
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000021",
+          "title": "Customer cities",
+          "query": "MATCH (c:City)<-[:LIVES_IN]-(:Customer)\nRETURN DISTINCT c",
+          "width": 12,
+          "height": 6,
+          "x": 0,
+          "y": 0,
+          "type": "map",
+          "selection": {
+            "City": "name"
+          },
+          "settings": {
+            "defaultNodeSize": "small"
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000022",
+          "title": "Supplier lanes",
+          "query": "MATCH (s:Supplier)-[r:SHIPS_TO]->(w:Warehouse)\nRETURN s, r, w",
+          "width": 12,
+          "height": 6,
+          "x": 12,
+          "y": 0,
+          "type": "map",
+          "selection": {
+            "Supplier": "name",
+            "Warehouse": "name",
+            "SHIPS_TO": "(label)"
+          },
+          "settings": {
+            "defaultRelColor": "rgba(200,80,80,0.5)",
+            "defaultRelWidth": 3
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000023",
+          "title": "Revenue by country (ISO-3)",
+          "query": "MATCH (co:Country)<-[:IN_COUNTRY]-(:City)<-[:LIVES_IN]-(:Customer)-[:PLACED]->(o:Order)\nWHERE o.status <> 'Cancelled'\nRETURN co.code AS code, toInteger(sum(o.total)) AS value",
+          "width": 12,
+          "height": 6,
+          "x": 0,
+          "y": 6,
+          "type": "choropleth",
+          "selection": {
+            "index": "code",
+            "value": "value",
+            "key": "code"
+          },
+          "settings": {
+            "colors": "greens"
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000024",
+          "title": "Customers by country (area map, ISO-2)",
+          "query": "MATCH (co:Country)<-[:IN_COUNTRY]-(:City)<-[:LIVES_IN]-(cu:Customer)\nRETURN co.code2 AS code, count(cu) AS value",
+          "width": 12,
+          "height": 6,
+          "x": 12,
+          "y": 6,
+          "type": "areamap",
+          "selection": {
+            "index": "code",
+            "value": "value"
+          },
+          "settings": {
+            "countryCodeFormat": "Alpha-2",
+            "showLegend": true
+          }
+        }
+      ]
+    },
+    {
+      "title": "Graphs",
+      "reports": [
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000025",
+          "title": "Electronics supply graph",
+          "query": "MATCH path = (:Supplier)-[:SUPPLIES]->(:Product)-[:IN_CATEGORY]->(:Category)-[:SUBCATEGORY_OF]->(:Category {name: 'Electronics'})\nRETURN path",
+          "width": 12,
+          "height": 6,
+          "x": 0,
+          "y": 0,
+          "type": "graph",
+          "selection": {
+            "Supplier": "name",
+            "Product": "name",
+            "Category": "name"
+          },
+          "settings": {
+            "nodePositions": {},
+            "enableExploration": true
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000026",
+          "title": "Whole catalogue (3D)",
+          "query": "MATCH path = (:Supplier)-[:SUPPLIES]->(:Product)-[:IN_CATEGORY]->(:Category)-[:SUBCATEGORY_OF]->(:Category)\nRETURN path",
+          "width": 12,
+          "height": 6,
+          "x": 12,
+          "y": 0,
+          "type": "graph3d",
+          "selection": {
+            "Supplier": "name",
+            "Product": "name",
+            "Category": "name"
+          },
+          "settings": {}
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000027",
+          "title": "Movies since 2000",
+          "query": "MATCH path = (:Person)-[:ACTED_IN]->(m:Movie)\nWHERE m.released >= 2000\nRETURN path",
+          "width": 12,
+          "height": 6,
+          "x": 0,
+          "y": 6,
+          "type": "graph",
+          "selection": {
+            "Person": "name",
+            "Movie": "title"
+          },
+          "settings": {
+            "nodePositions": {}
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000028",
+          "title": "Project plan",
+          "query": "MATCH (p:Project)-[:HAS_TASK]->(t:Task)\nOPTIONAL MATCH (t)-[n:NEXT]->(t2:Task)\nRETURN t, n, t2",
+          "width": 12,
+          "height": 6,
+          "x": 12,
+          "y": 6,
+          "type": "gantt",
+          "selection": {},
+          "settings": {
+            "viewMode": "Month"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Parameters",
+      "reports": [
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000029",
+          "title": "Node property",
+          "query": "MATCH (n:`Category`) \nWHERE toLower(toString(n.`name`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`name` as value,  n.`name` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 6,
+          "height": 2,
+          "x": 0,
+          "y": 0,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Category",
+            "propertyType": "name",
+            "propertyTypeDisplay": "name",
+            "parameterName": "neodash_category_name"
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000030",
+          "title": "Relationship property",
+          "query": "MATCH ()-[n:`CONTAINS`]->() \nWHERE toLower(toString(n.`discount`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`discount` as value,  n.`discount` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 6,
+          "height": 2,
+          "x": 6,
+          "y": 0,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Relationship Property",
+            "entityType": "CONTAINS",
+            "propertyType": "discount",
+            "propertyTypeDisplay": "discount",
+            "parameterName": "neodash_contains_discount"
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000031",
+          "title": "Free text",
+          "query": "RETURN true;",
+          "width": 6,
+          "height": 2,
+          "x": 12,
+          "y": 0,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Free Text",
+            "entityType": "search",
+            "parameterName": "neodash_search",
+            "helperText": "Product or customer name"
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000032",
+          "title": "Date picker",
+          "query": "RETURN true;",
+          "width": 6,
+          "height": 2,
+          "x": 18,
+          "y": 0,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Date Picker",
+            "entityType": "since",
+            "parameterName": "neodash_since"
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000033",
+          "title": "Custom query",
+          "query": "MATCH (c:Customer)\nWHERE toLower(c.segment) CONTAINS toLower($input)\nRETURN DISTINCT c.segment AS value, c.segment AS display\nORDER BY value",
+          "width": 6,
+          "height": 2,
+          "x": 0,
+          "y": 2,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Custom Query",
+            "entityType": "segment",
+            "parameterName": "neodash_segment"
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000034",
+          "title": "Multi-select",
+          "query": "MATCH (n:`Country`) \nWHERE toLower(toString(n.`name`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`name` as value,  n.`name` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 10,
+          "height": 2,
+          "x": 6,
+          "y": 2,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Country",
+            "propertyType": "name",
+            "propertyTypeDisplay": "name",
+            "parameterName": "neodash_country_name",
+            "multiSelector": true,
+            "multiSelectLimit": 10,
+            "helperText": "Pick one or more countries"
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000035",
+          "title": "Current parameter values",
+          "query": "RETURN $neodash_category_name AS category, $neodash_contains_discount AS discount, $neodash_search AS search,\n       toString($neodash_since) AS since, $neodash_segment AS segment, $neodash_country_name AS countries",
+          "width": 8,
+          "height": 4,
+          "x": 16,
+          "y": 2,
+          "type": "table",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "compact": true
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000036",
+          "title": "Orders matching all parameters",
+          "query": "MATCH (cu:Customer)-[:PLACED]->(o:Order)-[c:CONTAINS]->(p:Product)-[:IN_CATEGORY]->(sub:Category)-[:SUBCATEGORY_OF]->(top:Category),\n      (cu)-[:LIVES_IN]->(:City)-[:IN_COUNTRY]->(co:Country)\nWHERE (coalesce($neodash_category_name, '') = '' OR $neodash_category_name IN [top.name, sub.name])\n  AND ($neodash_contains_discount IS NULL OR toString($neodash_contains_discount) = '' OR c.discount = toFloat($neodash_contains_discount))\n  AND (coalesce($neodash_search, '') = '' OR toLower(p.name) CONTAINS toLower($neodash_search) OR toLower(cu.name) CONTAINS toLower($neodash_search))\n  AND ($neodash_since IS NULL OR $neodash_since = '' OR o.date >= $neodash_since)\n  AND (coalesce($neodash_segment, '') = '' OR cu.segment = $neodash_segment)\n  AND (size(coalesce($neodash_country_name, [])) = 0 OR co.name IN $neodash_country_name)\nRETURN o.id AS Order, o.date AS Date, cu.name AS Customer, cu.segment AS Segment, co.name AS Country, p.name AS Product, c.quantity AS Qty, c.discount AS Discount\nORDER BY Date DESC LIMIT 200",
+          "width": 16,
+          "height": 7,
+          "x": 0,
+          "y": 4,
+          "type": "table",
+          "selection": {},
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "compact": true
+          }
+        },
+        {
+          "id": "c0ffee00-0000-4000-8000-000000000037",
+          "title": "Matching revenue by category",
+          "query": "MATCH (cu:Customer)-[:PLACED]->(o:Order)-[c:CONTAINS]->(p:Product)-[:IN_CATEGORY]->(sub:Category)-[:SUBCATEGORY_OF]->(top:Category),\n      (cu)-[:LIVES_IN]->(:City)-[:IN_COUNTRY]->(co:Country)\nWHERE (coalesce($neodash_category_name, '') = '' OR $neodash_category_name IN [top.name, sub.name])\n  AND ($neodash_contains_discount IS NULL OR toString($neodash_contains_discount) = '' OR c.discount = toFloat($neodash_contains_discount))\n  AND (coalesce($neodash_search, '') = '' OR toLower(p.name) CONTAINS toLower($neodash_search) OR toLower(cu.name) CONTAINS toLower($neodash_search))\n  AND ($neodash_since IS NULL OR $neodash_since = '' OR o.date >= $neodash_since)\n  AND (coalesce($neodash_segment, '') = '' OR cu.segment = $neodash_segment)\n  AND (size(coalesce($neodash_country_name, [])) = 0 OR co.name IN $neodash_country_name)\nRETURN top.name AS Category, toInteger(sum(c.quantity * c.unitPrice)) AS Revenue",
+          "width": 8,
+          "height": 5,
+          "x": 16,
+          "y": 6,
+          "type": "bar",
+          "selection": {
+            "index": "Category",
+            "value": "Revenue",
+            "key": "(none)"
+          },
+          "settings": {
+            "ignoreNonDefinedParams": true,
+            "marginLeft": 70,
+            "marginBottom": 80
+          }
+        }
+      ]
+    }
+  ],
+  "parameters": {},
+  "extensions": {
+    "active": true,
+    "activeReducers": [],
+    "advanced-charts": {
+      "active": true
+    },
+    "styling": {
+      "active": true
+    },
+    "actions": {
+      "active": true
+    }
+  }
+}

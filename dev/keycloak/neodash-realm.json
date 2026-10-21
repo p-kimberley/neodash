@@ -1,0 +1,88 @@
+{
+  "realm": "neodash",
+  "enabled": true,
+  "displayName": "NeoDash (dev)",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "roles": {
+    "realm": [
+      { "name": "neodash-viewer", "description": "Open dashboards and run their saved queries (read-only)" },
+      { "name": "neodash-editor", "description": "Everything a viewer can do, plus write any Cypher and save or delete dashboards" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "neodash",
+      "name": "NeoDash",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "neodash-dev-secret",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:3000/*", "http://localhost:5173/*"],
+      "webOrigins": ["http://localhost:3000", "http://localhost:5173"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3000/*##http://localhost:5173/*"
+      },
+      "defaultClientScopes": ["web-origins", "acr", "profile", "roles", "basic", "email"],
+      "protocolMappers": [
+        {
+          "name": "realm roles in ID token and userinfo",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "viewer",
+      "enabled": true,
+      "email": "viewer@example.com",
+      "emailVerified": true,
+      "firstName": "Vera",
+      "lastName": "Viewer",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }],
+      "realmRoles": ["neodash-viewer"]
+    },
+    {
+      "username": "editor",
+      "enabled": true,
+      "email": "editor@example.com",
+      "emailVerified": true,
+      "firstName": "Eddie",
+      "lastName": "Editor",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }],
+      "realmRoles": ["neodash-editor"]
+    },
+    {
+      "username": "nobody",
+      "enabled": true,
+      "email": "nobody@example.com",
+      "emailVerified": true,
+      "firstName": "Nora",
+      "lastName": "Nobody",
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }],
+      "realmRoles": []
+    }
+  ]
+}
