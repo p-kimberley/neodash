@@ -619,3 +619,97 @@ body {
   margin: 0;
   padding: 0;
 }
+
+/* ---------- Graph reports: search box and properties popup ---------- */
+
+.nd-graph-search {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  max-width: calc(100% - 16px);
+  height: 32px;
+  padding: 0 4px 0 8px;
+  border: 1px solid var(--nd-border);
+  border-radius: 8px;
+  background: var(--nd-surface-raised);
+  box-shadow: var(--nd-shadow);
+  color: var(--nd-text);
+}
+
+.nd-graph-search:focus-within {
+  border-color: var(--nd-primary);
+}
+
+.nd-graph-search-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--nd-text-muted);
+}
+
+.nd-graph-search input {
+  width: 150px;
+  min-width: 0;
+  padding: 0 6px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--nd-text);
+  font: inherit;
+  font-size: var(--nd-text-sm);
+}
+
+.nd-graph-search input::placeholder {
+  color: var(--nd-text-muted);
+}
+
+.nd-graph-search-count {
+  flex: none;
+  padding: 0 4px;
+  font-size: var(--nd-text-xs);
+  color: var(--nd-text-secondary);
+  white-space: nowrap;
+}
+
+.nd-graph-info {
+  width: max-content;
+  min-width: 240px;
+  max-width: min(420px, calc(100vw - 32px));
+  border: 1px solid var(--nd-border);
+  border-radius: 10px;
+  background: var(--nd-surface-raised);
+}
+
+.nd-graph-info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 8px 6px 14px;
+  border-bottom: 1px solid var(--nd-border);
+}
+
+.nd-graph-info-title {
+  font-size: var(--nd-text-md);
+  font-weight: 650;
+  color: var(--nd-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nd-graph-info-body {
+  max-height: min(50vh, 420px);
+  overflow: auto;
+  padding: 4px 6px 8px;
+}
+
+/* The search box has its own clear button; hide the browser's. */
+.nd-graph-search input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}

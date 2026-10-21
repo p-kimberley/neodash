@@ -131,6 +131,10 @@ export interface GraphChartVisualizationProps {
     setGlobalParameter?: (name: string, value: string) => void;
     handleExpand: (id, type, dir, properties) => void;
     zoomToFit: () => void;
+    /** Set by the visualization: centres the view on a node. */
+    focusNode?: (node: Node) => void;
+    /** Active search: IDs of matching nodes, and the one currently focused. */
+    search?: { matches: Set<string>; current?: string };
     drilldownLink: string;
     selectedEntity?: GraphEntity;
     setSelectedEntity: (entity) => void;

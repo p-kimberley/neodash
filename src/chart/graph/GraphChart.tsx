@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import useDimensions from 'react-cool-dimensions';
 import { ChartProps } from '../Chart';
-import { NeoGraphChartInspectModal } from './component/GraphChartInspectModal';
+import { NeoGraphChartInfoPopup } from './component/GraphChartInfoPopup';
+import { NeoGraphChartSearch, findMatches } from './component/GraphChartSearch';
+import { NeoGraphChartVisualization3D } from '../../extensions/advancedcharts/chart/graph3d/GraphChartVisualization3D';
 import { NeoGraphChartVisualization2D } from './GraphChartVisualization2D';
 import { NeoGraphChartDeepLinkButton } from './component/button/GraphChartDeepLinkButton';
 import { NeoGraphChartCanvas } from './component/GraphChartCanvas';
@@ -21,7 +23,7 @@ import { getSettings } from '../SettingsUtils';
 import { palettes } from '../../theme/palette';
 
 import { getPageNumbersAndNamesList } from '../../extensions/advancedcharts/Utils';
-import { CloudArrowDownIconOutline } from '@neo4j-ndl/react/icons';
+import { CloudArrowDownIconOutline, CubeIconOutline, CubeTransparentIconOutline } from '@neo4j-ndl/react/icons';
 
 /** Whether a colour setting is unset or still the built-in default (and so may follow the theme). */
 const isDefault = (value: unknown, builtIn: string) =>
@@ -34,6 +36,34 @@ export interface GraphChartProps extends ChartProps {
 
 const DEFAULT_VISUALIZATION_COMPONENT = NeoGraphChartVisualization2D;
 
+type GraphMode = '2d' | '3d';
+const MODE_STORAGE_PREFIX = 'neodash.graph.mode.';
+
+/** The 2D/3D view this browser last chose for a report, if any. */
+const readStoredMode = (reportId?: string): GraphMode | undefined => {
+  try {
+    const stored = reportId ? window.localStorage.getItem(MODE_STORAGE_PREFIX + reportId) : null;
+    return stored === '2d' || stored === '3d' ? stored : undefined;
+  } catch (e) {
+    return undefined;
+  }
+};
+
+const storeMode = (reportId: string | undefined, mode: GraphMode, reportDefault: GraphMode) => {
+  if (!reportId) {
+    return;
+  }
+  try {
+    if (mode === reportDefault) {
+      window.localStorage.removeItem(MODE_STORAGE_PREFIX + reportId);
+    } else {
+      window.localStorage.setItem(MODE_STORAGE_PREFIX + reportId, mode);
+    }
+  } catch (e) {
+    // Storage blocked: the choice simply isn't remembered.
+  }
+};
+
 /**
  * Draws graph data using a force-directed-graph visualization.
  * This visualization is powered by `react-force-graph`.
@@ -43,7 +73,6 @@ const NeoGraphChart = (props: GraphChartProps) => {
   if (props.records == null || props.records.length == 0 || props.records[0].keys == null) {
     return <>No data, re-run the report.</>;
   }
-  const Visualization = props.component ? props.component : DEFAULT_VISUALIZATION_COMPONENT;
 
   // Retrieve config from advanced settings
   const settings = getSettings(props.settings, props.extensions, props.getGlobalParameter);
@@ -73,6 +102,15 @@ const NeoGraphChart = (props: GraphChartProps) => {
   };
   const frozen: boolean = props.settings && props.settings.frozen !== undefined ? props.settings.frozen : false;
   const [inspectModalOpen, setInspectModalOpen] = useState(false);
+  // 2D/3D view: the report type's default (a "Graph (3D)" report starts in 3D), unless this browser
+  // switched it.
+  const reportMode: GraphMode = props.component === NeoGraphChartVisualization3D ? '3d' : '2d';
+  const [mode, setMode] = useState<GraphMode>(() => readStoredMode(props.id) ?? reportMode);
+  const Visualization = mode === '3d' ? NeoGraphChartVisualization3D : DEFAULT_VISUALIZATION_COMPONENT;
+  const [searchText, setSearchText] = useState('');
+  const [searchIndex, setSearchIndex] = useState(0);
+  // Whether the view has moved to the current match yet: the first Enter goes to the first match.
+  const [searchFocused, setSearchFocused] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState(undefined);
   const [contextMenuOpen, setContextMenuOpen] = useState(false);
   const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 });
@@ -141,6 +179,9 @@ const NeoGraphChart = (props: GraphChartProps) => {
   });
 
   const pageNames = getPageNumbersAndNamesList();
+  const searchMatches = useMemo(() => findMatches(data.nodes, searchText), [data.nodes, searchText]);
+  const searchMatchSet = useMemo(() => new Set(searchMatches), [searchMatches]);
+  useEffect(() => setSearchIndex(0), [searchMatches]);
   const chartProps: GraphChartVisualizationProps = {
     data: {
       nodes: data.nodes,
@@ -220,12 +261,39 @@ const NeoGraphChart = (props: GraphChartProps) => {
       setContextMenuOpen: setContextMenuOpen,
       clickPosition: clickPosition,
       setClickPosition: setClickPosition,
+      search: searchText.trim() ? { matches: searchMatchSet, current: searchMatches[searchIndex] } : undefined,
       createNotification: props.createNotification,
     },
     extensions: {
       styleRules: settings.styleRules,
       actionsRules: settings.actionsRules,
     },
+  };
+
+  // Steps through the search matches, centring the view on each.
+  const stepSearch = (direction: 1 | -1) => {
+    if (searchMatches.length === 0) {
+      return;
+    }
+    let step: number = direction;
+    if (!searchFocused) {
+      step = direction === 1 ? 0 : -1;
+    }
+    const index = (searchIndex + step + searchMatches.length) % searchMatches.length;
+    setSearchIndex(index);
+    setSearchFocused(true);
+    const node = data.nodes.find((n) => n.id === searchMatches[index]);
+    chartProps.interactivity.focusNode && chartProps.interactivity.focusNode(node);
+  };
+
+  const toggleMode = () => {
+    const next: GraphMode = mode === '3d' ? '2d' : '3d';
+    setMode(next);
+    storeMode(props.id, next, reportMode);
+    setContextMenuOpen(false);
+    setInspectModalOpen(false);
+    setRecenterAfterEngineStop(true);
+    setCooldownTicks(100);
   };
 
   // When data is refreshed, rebuild the visualization data.
@@ -244,11 +312,33 @@ const NeoGraphChart = (props: GraphChartProps) => {
         >
           <GraphChartContextMenu {...chartProps} />
           <NeoGraphChartFitViewButton {...chartProps} />
-          {lockable && settings.lockable ? <NeoGraphChartLockButton {...chartProps} /> : <></>}
+          <Tooltip title={mode === '3d' ? 'Show in 2D' : 'Show in 3D'} disableInteractive>
+            <IconButton
+              aria-label={mode === '3d' ? 'show in 2D' : 'show in 3D'}
+              size='small'
+              onClick={toggleMode}
+              clean
+              grouped
+            >
+              {mode === '3d' ? <CubeTransparentIconOutline /> : <CubeIconOutline />}
+            </IconButton>
+          </Tooltip>
+          {/* Frozen layouts are 2D only. */}
+          {lockable && settings.lockable && mode === '2d' ? <NeoGraphChartLockButton {...chartProps} /> : <></>}
           {settings.drilldownLink ? <NeoGraphChartDeepLinkButton {...chartProps} /> : <></>}
         </IconButtonArray>
+        <NeoGraphChartSearch
+          text={searchText}
+          setText={(text) => {
+            setSearchText(text);
+            setSearchFocused(false);
+          }}
+          matches={searchMatches}
+          current={searchIndex}
+          onStep={stepSearch}
+        />
         <Visualization {...chartProps} />
-        <NeoGraphChartInspectModal {...chartProps}></NeoGraphChartInspectModal>
+        <NeoGraphChartInfoPopup {...chartProps} />
         {settings.allowDownload && props.records && props.records.length > 0 ? (
           <IconButtonArray floating orientation='horizontal' className='n-z-10 n-absolute n-bottom-2 n-left-4'>
             <Tooltip title='Download CSV.' aria-label={'download csv'} disableInteractive>

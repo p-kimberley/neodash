@@ -1,0 +1,95 @@
+import React from 'react';
+import { IconButton } from '@neo4j-ndl/react';
+import {
+  ChevronDownIconOutline,
+  ChevronUpIconOutline,
+  MagnifyingGlassIconOutline,
+  XMarkIconOutline,
+} from '@neo4j-ndl/react/icons';
+import { Node } from '../GraphChartVisualization';
+
+/** Text a node can be found by: its labels, its displayed caption and its property values. */
+const searchableText = (node: Node) =>
+  [...(node.labels || []), ...Object.values(node.properties || {}).map((value) => `${value}`)]
+    .join('\u0000')
+    .toLowerCase();
+
+/** IDs of the nodes matching a search, in display order; empty for an empty search. */
+export const findMatches = (nodes: Node[], text: string): string[] => {
+  const query = text.trim().toLowerCase();
+  if (!query) {
+    return [];
+  }
+  return nodes.filter((node) => searchableText(node).includes(query)).map((node) => node.id);
+};
+
+/**
+ * Search box over a graph. Matching nodes are highlighted (the rest dimmed); Enter / the arrows step
+ * through the matches and centre the view on each.
+ */
+export const NeoGraphChartSearch = ({
+  text,
+  setText,
+  matches,
+  current,
+  onStep,
+}: {
+  text: string;
+  setText: (text: string) => void;
+  matches: string[];
+  current: number;
+  onStep: (direction: 1 | -1) => void;
+}) => {
+  const active = text.trim() !== '';
+  return (
+    <div className='nd-graph-search' role='search'>
+      <MagnifyingGlassIconOutline className='nd-graph-search-icon' aria-hidden />
+      <input
+        type='search'
+        aria-label='Search the graph'
+        placeholder='Search graph'
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            onStep(e.shiftKey ? -1 : 1);
+          } else if (e.key === 'Escape') {
+            e.stopPropagation();
+            setText('');
+          }
+        }}
+      />
+      {active ? (
+        <>
+          <span className='nd-graph-search-count' aria-live='polite'>
+            {matches.length === 0 ? 'No matches' : `${current + 1} of ${matches.length}`}
+          </span>
+          <IconButton
+            aria-label='previous match'
+            size='small'
+            clean
+            disabled={matches.length < 2}
+            onClick={() => onStep(-1)}
+          >
+            <ChevronUpIconOutline />
+          </IconButton>
+          <IconButton
+            aria-label='next match'
+            size='small'
+            clean
+            disabled={matches.length < 2}
+            onClick={() => onStep(1)}
+          >
+            <ChevronDownIconOutline />
+          </IconButton>
+          <IconButton aria-label='clear search' size='small' clean onClick={() => setText('')}>
+            <XMarkIconOutline />
+          </IconButton>
+        </>
+      ) : (
+        <></>
+      )}
+    </div>
+  );
+};

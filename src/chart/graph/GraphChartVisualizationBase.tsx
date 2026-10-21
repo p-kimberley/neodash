@@ -1,7 +1,13 @@
 import React, { useRef } from 'react';
+import chroma from 'chroma-js';
 import { executeActionRule, getRuleWithFieldPropertyName } from '../../extensions/advancedcharts/Utils';
 import { getTooltip } from './component/GraphChartTooltip';
 import { GraphChartVisualizationProps } from './GraphChartVisualization';
+
+/** A colour at low opacity, for nodes and relationships that don't match a search. */
+const faded = (color?: string) => {
+  return color && chroma.valid(color) ? chroma(color).alpha(0.12).css() : 'rgba(128, 128, 128, 0.12)';
+};
 
 export const NeoGraphChartVisualizationBase = (props: GraphChartVisualizationProps) => {
   const fgRef: React.MutableRefObject<any> = useRef();
@@ -10,6 +16,26 @@ export const NeoGraphChartVisualizationBase = (props: GraphChartVisualizationPro
     return <></>;
   }
   props.interactivity.zoomToFit = () => fgRef.current && fgRef.current.zoomToFit(400);
+  // Centres the view on a node: pans and zooms in 2D, moves the camera to look at it in 3D.
+  props.interactivity.focusNode = (node: any) => {
+    const graph = fgRef.current;
+    if (!graph || !node || node.x === undefined) {
+      return;
+    }
+    if (node.z === undefined) {
+      graph.centerAt(node.x, node.y, 600);
+      graph.zoom(Math.max(graph.zoom(), 2.5), 600);
+    } else {
+      const distance = 140;
+      const ratio = 1 + distance / Math.max(1, Math.hypot(node.x, node.y, node.z));
+      graph.cameraPosition({ x: node.x * ratio, y: node.y * ratio, z: node.z * ratio }, node, 800);
+    }
+  };
+  // While searching, everything that isn't a match (or a relationship touching one) is dimmed.
+  const matches: Set<string> | undefined = props.interactivity.search?.matches;
+  const searching = matches !== undefined;
+  const linkMatches = (link: any) =>
+    matches.has(link.source?.id ?? link.source) || matches.has(link.target?.id ?? link.target);
   return (
     <GraphComponent
       ref={fgRef}
@@ -25,13 +51,17 @@ export const NeoGraphChartVisualizationBase = (props: GraphChartVisualizationPro
       linkLabel={(link: any) => (props.interactivity.showPropertiesOnHover ? `<div>${getTooltip(link)}</div>` : '')}
       nodeLabel={(node: any) => (props.interactivity.showPropertiesOnHover ? `<div>${getTooltip(node)}</div>` : '')}
       nodeVal={(node: any) => node.size}
-      onNodeClick={(item) => {
+      nodeColor={(node: any) => (searching && !matches.has(node.id) ? faded(node.color) : node.color)}
+      linkColor={(link: any) => (searching && !linkMatches(link) ? faded(link.color) : link.color)}
+      onNodeClick={(item, event) => {
+        props.interactivity.setClickPosition({ x: event.clientX, y: event.clientY });
         let rules = getRuleWithFieldPropertyName(item, props.extensions.actionsRules, 'onNodeClick', 'labels');
         rules != null
           ? rules.forEach((rule) => executeActionRule(rule, item, { ...props.interactivity }))
           : props.interactivity.onNodeClick(item);
       }}
-      onLinkClick={(item) => {
+      onLinkClick={(item, event) => {
+        props.interactivity.setClickPosition({ x: event.clientX, y: event.clientY });
         let rules = getRuleWithFieldPropertyName(item, props.extensions.actionsRules, 'onLinkClick', 'type');
         rules != null
           ? rules.forEach((rule) => executeActionRule(rule, item, props.interactivity.setGlobalParameter))
