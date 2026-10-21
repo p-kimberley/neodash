@@ -74,6 +74,8 @@ enum Modal {
 
 // We use "index = -1" to represent a non-saved draft dashboard in the sidebar's dashboard list.
 const UNSAVED_DASHBOARD_INDEX = -1;
+// Matches the slide transition of .dashboard-sidebar-slot .ndl-side-navigation (components.css).
+const SIDEBAR_TRANSITION_MS = 220;
 
 /**
  * A component responsible for rendering the sidebar on the left of the screen.
@@ -107,12 +109,15 @@ export const NeoDashboardSidebar = ({
   const [menuOpen, setMenuOpen] = useState(Menu.NONE);
   const [modalOpen, setModalOpen] = useState(Modal.NONE);
   const [dashboards, setDashboards] = React.useState([]);
+  const [listLoaded, setListLoaded] = React.useState(false);
   const [cachedDashboard, setCachedDashboard] = React.useState('');
 
   const getDashboardListFromNeo4j = () => {
     // Retrieves list of all dashboards stored in a given database.
     loadDashboardListFromNeo4j(driver, dashboardDatabase, (list) => {
-      setDashboards(list);
+      // Only re-render when the list actually changed, so a refresh doesn't disturb the panel.
+      setDashboards((previous) => (JSON.stringify(previous) === JSON.stringify(list) ? previous : list));
+      setListLoaded(true);
 
       // Update the UI to reflect the currently selected dashboard.
       if (dashboard && dashboard.uuid) {
@@ -126,11 +131,19 @@ export const NeoDashboardSidebar = ({
     });
   };
 
-  // Refresh the list whenever the panel opens (from its own toggle or the header menu button).
+  // Load the list up front, so the panel already has its contents when it opens.
   useEffect(() => {
-    if (expanded) {
-      getDashboardListFromNeo4j();
+    getDashboardListFromNeo4j();
+  }, []);
+
+  // Refresh it when the panel opens, but only after the slide-in has finished: updating the list
+  // mid-animation made the panel jump.
+  useEffect(() => {
+    if (!expanded) {
+      return undefined;
     }
+    const timer = setTimeout(getDashboardListFromNeo4j, SIDEBAR_TRANSITION_MS);
+    return () => clearTimeout(timer);
   }, [expanded]);
 
   function createDashboard() {
@@ -514,6 +527,16 @@ export const NeoDashboardSidebar = ({
                 setMenuAnchor(event.currentTarget);
               }}
             />
+          ) : (
+            <></>
+          )}
+          {!listLoaded ? (
+            // Placeholder rows until the first list arrives, instead of an empty panel that jumps.
+            <div className='nd-sidebar-skeleton' aria-hidden>
+              <span />
+              <span />
+              <span />
+            </div>
           ) : (
             <></>
           )}

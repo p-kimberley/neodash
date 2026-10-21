@@ -25,12 +25,8 @@ const Dashboard = ({ standaloneSettings, sidebarOpen, closeSidebar }) => {
         ) : (
           <></>
         )}
-        {sidebarOpen ? (
-          // Clicking outside the open panel closes it.
-          <div className='dashboard-sidebar-scrim' onClick={closeSidebar} aria-hidden />
-        ) : (
-          <></>
-        )}
+        {/* Clicking outside the open panel closes it; always mounted so it can fade in and out. */}
+        <div className={`dashboard-sidebar-scrim ${sidebarOpen ? 'is-open' : ''}`} onClick={closeSidebar} aria-hidden />
         <div className='n-w-full n-h-full n-flex n-flex-col n-items-center n-justify-center n-rounded-md'>
           <div className='n-w-full n-h-full n-overflow-y-scroll n-flex n-flex-row'>
             {/* Main Content */}
