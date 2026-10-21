@@ -14,6 +14,7 @@ import { getDashboardExtensions } from '../DashboardSelectors';
 import { getExampleReports } from '../../extensions/ExtensionUtils';
 import { NeoReportExamplesModal } from '../../modal/ReportExamplesModal';
 import { enterHandler, openTab } from '../../utils/accessibility';
+import { session } from '../../api/client';
 
 type HelpMenuOpenEvent = React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>;
 
@@ -63,11 +64,16 @@ export const NeoAboutButton = ({ connection, onAboutModalOpen, extensions }) => 
         size='large'
       >
         <MenuItems>
-          <NeoReportExamplesModal
-            extensions={extensions}
-            examples={getExampleReports(extensions)}
-            database={connection.database}
-          ></NeoReportExamplesModal>
+          {/* The examples run free-form (synthetic) queries, which only editors may run. */}
+          {session.me?.role === 'editor' ? (
+            <NeoReportExamplesModal
+              extensions={extensions}
+              examples={getExampleReports(extensions)}
+              database={connection.database}
+            ></NeoReportExamplesModal>
+          ) : (
+            <></>
+          )}
           <MenuItem
             onKeyDown={(e) =>
               enterHandler(e, () =>
