@@ -1,3 +1,4 @@
+import { createSelector } from 'reselect';
 export const getPageNumber = (state: any) => state.dashboard.settings.pagenumber;
 
 export const getDashboardIsEditable = (state: any) =>
@@ -6,6 +7,12 @@ export const getDashboardIsEditable = (state: any) =>
 export const getGlobalParameters = (state: any) => state.dashboard.settings.parameters;
 
 export const getSessionParameters = (state: any) => state.application.sessionParameters;
+
+/** Dashboard and session parameters together; memoised so reports only re-render when they change. */
+export const getAllParameters = createSelector(getGlobalParameters, getSessionParameters, (global, session) => ({
+  ...global,
+  ...session,
+}));
 
 /*
 The database related to a card is, at its start, the same as the one defined inside the application connection field, however

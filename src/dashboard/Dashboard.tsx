@@ -2,7 +2,7 @@ import React from 'react';
 import NeoPage from '../page/Page';
 import NeoDashboardTitle from './header/DashboardTitle';
 import NeoDashboardHeaderPageList from './header/DashboardHeaderPageList';
-import { Neo4jProvider } from 'use-neo4j';
+import { Neo4jContext } from 'use-neo4j/dist/neo4j.context';
 import { applicationGetStandaloneSettings, applicationIsSidebarOpen } from '../application/ApplicationSelectors';
 import { setSidebarOpen } from '../application/ApplicationActions';
 import { connect, useStore } from 'react-redux';
@@ -27,9 +27,18 @@ const Dashboard = ({ standaloneSettings, sidebarOpen, closeSidebar }) => {
 
   const store = useStore();
   // All queries go through the backend; the driver only needs to know which dashboard is open.
-  const [driver] = React.useState(() => new ApiDriver({ getDashboard: () => (store.getState() as any).dashboard }));
+  // A stable context value: use-neo4j's Neo4jProvider created a new one on every render, which
+  // re-rendered every report whenever the dashboard did (e.g. opening the dashboards panel),
+  // stalling the panel's animation while graphs rebuilt. Its login and connection checks don't
+  // apply here, as the backend owns the connection.
+  const [neo4jContext] = React.useState(() => ({
+    driver: new ApiDriver({ getDashboard: () => (store.getState() as any).dashboard }) as any,
+    config: {} as any,
+    updateConnection: () => {},
+    setDatabase: () => {},
+  }));
   const content = (
-    <Neo4jProvider driver={driver as any}>
+    <Neo4jContext.Provider value={neo4jContext}>
       <div className='dashboard-body'>
         {!standaloneSettings.standalone || (standaloneSettings.standalone && standaloneSettings.standaloneAllowLoad) ? (
           // A zero-width slot: the open panel floats over the dashboard instead of squeezing it.
@@ -58,7 +67,7 @@ const Dashboard = ({ standaloneSettings, sidebarOpen, closeSidebar }) => {
           </div>
         </div>
       </div>
-    </Neo4jProvider>
+    </Neo4jContext.Provider>
   );
   return content;
 };

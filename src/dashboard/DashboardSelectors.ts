@@ -1,3 +1,4 @@
+import { createSelector } from 'reselect';
 export const getDashboardUuid = (state: any) => state.dashboard.uuid;
 
 export const getDashboardTitle = (state: any) => state.dashboard.title;
@@ -14,21 +15,25 @@ export const getDashboardTheme = (state: any): 'light' | 'dark' => {
   return preference;
 };
 
-export const getDashboardExtensions = (state: any) => {
-  const { extensions } = state.dashboard;
-  if (!extensions) {
-    return {};
-  }
+const NO_EXTENSIONS = {};
 
-  return Object.fromEntries(Object.entries(extensions).filter(([_, v]) => v.active));
-};
+// Memoised: a new object on every call made every connected report re-render on any state change
+// (e.g. opening the dashboards panel), which stalled animations on pages with graphs.
+export const getDashboardExtensions = createSelector(
+  (state: any) => state.dashboard.extensions,
+  (extensions) => {
+    if (!extensions) {
+      return NO_EXTENSIONS;
+    }
+    return Object.fromEntries(Object.entries(extensions).filter(([_, v]: [string, any]) => v.active));
+  }
+);
 
 export const getPages = (state: any) => state.dashboard.pages;
 
-export const getPageNumbersAndNames = (state: any) => {
-  let pageNames = state.dashboard.pages.reduce((acc, page, idx) => {
-    acc.push(`${idx}/${page.title}`);
-    return acc;
-  }, []);
-  return pageNames;
-};
+// Memoised: it is read with useSelector by every graph, table and bar chart, and a new array on
+// every call re-rendered them all on any state change.
+export const getPageNumbersAndNames = createSelector(
+  (state: any) => state.dashboard.pages,
+  (pages) => pages.map((page, idx) => `${idx}/${page.title}`)
+);

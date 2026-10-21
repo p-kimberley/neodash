@@ -15,12 +15,7 @@ import {
 } from './CardThunks';
 import { toggleReportSettings } from './CardActions';
 import { getReportState } from './CardSelectors';
-import {
-  getDashboardIsEditable,
-  getDatabase,
-  getGlobalParameters,
-  getSessionParameters,
-} from '../settings/SettingsSelectors';
+import { getAllParameters, getDashboardIsEditable, getDatabase } from '../settings/SettingsSelectors';
 import { updateGlobalParameterThunk } from '../settings/SettingsThunks';
 import useDimensions from 'react-cool-dimensions';
 import { setReportHelpModalOpen } from '../application/ApplicationActions';
@@ -230,7 +225,7 @@ const mapStateToProps = (state, ownProps) => ({
     ownProps && ownProps.dashboardSettings ? ownProps.dashboardSettings.pagenumber : undefined,
     ownProps.id
   ),
-  globalParameters: { ...getGlobalParameters(state), ...getSessionParameters(state) },
+  globalParameters: getAllParameters(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({

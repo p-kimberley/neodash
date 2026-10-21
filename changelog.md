@@ -2,6 +2,7 @@
 - **Map data bundled**: choropleth and area map reports work out of the box and offline (country and region shapes served from `/maps`).
 - UI assets, including the map data, are sent Brotli/gzip-compressed (about 19 MB down to 2 MB).
 - Every report has a **maximise** button (the "Fullscreen enabled" setting is gone); a maximised report fills the window and Escape restores it.
+- Opening or closing the dashboards panel no longer stalls on pages with graphs: reports no longer re-render on unrelated state changes.
 - Map markers show their label on mouse-over instead of permanently (labels overlapped and hid the map).
 - Report settings use a cog icon; card corners are cleanly rounded (no square edges or corner handle sticking out).
 - The dashboards panel no longer leaves a collapsed rail: closed, the dashboard uses the full width. It closes with Escape, and its own expand button (duplicating the header menu button) is gone.
