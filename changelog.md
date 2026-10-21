@@ -7,7 +7,7 @@ See [docs/deployment.md](docs/deployment.md) for deployment and migration.
 - **Multiple dashboards**: start page, sidebar switcher, Save button and unsaved-changes indicator.
 - **URL state and browser titles** for every dashboard, page and parameter; back/forward navigation.
 - **Audit logging** of sign-ins, dashboard access and changes, and every query (JSON lines).
-- **Helm chart 2.0**: Ingress (ingress-nginx) or Gateway API HTTPRoute, TLS, Secrets mounted as files, network policy, PDB/HPA, branding, offline (air-gapped) installs.
+- **Helm chart 2.1**: Ingress (ingress-nginx) or Gateway API HTTPRoute, TLS, Secrets mounted as files, network policy, PDB/HPA, branding, offline (air-gapped) installs.
 - **Image**: distroless, non-root, read-only filesystem, no outbound internet requests.
 - **UI**: refreshed design; per-user light/dark/system appearance with WCAG AA contrast across the app, charts, code editors, maps and graphs; syntax-highlighted JSON viewer.
 - **Tables**: "Rows per page" setting (default 25, previously a fixed 5); each reader's choice is remembered per table.
