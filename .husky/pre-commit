@@ -1,5 +1,2 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-. "$(dirname -- "$0")/common.sh"
-
+# Opt in with: yarn hooks (sets git's hooks path to .husky)
 yarn run lint-staged

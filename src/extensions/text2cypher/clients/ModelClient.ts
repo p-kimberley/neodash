@@ -250,7 +250,6 @@ export abstract class ModelClient {
           let elems = records.map((elem) => {
             return getFirstColumnOnly ? elem.toObject()[elem.keys[0]] : elem.toObject();
           });
-          records.length > 0 ?? elems.unshift(records[0].keys);
           transaction.commit();
           return elems;
         })
