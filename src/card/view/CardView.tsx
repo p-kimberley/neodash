@@ -105,7 +105,6 @@ const NeoCardView = ({
       title={title}
       editable={editable}
       description={settings.description}
-      fullscreenEnabled={settings.fullscreenEnabled}
       downloadImageEnabled={settings.downloadImageEnabled}
       refreshButtonEnabled={settings.refreshButtonEnabled}
       onTitleUpdate={onTitleUpdate}

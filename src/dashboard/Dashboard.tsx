@@ -11,6 +11,20 @@ import { ApiDriver } from '../api/ApiDriver';
 
 /** A dashboard: sidebar (dashboards list), title, page tabs and the current page's reports. */
 const Dashboard = ({ standaloneSettings, sidebarOpen, closeSidebar }) => {
+  // Escape closes the open dashboards panel, like the backdrop and the header's menu button.
+  React.useEffect(() => {
+    if (!sidebarOpen) {
+      return undefined;
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeSidebar();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [sidebarOpen]);
+
   const store = useStore();
   // All queries go through the backend; the driver only needs to know which dashboard is open.
   const [driver] = React.useState(() => new ApiDriver({ getDashboard: () => (store.getState() as any).dashboard }));

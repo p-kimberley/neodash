@@ -179,7 +179,6 @@ const NeoCard = ({
             type={report.type}
             expanded={expanded}
             extensions={extensions}
-            dashboardSettings={dashboardSettings}
             onToggleCardExpand={onToggleCardExpand}
             setActive={setActive}
             reportSettings={report.settings}
@@ -208,8 +207,14 @@ const NeoCard = ({
   // Look into React Portals: https://stackoverflow.com/questions/61432878/how-to-render-child-component-outside-of-its-parent-component-dom-hierarchy
   if (expanded) {
     return (
-      <Dialog open={expanded} aria-labelledby='form-dialog-title' className='dialog-xxl'>
-        <Dialog.Content style={{ height: document.documentElement.clientHeight - 200 }}>{component}</Dialog.Content>
+      <Dialog
+        open={expanded}
+        onClose={onToggleCardExpand}
+        disableCloseButton
+        aria-labelledby='form-dialog-title'
+        className='nd-maximised'
+      >
+        <Dialog.Content className='nd-maximised-content'>{component}</Dialog.Content>
       </Dialog>
     );
   }

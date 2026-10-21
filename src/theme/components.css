@@ -43,6 +43,11 @@ body {
   box-shadow: var(--nd-shadow-raised);
 }
 
+/* The header's menu button opens and closes the panel, so the design system's own drawer button is hidden. */
+.dashboard-sidebar-slot .ndl-side-navigation-drawer-button {
+  display: none;
+}
+
 /*
  * Slide: the panel's width animates, but its content is laid out at full width from the start and
  * revealed as the panel grows, so nothing re-wraps or jumps mid-animation. Keep the duration in
@@ -159,10 +164,29 @@ body {
   color: var(--nd-text-muted);
 }
 
-/* The resize handle was dark grey on dark cards. */
-.react-grid-item > .react-resizable-handle::after {
-  border-right-color: var(--nd-border-strong) !important;
-  border-bottom-color: var(--nd-border-strong) !important;
+/* Resize handle: an arc that follows the card's rounded corner (it was a square "L" sticking out of
+   the corner, in dark grey on dark cards). */
+.react-grid-item > .react-resizable-handle.react-resizable-handle-se {
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  opacity: 1;
+  /* react-resizable's own corner graphic, drawn as a square behind the arc. */
+  background-image: none !important;
+}
+.react-grid-item > .react-resizable-handle.react-resizable-handle-se::after {
+  right: 4px;
+  bottom: 4px;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--nd-border-strong) !important;
+  border-bottom: 2px solid var(--nd-border-strong) !important;
+  border-bottom-right-radius: calc(var(--nd-radius-lg) - 4px);
+}
+.react-grid-item > .react-resizable-handle.react-resizable-handle-se:hover::after {
+  border-color: var(--nd-text-muted) !important;
 }
 
 /* ---------- Chart controls (field selectors under a chart) ---------- */
@@ -544,7 +568,9 @@ body {
 .nd-report-card .MuiCard-root {
   background: transparent;
   border: none;
-  border-radius: 0;
+  /* The card's radius less its 1px border, so the content (which this layer clips) can't poke out
+     past the rounded corners. */
+  border-radius: calc(var(--nd-radius-lg) - 1px);
   box-shadow: none !important;
 }
 
@@ -558,4 +584,27 @@ body {
 .nd-floating-menu .MuiCardHeader-title {
   font-size: var(--nd-text-lg);
   font-weight: 650;
+}
+
+/* A maximised report fills the window (minus a small margin); the report's restore button,
+   Escape or a click on the backdrop shrink it back. */
+.ndl-dialog.nd-maximised {
+  width: calc(100vw - 32px);
+  max-width: none;
+  height: calc(100vh - 32px);
+  max-height: none;
+  margin: 16px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ndl-dialog.nd-maximised .nd-maximised-content {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }

@@ -9,7 +9,7 @@ import { replaceDashboardParameters } from '../../chart/ChartUtils';
 import { IconButton } from '@neo4j-ndl/react';
 import {
   DragIcon,
-  EllipsisVerticalIconOutline,
+  Cog6ToothIconOutline,
   ArrowPathIconOutline,
   ExpandIcon,
   ShrinkIcon,
@@ -23,7 +23,6 @@ const NeoCardViewHeader = ({
   description,
   editable,
   onTitleUpdate,
-  fullscreenEnabled,
   downloadImageEnabled,
   refreshButtonEnabled,
   onToggleCardSettings,
@@ -121,7 +120,7 @@ const NeoCardViewHeader = ({
   const settingsButton = (
     <Tooltip title='Settings' aria-label='settings' disableInteractive>
       <IconButton aria-label='settings' onClick={onToggleCardSettings} clean size='medium'>
-        <EllipsisVerticalIconOutline />
+        <Cog6ToothIconOutline />
       </IconButton>
     </Tooltip>
   );
@@ -143,9 +142,11 @@ const NeoCardViewHeader = ({
   );
 
   const unMaximizeButton = (
-    <IconButton aria-label='un-maximize' onClick={onToggleCardExpand} clean size='medium'>
-      <ShrinkIcon />
-    </IconButton>
+    <Tooltip title='Restore' aria-label='restore' disableInteractive>
+      <IconButton aria-label='un-maximize' onClick={onToggleCardExpand} clean size='medium'>
+        <ShrinkIcon />
+      </IconButton>
+    </Tooltip>
   );
 
   const downloadImageButton = (
@@ -194,7 +195,8 @@ const NeoCardViewHeader = ({
         action={
           <>
             {downloadImageEnabled ? downloadImageButton : <></>}
-            {fullscreenEnabled ? expanded ? unMaximizeButton : maximizeButton : <></>}
+            {/* Every report can be maximised to fill the window. */}
+            {expanded ? unMaximizeButton : maximizeButton}
             {descriptionEnabled ? descriptionButton : <></>}
             {refreshButtonEnabled ? refreshButton : <></>}
             {editable ? settingsButton : <></>}

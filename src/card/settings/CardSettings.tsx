@@ -32,7 +32,6 @@ const NeoCardSettings = ({
   setActive,
   onReportHelpButtonPressed,
   onToggleReportSettings,
-  dashboardSettings,
   expanded,
   onToggleCardExpand,
 }) => {
@@ -45,7 +44,6 @@ const NeoCardSettings = ({
       onRemovePressed={onRemovePressed}
       onClonePressed={onClonePressed}
       onReportHelpButtonPressed={onReportHelpButtonPressed}
-      fullscreenEnabled={dashboardSettings.fullscreenEnabled}
       onToggleCardSettings={(e) => {
         setActive(reportSettings.autorun !== undefined ? reportSettings.autorun : true);
         onToggleCardSettings(e);

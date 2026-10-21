@@ -16,7 +16,6 @@ const NeoCardSettingsHeader = ({
   onToggleCardSettings,
   onToggleCardExpand,
   expanded,
-  fullscreenEnabled,
   onReportHelpButtonPressed,
   onClonePressed,
 }) => {
@@ -58,7 +57,7 @@ const NeoCardSettingsHeader = ({
       }
       action={
         <>
-          {fullscreenEnabled ? expanded ? unMaximizeButton : maximizeButton : <></>}
+          {expanded ? unMaximizeButton : maximizeButton}
           <Tooltip title='Run' aria-label='run' disableInteractive>
             <IconButton
               aria-label='run'

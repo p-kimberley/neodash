@@ -66,12 +66,6 @@ export const FORMS = {
         values: [true, false],
         default: false,
       },
-      fullscreenEnabled: {
-        label: 'Fullscreen enabled',
-        type: SELECTION_TYPES.LIST,
-        values: [true, false],
-        default: false,
-      },
       downloadImageEnabled: {
         label: 'Download Image enabled',
         type: SELECTION_TYPES.LIST,
