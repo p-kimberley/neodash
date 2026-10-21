@@ -1,78 +1,139 @@
-# NeoDash
+# NeoDash Helm chart
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.16.0](https://img.shields.io/badge/AppVersion-1.16.0-informational?style=flat-square)
+Deploys NeoDash as one stateless Deployment: a single container serves the UI, handles OIDC
+sign-in and runs all Neo4j queries. Browsers never connect to Neo4j and never see its credentials.
 
-A NeoDash Helm chart for Kubernetes
+- **Ingress with TLS**: one host, one path (`/`); works with ingress-nginx or any other controller.
+- **Secrets, not values**: the Neo4j password and OIDC client secret come from existing Secrets,
+  mounted as files. A session key is generated on install unless you supply one.
+- **Roles**: users need the viewer or editor role from your identity provider (e.g. Keycloak).
+  Viewers can only run the queries saved in dashboards, read-only; editors can edit and save.
+- **Hardened pod**: distroless image, non-root (UID 65532), read-only root filesystem, no
+  capabilities, no service-account token, RuntimeDefault seccomp.
+- **Offline-ready**: the image makes no outbound internet requests and the chart uses no other
+  images (the `helm test` pod reuses the NeoDash image). See [Air-gapped installs](#air-gapped-installs).
 
-## Resources
+## Prerequisites
 
-Following are the Kubernetes resources utilized for the NeoDash.
+- Kubernetes 1.25+, Helm 3.
+- A Neo4j 5 server reachable from the cluster (Community or Enterprise).
+- An OIDC provider. For Keycloak, in your realm:
+  1. Create a **confidential** OpenID Connect client, e.g. `neodash`, with standard flow enabled.
+     - Valid redirect URI: `https://neodash.example.com/auth/callback`
+     - Valid post-logout redirect URI: `https://neodash.example.com/*`
+     - Web origin: `https://neodash.example.com`
+  2. Create realm roles `neodash-viewer` and `neodash-editor` and assign them to users or groups.
+     Realm roles appear in the `realm_access.roles` claim by default. To use client roles instead,
+     set `oidc.rolesClaim: resource_access.neodash.roles`.
+  3. Copy the client secret from the client's *Credentials* tab.
 
-- Deployment
-- Service
-- Ingress
-- Service Account
-- Horizontal Pod Autoscalar (HPA)
+## Install
 
-## Values Configuration
+```sh
+kubectl create namespace neodash
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| autoscaling.enabled | bool | `false` | Enable/disable Autoscaling |
-| enable_reader_mode | bool | `true` | Enable/disable Reader mode |
-| envFromSecrets | list | `[]` | Environment variables from secrets |
-| fullnameOverride | string | `"neodash-test"` | Name override applies to all resources |
-| image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
-| image.repository | string | `"neo4jlabs/neodash"` |  Image repository and Image name |
-| image.tag | string | `"latest"` | Image version |
-| imagePullSecrets | list | `[]` | Image pull secrets if any |
-| podAnnotations | object | `{}` | Pod annotations |
-| podLabels | object | `{}` | Additional labels |
-| podSecurityContext | object | `{}` | Security Context if any |
-| ingress.annotations | object | `{}` | Ingress Annotations for load balancers |
-| ingress.className | string | `"alb"` | Ingress Class |
-| ingress.enabled | bool | `false` | Enable/disable Ingress |
-| ingress.hosts | list | `[]` | Host Details |
-| ingress.tls | list | `[]` | TLS details |
-| livenessProbe.httpGet.path | string | `"/*"` | LivenessProbe path |
-| livenessProbe.httpGet.port | int | `5005` | LivenessProbe port |
-| readinessProbe.httpGet.path | string | `"/*"` | Readiness path |
-| readinessProbe.httpGet.port | int | `5005` | Readiness port |
-| replicaCount | int | `1` | Replica count |
-| resources.limits.cpu | string | `"500m"` | CPU limit |
-| resources.limits.memory | string | `"128Mi"` | Memory limit |
-| resources.requests.cpu | string | `"250m"` | CPU request |
-| resources.requests.memory | string | `"64Mi"` | Memory request |
-| service.annotations | object | `{}` | Service annotations |
-| service.port | int | `5005` | Service port |
-| service.targetPort | int | `5005` | Service target port |
-| service.type | string | `"LoadBalancer"` | Type of service, other options are `ClusterIP` or `NodePort`  |
-| serviceAccount.automount | bool | `true` | Enable/disable service account auto mount to pod |
-| serviceAccount.create | bool | `true` | Enable/disable service account |
-| volumeMounts | list | `[]` | Volume mounts on pod |
-| volumes | list | `[]` | Volumes for pod |
-| env | list |<br><pre lang="YAML">- name: "ssoEnabled" &#13;  value: "false" &#13;- name: "standalone" &#13;  value: "true" &#13;- name: "standaloneProtocol" &#13;  value: "neo4j+s" &#13;- name: "standaloneHost" &#13;  value: "localhost" &#13;- name: "standalonePort" &#13;  value: "7687" &#13;- name: "standaloneDatabase" &#13;  value: "neo4j" &#13;- name: "standaloneDashboardName" &#13;  value: "test" &#13;- name: "standaloneDashboardDatabase" &#13;  value: "neo4j" &#13;- name: "standaloneAllowLoad" &#13;  value: "false" &#13;- name: "standaloneLoadFromOtherDatabases" &#13;  value: "false" &#13;- name: "standaloneMultiDatabase" &#13;  value: "false" &#13;</pre> | Env variables for reader mode |
+kubectl -n neodash create secret generic neo4j-credentials \
+  --from-literal=username=neo4j --from-literal=password='<neo4j password>'
 
-## Usage
+kubectl -n neodash create secret generic neodash-oidc \
+  --from-literal=client-secret='<client secret>'
 
-- To install this helm chart run the following command,
+# TLS certificate for the ingress (or let cert-manager create neodash-tls)
+kubectl -n neodash create secret tls neodash-tls --cert=tls.crt --key=tls.key
+```
 
-    ```bash
-    helm install <release-name> ./neodash -n <namespace-name>
-    ```
+`my-values.yaml`:
 
-- To upgrade the release run the following command,
+```yaml
+image:
+  registry: registry.example.com
+  repository: platform/neodash
+publicUrl: https://neodash.example.com
+neo4j:
+  uri: neo4j://neo4j.neo4j.svc.cluster.local:7687
+  auth:
+    existingSecret: neo4j-credentials
+oidc:
+  issuerUrl: https://keycloak.example.com/realms/acme
+  existingSecret: neodash-oidc
+ingress:
+  host: neodash.example.com
+  tls:
+    secretName: neodash-tls
+```
 
-    ```bash
-    helm upgrade <release-name> ./neodash -n <namespace-name>
-    ```
+```sh
+helm install neodash k8s-deploy/neodash -n neodash -f my-values.yaml
+helm test neodash -n neodash
+```
 
-- To uninstall the release run the following command,
+The chart stops with a clear message if a required value is missing.
 
-    ```bash
-    helm uninstall <release-name> -n <namespace-name>
-    ```
+## Common settings
 
-> **Note:** To use custom values files, pass `-f <path-to-values-file>.yaml` for the above command.
-> **Note:** To use custom values, pass `--set param=value` for the above command.
-For example, to install neodash and set the service type to NodePort, run: `helm install <release-name> ./neodash -n <namespace-name> --set service.type=NodePort`
+| Value | Default | |
+| --- | --- | --- |
+| `publicUrl` | required | URL users open; `https://<ingress.host>` |
+| `image.registry` / `image.repository` / `image.tag` / `image.digest` | – / required / appVersion / – | `digest` wins over `tag` |
+| `global.imageRegistry` | – | Overrides `image.registry` (air-gapped mirrors) |
+| `replicaCount` | `2` | Pods are stateless; scale freely |
+| `neo4j.uri` | in-cluster `neo4j` service | `neo4j+s://` for TLS |
+| `neo4j.databases` | `[neo4j]` | Databases reports may query; first is the default |
+| `neo4j.auth.existingSecret` | required | Keys `username`, `password` (configurable) |
+| `oidc.issuerUrl` | required | Issuer as browsers see it |
+| `oidc.discoveryUrl` | – | In-cluster URL for the pods to fetch the issuer's metadata |
+| `oidc.existingSecret` | required | Key `client-secret` (configurable) |
+| `oidc.rolesClaim` | `realm_access.roles` | Dot path to the roles claim |
+| `oidc.roles.viewer` / `.editor` | `neodash-viewer` / `neodash-editor` | |
+| `oidc.caBundle.existingSecret` / `.existingConfigMap` | – | PEM CA bundle to trust, e.g. an internal CA |
+| `session.existingSecret` | generated | Cookie-encryption key; shared by all replicas |
+| `session.maxAgeSeconds` | `28800` | Users sign in again after this; role changes apply then |
+| `query.timeoutSecondsMax` / `query.rowLimitMax` | `120` / `10000` | Server-side limits for every query |
+| `audit.logParameters` | `true` | Include query parameter values in audit logs |
+| `maps.tileUrl` | – | Map tile server, e.g. `https://tiles.internal/{z}/{x}/{y}.png`; empty = no tiles |
+| `maps.dataUrl` | `/maps` | Where choropleth/area-map country shapes are served from |
+| `ingress.enabled` / `className` / `host` | `true` / `nginx` / required | |
+| `ingress.tls.enabled` / `secretName` | `true` / required | |
+| `ingress.annotations` | body size 20m, read timeout 150s | ingress-nginx annotations; adjust for other controllers |
+| `autoscaling.enabled` | `false` | CPU-based HPA |
+| `podDisruptionBudget.enabled` | `true` | Applied when more than one replica |
+| `networkPolicy.enabled` | `false` | Ingress from the ingress controller; egress to DNS + `egressTo` |
+| `extraEnv` | `[]` | Any other backend setting (see `server/README.md`) |
+
+## Audit logs
+
+Each sign-in, access decision, dashboard view/save/delete and query is logged as one JSON line on
+stdout with `"audit": true`, including the user, role, dashboard, report and (optionally)
+parameter values. Ship pod logs with your usual collector and filter on that field.
+
+## Air-gapped installs
+
+Nothing in the running system needs internet access:
+
+- The image contains the UI, fonts and backend; it makes no outbound requests.
+- Sign-in uses your identity provider; set `oidc.discoveryUrl` if pods reach it on an internal URL,
+  and `oidc.caBundle` if its certificate is signed by an internal CA.
+- Map charts use `maps.tileUrl` (an internal tile server, or none) and `maps.dataUrl`.
+- The optional text-to-Cypher extension calls an external LLM API only if an editor configures it.
+
+On a connected machine, from the repository root:
+
+```sh
+scripts/offline-bundle.sh
+```
+
+This writes `neodash-offline-<version>/` with the image (`docker save` tarball), the packaged chart,
+checksums and `INSTALL.md`. Transfer the folder, then load the image into your internal registry and
+install with `--set global.imageRegistry=<registry>`.
+
+## Upgrading from chart 1.x
+
+Chart 1.x deployed the browser-only NeoDash (nginx) with optional viewer-mode credentials in
+`env` / `envFromSecrets`. 2.x replaces all of that:
+
+- `enable_reader_mode`, `env`, `envFromSecrets` → roles from your identity provider, plus
+  `neo4j.auth.existingSecret` and `oidc.*`.
+- `service.type: LoadBalancer` on port 5005 → `ClusterIP` behind the Ingress (container port 3000).
+- Separate viewer and editor releases → one release; each user's role decides what they can do.
+
+Dashboards stored in Neo4j are unchanged and keep working.

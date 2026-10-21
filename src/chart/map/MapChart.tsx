@@ -3,6 +3,7 @@ import { ChartProps } from '../Chart';
 import { categoricalColorSchemes } from '../../config/ColorConfig';
 import { valueIsArray, valueIsNode, valueIsRelationship, valueIsPath, valueIsObject } from '../../chart/ChartUtils';
 import { MapContainer, TileLayer } from 'react-leaflet';
+import { tileAttributionFor, tileUrlFor } from '../../config/MapConfig';
 import 'leaflet/dist/leaflet.css';
 import { evaluateRulesOnNode, useStyleRules } from '../../extensions/styling/StyleRuleEvaluator';
 import { createHeatmap } from './layers/HeatmapLayer';
@@ -32,14 +33,8 @@ const NeoMapChart = (props: ChartProps) => {
   );
   const defaultNodeColor = 'grey'; // Color of nodes without labels
   const dimensions = props.dimensions ? props.dimensions : { width: 100, height: 100 };
-  const mapProviderURL =
-    props.settings && props.settings.providerUrl
-      ? props.settings.providerUrl
-      : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-  const attribution =
-    props.settings && props.settings.attribution
-      ? props.settings.attribution
-      : '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors';
+  const mapProviderURL = tileUrlFor(props.settings);
+  const attribution = tileAttributionFor(props.settings);
 
   const actionsRules =
     extensionEnabled(props.extensions, 'actions') && props.settings && props.settings.actionsRules
@@ -249,7 +244,7 @@ const NeoMapChart = (props: ChartProps) => {
       scrollWheelZoom={false}
     >
       {heatmap}
-      <TileLayer attribution={attribution} url={mapProviderURL ? mapProviderURL : ''} />
+      {mapProviderURL ? <TileLayer attribution={attribution} url={mapProviderURL} /> : <></>}
       {markers}
       {lines}
     </MapContainer>

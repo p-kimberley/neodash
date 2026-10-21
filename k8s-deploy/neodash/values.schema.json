@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "global": {
+      "type": "object",
+      "properties": { "imageRegistry": { "type": "string" } }
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "registry": { "type": "string" },
+        "repository": { "type": "string" },
+        "tag": { "type": "string" },
+        "digest": { "type": "string", "pattern": "^(|sha256:[a-f0-9]{64})$" },
+        "pullPolicy": { "enum": ["Always", "IfNotPresent", "Never"] }
+      }
+    },
+    "replicaCount": { "type": "integer", "minimum": 1 },
+    "publicUrl": { "type": "string", "pattern": "^(|https?://[^/]+/?)$" },
+    "neo4j": {
+      "type": "object",
+      "properties": {
+        "uri": { "type": "string", "pattern": "^(neo4j|bolt)(\\+s|\\+ssc)?://" },
+        "databases": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "dashboardDatabase": { "type": "string" },
+        "auth": {
+          "type": "object",
+          "properties": {
+            "existingSecret": { "type": "string" },
+            "usernameKey": { "type": "string", "minLength": 1 },
+            "passwordKey": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "oidc": {
+      "type": "object",
+      "properties": {
+        "issuerUrl": { "type": "string" },
+        "discoveryUrl": { "type": "string" },
+        "clientId": { "type": "string", "minLength": 1 },
+        "existingSecret": { "type": "string" },
+        "clientSecretKey": { "type": "string", "minLength": 1 },
+        "scopes": { "type": "string" },
+        "rolesClaim": { "type": "string", "minLength": 1 },
+        "usernameClaim": { "type": "string", "minLength": 1 },
+        "roles": {
+          "type": "object",
+          "properties": {
+            "viewer": { "type": "string", "minLength": 1 },
+            "editor": { "type": "string", "minLength": 1 }
+          }
+        },
+        "allowInsecureHttp": { "type": "boolean" }
+      }
+    },
+    "session": {
+      "type": "object",
+      "properties": {
+        "existingSecret": { "type": "string" },
+        "secretKey": { "type": "string", "minLength": 1 },
+        "maxAgeSeconds": { "type": "integer", "minimum": 60 }
+      }
+    },
+    "query": {
+      "type": "object",
+      "properties": {
+        "timeoutSecondsDefault": { "type": "number", "exclusiveMinimum": 0 },
+        "timeoutSecondsMax": { "type": "number", "exclusiveMinimum": 0 },
+        "rowLimitMax": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "type": { "enum": ["ClusterIP", "NodePort", "LoadBalancer"] },
+        "port": { "type": "integer" }
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "className": { "type": "string" },
+        "host": { "type": "string" },
+        "tls": {
+          "type": "object",
+          "properties": { "enabled": { "type": "boolean" }, "secretName": { "type": "string" } }
+        }
+      }
+    },
+    "logLevel": { "enum": ["fatal", "error", "warn", "info", "debug", "trace"] }
+  }
+}

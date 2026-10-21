@@ -4,6 +4,7 @@ import { ResponsiveChoropleth } from '@nivo/geo';
 import { useState, useEffect } from 'react';
 import { recordToNative } from '../../../../chart/ChartUtils';
 import { NoDrawableDataErrorMessage } from '../../../../component/editor/CodeViewerComponent';
+import { mapDataUrl } from '../../../../config/MapConfig';
 
 /**
  * Embeds a NeoChoroplethMapChart (from Charts) into NeoDash.
@@ -15,10 +16,9 @@ const NeoChoroplethMapChart = (props: ChartProps) => {
   // TODO Apply certain logic to determine different map features to display
   // const feature = globeFeature;
   const [feature, setFeature] = useState({ features: [] });
-  // TODO Think of a way to make it configurable to fetch vector data.
-  // It makes sense to ship this JSON with NeoDash deployments that are behind some firewall and can't access this site.
+  // Country shapes are served by this deployment (MAP_DATA_URL), so the chart works offline.
   useEffect(() => {
-    fetch('https://raw.githubusercontent.com/neo4j-contrib/neodash-static/main/world_polymap.json')
+    fetch(mapDataUrl('world_polymap.json'))
       .then((res) => res.json())
       .then((matched) => setFeature(matched));
   }, []);

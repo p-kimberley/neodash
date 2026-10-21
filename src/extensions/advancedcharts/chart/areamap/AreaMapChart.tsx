@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChartProps } from '../../../../chart/Chart';
 import { MapContainer, TileLayer } from 'react-leaflet';
+import { mapDataUrl, tileAttributionFor, tileUrlFor } from '../../../../config/MapConfig';
 import 'leaflet/dist/leaflet.css';
 import { MapBoundary } from './PolygonLayer';
 import { recordToNative } from '../../../../chart/ChartUtils';
@@ -69,14 +70,8 @@ const NeoAreaMapChart = (props: ChartProps) => {
   const [featureLevel1, setFeatureLevel1] = useState({});
 
   const [isReady, setIsReady] = useState(false);
-  const mapProviderURL =
-    props.settings && props.settings.providerUrl
-      ? props.settings.providerUrl
-      : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-  const attribution =
-    props.settings && props.settings.attribution
-      ? props.settings.attribution
-      : '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors';
+  const mapProviderURL = tileUrlFor(props.settings);
+  const attribution = tileAttributionFor(props.settings);
 
   // Extracting the geoData from the records
   useEffect(() => {
@@ -84,7 +79,7 @@ const NeoAreaMapChart = (props: ChartProps) => {
   }, [records, selection]);
 
   useEffect(() => {
-    fetch('https://raw.githubusercontent.com/neo4j-contrib/neodash-static/main/world_polymap_level_0_entities.json')
+    fetch(mapDataUrl('world_polymap_level_0_entities.json'))
       .then((res) => res.json())
       .then((matched) => {
         let tmp = fromFeatureListToObject(matched.features, keyLengthToKeyName[keyLength]);
@@ -94,7 +89,7 @@ const NeoAreaMapChart = (props: ChartProps) => {
   }, [keyLength]);
 
   useEffect(() => {
-    fetch('https://raw.githubusercontent.com/neo4j-contrib/neodash-static/main/world_polymap_level_1_entities.json')
+    fetch(mapDataUrl('world_polymap_level_1_entities.json'))
       .then((res) => res.json())
       .then((matched) => {
         let tmp = fromFeatureListToObject(matched.features, regionCodeName);
@@ -124,7 +119,7 @@ const NeoAreaMapChart = (props: ChartProps) => {
         maxZoom={18}
         scrollWheelZoom={false}
       >
-        <TileLayer attribution={attribution} url={mapProviderURL} />
+        {mapProviderURL ? <TileLayer attribution={attribution} url={mapProviderURL} /> : <></>}
         {
           <MapBoundary
             data={data}

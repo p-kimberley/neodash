@@ -20,6 +20,7 @@ export interface BackendConfig {
   defaultDatabase: string;
   dashboardDatabase: string;
   limits: { maxRowLimit: number; defaultTimeoutSeconds: number; maxTimeoutSeconds: number };
+  maps?: { tileUrl: string; tileAttribution: string; dataUrl: string };
 }
 
 export interface DashboardSummary {

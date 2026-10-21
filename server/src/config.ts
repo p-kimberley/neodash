@@ -61,6 +61,13 @@ const schema = z.object({
   SESSION_SECRET: z.string().min(32, 'SESSION_SECRET must be at least 32 characters'),
   SESSION_MAX_AGE_SECONDS: z.coerce.number().int().positive().default(8 * 60 * 60),
 
+  // Map background tiles, e.g. an internal tile server: https://tiles.internal/{z}/{x}/{y}.png.
+  // Empty (the default) means no tiles, so nothing is fetched from the internet.
+  MAP_TILE_URL: z.string().default(''),
+  MAP_TILE_ATTRIBUTION: z.string().default(''),
+  // Where the choropleth / area map charts load country shapes (GeoJSON) from.
+  MAP_DATA_URL: z.string().default('/maps'),
+
   // Include query parameter values in audit logs. Turn off if parameters may hold sensitive data.
   AUDIT_LOG_PARAMETERS: bool.default('true'),
 });
@@ -134,6 +141,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env) {
     },
     audit: {
       logParameters: c.AUDIT_LOG_PARAMETERS,
+    },
+    maps: {
+      tileUrl: c.MAP_TILE_URL,
+      tileAttribution: c.MAP_TILE_ATTRIBUTION,
+      dataUrl: c.MAP_DATA_URL,
     },
   };
 }

@@ -101,6 +101,9 @@ All settings are environment variables. Secrets can be given as files instead, b
 | `QUERY_TIMEOUT_SECONDS_DEFAULT` / `_MAX` | `20` / `120` | |
 | `QUERY_ROW_LIMIT_MAX` | `10000` | Rows beyond this are not fetched; the response says `truncated` |
 | `AUDIT_LOG_PARAMETERS` | `true` | Include parameter values in audit lines |
+| `MAP_TILE_URL` / `MAP_TILE_ATTRIBUTION` | – | Default map tile server for map reports, e.g. an internal one; empty = no tiles (works offline) |
+| `MAP_DATA_URL` | `/maps` | Where choropleth / area map charts load country shapes from |
+| `NODE_EXTRA_CA_CERTS` | – | PEM file of extra CAs to trust (internal CA for Keycloak or `neo4j+s://`) |
 | `TRUST_PROXY` | `false` | Set behind an ingress so audit logs record the client IP |
 | `STATIC_DIR` | – | Built frontend to serve, with client-side routing fallback |
 | `PORT` / `HOST` / `LOG_LEVEL` | `3000` / `0.0.0.0` / `info` | |

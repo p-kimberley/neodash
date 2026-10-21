@@ -60,3 +60,44 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Image reference: [global.imageRegistry | image.registry]/image.repository[@digest | :tag]
+*/}}
+{{- define "neodash.image" -}}
+{{- $registry := .Values.global.imageRegistry | default .Values.image.registry -}}
+{{- $repository := .Values.image.repository -}}
+{{- $ref := ternary (printf "@%s" .Values.image.digest) (printf ":%s" (.Values.image.tag | default .Chart.AppVersion)) (ne .Values.image.digest "") -}}
+{{- if $registry -}}
+{{- printf "%s/%s%s" $registry $repository $ref -}}
+{{- else -}}
+{{- printf "%s%s" $repository $ref -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Name of the Secret holding the session key.
+*/}}
+{{- define "neodash.sessionSecretName" -}}
+{{- .Values.session.existingSecret | default (printf "%s-session" (include "neodash.fullname" .)) -}}
+{{- end }}
+
+{{/*
+Fail early, with a helpful message, on missing required values.
+*/}}
+{{- define "neodash.validate" -}}
+{{- $_ := required "publicUrl is required, e.g. https://neodash.example.com" .Values.publicUrl -}}
+{{- $_ := required "image.repository is required" .Values.image.repository -}}
+{{- $_ := required "neo4j.auth.existingSecret is required: a Secret with the Neo4j username and password" .Values.neo4j.auth.existingSecret -}}
+{{- $_ := required "oidc.issuerUrl is required, e.g. https://keycloak.example.com/realms/acme" .Values.oidc.issuerUrl -}}
+{{- $_ := required "oidc.existingSecret is required: a Secret with the OIDC client secret" .Values.oidc.existingSecret -}}
+{{- if .Values.ingress.enabled -}}
+{{- $_ := required "ingress.host is required when ingress.enabled is true" .Values.ingress.host -}}
+{{- if .Values.ingress.tls.enabled -}}
+{{- $_ := required "ingress.tls.secretName is required when ingress.tls.enabled is true" .Values.ingress.tls.secretName -}}
+{{- end -}}
+{{- end -}}
+{{- if and .Values.oidc.caBundle.existingSecret .Values.oidc.caBundle.existingConfigMap -}}
+{{- fail "set only one of oidc.caBundle.existingSecret and oidc.caBundle.existingConfigMap" -}}
+{{- end -}}
+{{- end }}

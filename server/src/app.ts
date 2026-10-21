@@ -220,6 +220,7 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
       defaultTimeoutSeconds: config.query.defaultTimeoutSeconds,
       maxTimeoutSeconds: config.query.maxTimeoutSeconds,
     },
+    maps: config.maps,
   }));
 
   app.get('/api/me', async (request) => {

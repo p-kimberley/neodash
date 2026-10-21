@@ -1,3 +1,5 @@
+{{- include "neodash.validate" . -}}
+{{- $caBundle := or .Values.oidc.caBundle.existingSecret .Values.oidc.caBundle.existingConfigMap -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -11,6 +13,11 @@ spec:
   selector:
     matchLabels:
       {{- include "neodash.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -28,49 +35,154 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "neodash.serviceAccountName" . }}
+      # NeoDash never talks to the Kubernetes API.
       automountServiceAccountToken: false
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        - name: neodash
+          image: {{ include "neodash.image" . | quote }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- with .Values.podSecurityContext }}
           securityContext:
-            {{- toYaml .Values.podSecurityContext | nindent 12 }}
-          {{- end }}
+            {{- toYaml .Values.securityContext | nindent 12 }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.targetPort }}
+              containerPort: 3000
               protocol: TCP
           env:
-            {{- if ne 5005 (int .Values.service.targetPort) }}
-            - name: NGINX_PORT
-              value: {{ .Values.service.port | quote }}
+            - name: PUBLIC_URL
+              value: {{ .Values.publicUrl | quote }}
+            - name: TRUST_PROXY
+              value: {{ .Values.ingress.enabled | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | quote }}
+            - name: NEO4J_URI
+              value: {{ .Values.neo4j.uri | quote }}
+            - name: NEO4J_DATABASES
+              value: {{ join "," .Values.neo4j.databases | quote }}
+            {{- with .Values.neo4j.dashboardDatabase }}
+            - name: DASHBOARD_DATABASE
+              value: {{ . | quote }}
             {{- end }}
-            {{- if .Values.enable_reader_mode}}
-            {{- with .Values.env }}
-            {{- toYaml . | nindent 12 }}
-            {{- end }}
-            {{- if .Values.envFromSecrets }}
-            {{- range $key, $value := .Values.envFromSecrets }}
-            - name: {{ $key }}
+            - name: NEO4J_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ $value.secretName }}
-                  key: {{ $value.key }}
+                  name: {{ .Values.neo4j.auth.existingSecret }}
+                  key: {{ .Values.neo4j.auth.usernameKey }}
+            - name: NEO4J_PASSWORD_FILE
+              value: /var/run/secrets/neodash/neo4j-password
+            - name: OIDC_ISSUER_URL
+              value: {{ .Values.oidc.issuerUrl | quote }}
+            {{- with .Values.oidc.discoveryUrl }}
+            - name: OIDC_DISCOVERY_URL
+              value: {{ . | quote }}
             {{- end }}
+            - name: OIDC_CLIENT_ID
+              value: {{ .Values.oidc.clientId | quote }}
+            - name: OIDC_CLIENT_SECRET_FILE
+              value: /var/run/secrets/neodash/oidc-client-secret
+            - name: OIDC_SCOPES
+              value: {{ .Values.oidc.scopes | quote }}
+            - name: OIDC_ROLES_CLAIM
+              value: {{ .Values.oidc.rolesClaim | quote }}
+            - name: OIDC_USERNAME_CLAIM
+              value: {{ .Values.oidc.usernameClaim | quote }}
+            - name: OIDC_ALLOW_INSECURE_HTTP
+              value: {{ .Values.oidc.allowInsecureHttp | quote }}
+            - name: ROLE_VIEWER
+              value: {{ .Values.oidc.roles.viewer | quote }}
+            - name: ROLE_EDITOR
+              value: {{ .Values.oidc.roles.editor | quote }}
+            - name: SESSION_SECRET_FILE
+              value: /var/run/secrets/neodash/session-secret
+            - name: SESSION_MAX_AGE_SECONDS
+              value: {{ .Values.session.maxAgeSeconds | quote }}
+            - name: QUERY_TIMEOUT_SECONDS_DEFAULT
+              value: {{ .Values.query.timeoutSecondsDefault | quote }}
+            - name: QUERY_TIMEOUT_SECONDS_MAX
+              value: {{ .Values.query.timeoutSecondsMax | quote }}
+            - name: QUERY_ROW_LIMIT_MAX
+              value: {{ .Values.query.rowLimitMax | quote }}
+            - name: AUDIT_LOG_PARAMETERS
+              value: {{ .Values.audit.logParameters | quote }}
+            - name: MAP_TILE_URL
+              value: {{ .Values.maps.tileUrl | quote }}
+            - name: MAP_TILE_ATTRIBUTION
+              value: {{ .Values.maps.tileAttribution | quote }}
+            - name: MAP_DATA_URL
+              value: {{ .Values.maps.dataUrl | quote }}
+            {{- if $caBundle }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: /etc/neodash/ca/{{ .Values.oidc.caBundle.key }}
             {{- end }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
             {{- end }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
             {{- toYaml .Values.readinessProbe | nindent 12 }}
+          startupProbe:
+            {{- toYaml .Values.startupProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- with .Values.volumeMounts }}
           volumeMounts:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-      {{- with .Values.volumes }}
+            - name: secrets
+              mountPath: /var/run/secrets/neodash
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            {{- if $caBundle }}
+            - name: ca-bundle
+              mountPath: /etc/neodash/ca
+              readOnly: true
+            {{- end }}
       volumes:
+        # Secrets are mounted as files rather than environment variables.
+        - name: secrets
+          projected:
+            defaultMode: 0440
+            sources:
+              - secret:
+                  name: {{ .Values.neo4j.auth.existingSecret }}
+                  items:
+                    - key: {{ .Values.neo4j.auth.passwordKey }}
+                      path: neo4j-password
+              - secret:
+                  name: {{ .Values.oidc.existingSecret }}
+                  items:
+                    - key: {{ .Values.oidc.clientSecretKey }}
+                      path: oidc-client-secret
+              - secret:
+                  name: {{ include "neodash.sessionSecretName" . }}
+                  items:
+                    - key: {{ .Values.session.secretKey }}
+                      path: session-secret
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi
+        {{- if .Values.oidc.caBundle.existingSecret }}
+        - name: ca-bundle
+          secret:
+            secretName: {{ .Values.oidc.caBundle.existingSecret }}
+        {{- else if .Values.oidc.caBundle.existingConfigMap }}
+        - name: ca-bundle
+          configMap:
+            name: {{ .Values.oidc.caBundle.existingConfigMap }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
         {{- toYaml . | nindent 8 }}
       {{- end }}

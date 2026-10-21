@@ -1,108 +1,198 @@
-# Name override or full name override
+# NeoDash Helm values. Required settings are marked REQUIRED; everything else has a working default.
+# See README.md for a walkthrough, including Keycloak setup and offline (air-gapped) installs.
+
+global:
+  # Registry to pull all images from, e.g. registry.internal:5000 for an air-gapped cluster.
+  # Replaces the registry part of image.repository.
+  imageRegistry: ''
+
 nameOverride: ''
-fullnameOverride: neodash-test
+fullnameOverride: ''
 
-# Number of pods
-replicaCount: 1
-
-# Image Details
 image:
-  repository: neo4jlabs/neodash
+  registry: ghcr.io
+  repository: example/neodash # REQUIRED: where you push the NeoDash image
+  tag: '' # defaults to the chart appVersion
+  digest: '' # pin by digest (sha256:...); takes precedence over tag
   pullPolicy: IfNotPresent
-  tag: 'latest'
-imagePullSecrets: [] # Image pull secret if any
+imagePullSecrets: []
 
-# Pod annotations, labels and security context
+replicaCount: 2
+
+# REQUIRED: the URL users open, e.g. https://neodash.example.com. Used for sign-in redirects and
+# secure cookies. With ingress enabled this should be https://<ingress.host>.
+publicUrl: ''
+
+neo4j:
+  # Bolt URI of the Neo4j server, usually an in-cluster service.
+  uri: neo4j://neo4j.neo4j.svc.cluster.local:7687
+  # Databases reports may query; the first is the default. Community edition has only "neo4j".
+  databases:
+    - neo4j
+  # Database holding the dashboards (_Neodash_Dashboard nodes); defaults to the first database.
+  dashboardDatabase: ''
+  # REQUIRED: an existing Secret with the Neo4j credentials (the chart never takes them as values).
+  auth:
+    existingSecret: ''
+    usernameKey: username
+    passwordKey: password
+
+oidc:
+  # REQUIRED: issuer as browsers see it, e.g. https://keycloak.example.com/realms/acme
+  issuerUrl: ''
+  # Optional: where the pods fetch the issuer's metadata if not the public URL, e.g. an in-cluster
+  # Keycloak service (http://keycloak.keycloak.svc:8080/realms/acme). Its metadata must still name
+  # issuerUrl as the issuer.
+  discoveryUrl: ''
+  clientId: neodash
+  # REQUIRED: an existing Secret holding the client secret.
+  existingSecret: ''
+  clientSecretKey: client-secret
+  scopes: openid profile email
+  # Token claim holding the user's roles (dot path). For Keycloak client roles use
+  # resource_access.<clientId>.roles.
+  rolesClaim: realm_access.roles
+  usernameClaim: preferred_username
+  roles:
+    viewer: neodash-viewer
+    editor: neodash-editor
+  # Only for an http:// identity provider in development.
+  allowInsecureHttp: false
+  # PEM CA bundle to trust (e.g. an internal CA that signed Keycloak's certificate), from a Secret
+  # or ConfigMap key. Leave existingSecret and existingConfigMap empty to use the system CAs.
+  caBundle:
+    existingSecret: ''
+    existingConfigMap: ''
+    key: ca.crt
+
+session:
+  # Secret holding the cookie-encryption key (>= 32 characters). If empty, the chart generates
+  # one on install and keeps it across upgrades. All replicas share it.
+  existingSecret: ''
+  secretKey: session-secret
+  maxAgeSeconds: 28800
+
+query:
+  timeoutSecondsDefault: 20
+  timeoutSecondsMax: 120
+  rowLimitMax: 10000
+
+audit:
+  # Include query parameter values in audit log lines.
+  logParameters: true
+
+maps:
+  # Map background tiles, e.g. an internal tile server https://tiles.internal/{z}/{x}/{y}.png.
+  # Empty: no tiles, so nothing is fetched from the internet.
+  tileUrl: ''
+  tileAttribution: ''
+  # Where choropleth / area map charts load country shapes; served by NeoDash by default.
+  dataUrl: /maps
+
+logLevel: info
+
+# Extra environment variables for the container (see server/README.md for all settings).
+extraEnv: []
+
+service:
+  type: ClusterIP
+  port: 80
+  annotations: {}
+
+ingress:
+  enabled: true
+  className: nginx
+  host: '' # REQUIRED when enabled, e.g. neodash.example.com
+  path: /
+  pathType: Prefix
+  annotations:
+    # Dashboards are saved as one JSON document; allow large ones.
+    nginx.ingress.kubernetes.io/proxy-body-size: 20m
+    # Allow queries up to query.timeoutSecondsMax (plus headroom).
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '150'
+  tls:
+    enabled: true
+    # Secret with the certificate (e.g. created by cert-manager or imported by hand).
+    secretName: ''
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 192Mi
+  limits:
+    memory: 512Mi
+
 podAnnotations: {}
 podLabels: {}
-podSecurityContext: {}
 
-# Mode configuration using environment variables
-# Set reader mode environment variables when enable_reader_mode is true
-enable_reader_mode: true
-env: 
-  - name: "ssoEnabled"
-    value: "false"
-  - name: "standalone"
-    value: "true"
-  - name: "standaloneProtocol"
-    value: "neo4j+s"
-  - name: "standaloneHost"
-    value: "localhost"
-  - name: "standalonePort"
-    value: "7687"
-  - name: "standaloneDatabase"
-    value: neo4j
-  - name: "standaloneDashboardName"
-    value: "test"
-  - name: "standaloneDashboardDatabase"
-    value: neo4j
-  - name: "standaloneAllowLoad"
-    value: "false"
-  - name: "standaloneLoadFromOtherDatabases"
-    value: "false"
-  - name: "standaloneMultiDatabase"
-    value: "false"
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  fsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
 
-# Environment variable from secret
-envFromSecrets: []
-  # standaloneUsername: 
-      # secretName: "neo4j-connection-secrets"
-      # key: "username"
-  # standalonePassword: 
-      # secretName: "neo4j-connection-secrets"
-      # key: "password"
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
 
-# Service details
-service:
-  type: LoadBalancer # Can also be ClusterIP or NodePort  
-  port: 5005 # For the service to listen in for Traffic
-  targetPort: 5005 # Target port is the container port
-  annotations: {} # Service annotations for the LoadBalance
-
-# Ingress
-ingress:
-  enabled: false # Enable Kubernetes Ingress
-  className: 'alb' # Class Name
-  annotations: {} # Cloud LoadBalancer annotations
-  hosts: []
-    # - host: neodash.example.com
-    #   paths:
-    #     - path: '/'
-    #       pathType: Prefix
-  tls: []
-
-# Pod resources request, limits and health check
-resources: 
-  requests:
-    memory: "64Mi"
-    cpu: "250m"
-  limits:
-    memory: "128Mi"
-    cpu: "500m"
 livenessProbe:
   httpGet:
-    path: /*
-    port: 5005
+    path: /healthz
+    port: http
+  periodSeconds: 10
+  timeoutSeconds: 3
 readinessProbe:
   httpGet:
-    path: /*
-    port: 5005
+    path: /readyz
+    port: http
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+startupProbe:
+  httpGet:
+    path: /healthz
+    port: http
+  periodSeconds: 2
+  failureThreshold: 30
 
-# Pod Autoscaler
 autoscaling:
   enabled: false
-  # minReplicas: 1
-  # maxReplicas: 100
-  # targetCPUUtilizationPercentage: 80
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 75
 
-# Pod Volumes
-volumes: []
-volumeMounts: []
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
 
-# Service Account
+# Restrict traffic to and from the pods. Egress is limited to DNS, Neo4j and the identity provider
+# when their addresses are given below.
+networkPolicy:
+  enabled: false
+  # Pods allowed to reach NeoDash (default: the ingress controller namespace).
+  ingressFrom:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ingress-nginx
+  # Destinations NeoDash may reach besides DNS, e.g. Neo4j and Keycloak.
+  egressTo: []
+    # - to:
+    #     - namespaceSelector:
+    #         matchLabels:
+    #           kubernetes.io/metadata.name: neo4j
+    #   ports:
+    #     - port: 7687
+
 serviceAccount:
   create: true
-  automount: true
-  # annotations: {}
-  # name: ''
+  name: ''
+  annotations: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []

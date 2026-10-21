@@ -873,7 +873,8 @@ export const _ADVANCED_REPORT_TYPES = {
       providerUrl: {
         label: 'Map Provider URL',
         type: SELECTION_TYPES.TEXT,
-        default: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        // Empty: use the deployment's MAP_TILE_URL (no tiles if that is unset either).
+        default: '',
       },
       colors: {
         label: 'Color Scheme',

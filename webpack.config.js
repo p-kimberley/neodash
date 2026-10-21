@@ -17,6 +17,20 @@ const circularPlugin = new CircularDependencyPlugin({
 
 const circularValidation = false;
 
+// Removes @import of remote stylesheets (e.g. Google Fonts) from third-party CSS, so the app makes no
+// requests outside its own origin. The fonts themselves are bundled in src/fonts.ts.
+const stripRemoteImports = () => ({
+  postcssPlugin: 'strip-remote-imports',
+  AtRule: {
+    import: (rule) => {
+      if (/^(url\()?\s*['"]?https?:/i.test(rule.params)) {
+        rule.remove();
+      }
+    },
+  },
+});
+stripRemoteImports.postcss = true;
+
 const rules = [
   {
     test: /\.(js|jsx|ts|tsx)$/,
@@ -31,7 +45,11 @@ const rules = [
   },
   {
     test: /\.css$/,
-    use: ['style-loader', 'css-loader'],
+    use: [
+      'style-loader',
+      'css-loader',
+      { loader: 'postcss-loader', options: { postcssOptions: { config: false, plugins: [stripRemoteImports] } } },
+    ],
   },
   {
     test: /\.pcss$/,
