@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ChartProps } from '../../../../chart/Chart';
-import { MapContainer, TileLayer } from 'react-leaflet';
+import * as maplibregl from 'maplibre-gl';
 import { fetchMapData, tileAttributionFor, tileUrlFor } from '../../../../config/MapConfig';
-import 'leaflet/dist/leaflet.css';
+import { MapView } from '../../../../chart/map/maplibre/MapView';
 import { MapBoundary } from './PolygonLayer';
 import { recordToNative } from '../../../../chart/ChartUtils';
 import { NoDrawableDataErrorMessage } from '../../../../component/editor/CodeViewerComponent';
@@ -61,9 +61,8 @@ const NeoAreaMapChart = (props: ChartProps) => {
   const dimensions = props.dimensions ? props.dimensions : { width: 100, height: 100 };
   const keyLength = props.settings && props.settings.countryCodeFormat ? props.settings.countryCodeFormat : 'Alpha-2';
 
-  // Key used to refresh the visualization
-  let key = `${dimensions.width},${dimensions.height},${props.fullscreen}`;
   const [data, setData] = useState({});
+  const [map, setMap] = useState<maplibregl.Map | undefined>(undefined);
 
   // Two feature levels (ideally we can extend this too)
   const [featureLevel0, setFeatureLevel0] = useState({});
@@ -107,25 +106,16 @@ const NeoAreaMapChart = (props: ChartProps) => {
   // Rendering the map only when all the data is ready
   if (isReady) {
     return (
-      <MapContainer
-        key={key}
-        style={{ width: '100%', height: '100%' }}
-        center={[0, 0]}
-        zoom={0.5}
-        maxZoom={18}
-        scrollWheelZoom={false}
-      >
-        {mapProviderURL ? <TileLayer attribution={attribution} url={mapProviderURL} /> : <></>}
-        {
-          <MapBoundary
-            data={data}
-            props={props}
-            featureLevel0={featureLevel0}
-            featureLevel1={featureLevel1}
-            dimensions={dimensions}
-          />
-        }
-      </MapContainer>
+      <MapView tileUrl={mapProviderURL} attribution={attribution} onReady={setMap}>
+        <MapBoundary
+          map={map}
+          data={data}
+          props={props}
+          featureLevel0={featureLevel0}
+          featureLevel1={featureLevel1}
+          dimensions={dimensions}
+        />
+      </MapView>
     );
   }
   return <></>;

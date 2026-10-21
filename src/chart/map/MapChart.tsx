@@ -1,20 +1,21 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import * as maplibregl from 'maplibre-gl';
 import { ChartProps } from '../Chart';
 import { categoricalColorSchemes } from '../../config/ColorConfig';
 import { valueIsArray, valueIsNode, valueIsRelationship, valueIsPath, valueIsObject } from '../../chart/ChartUtils';
-import { MapContainer, TileLayer } from 'react-leaflet';
 import { tileAttributionFor, tileUrlFor } from '../../config/MapConfig';
-import 'leaflet/dist/leaflet.css';
+import { MapView, fitToPoints } from './maplibre/MapView';
 import { evaluateRulesOnNode, useStyleRules } from '../../extensions/styling/StyleRuleEvaluator';
-import { createHeatmap } from './layers/HeatmapLayer';
-import { createMarkers } from './layers/MarkerLayer';
-import { createLines } from './layers/LineLayer';
+import { addHeatmapLayer } from './layers/HeatmapLayer';
+import { addMarkerLayer } from './layers/MarkerLayer';
+import { addLineLayer } from './layers/LineLayer';
 import { extensionEnabled } from '../../utils/ReportUtils';
 
 const update = (state, mutations) => Object.assign({}, state, mutations);
 
 /**
- * Renders Neo4j records as their JSON representation.
+ * Renders nodes with a location (latitude/longitude properties or a Neo4j point) on a map, as pins
+ * (optionally clustered) with the relationships between them, or as a heatmap. Drawn with MapLibre.
  */
 const NeoMapChart = (props: ChartProps) => {
   // Retrieve config from advanced settings
@@ -32,29 +33,31 @@ const NeoMapChart = (props: ChartProps) => {
     props.getGlobalParameter
   );
   const defaultNodeColor = 'grey'; // Color of nodes without labels
-  const dimensions = props.dimensions ? props.dimensions : { width: 100, height: 100 };
   const mapProviderURL = tileUrlFor(props.settings);
   const attribution = tileAttributionFor(props.settings);
 
-  const actionsRules =
-    extensionEnabled(props.extensions, 'actions') && props.settings && props.settings.actionsRules
-      ? props.settings.actionsRules
-      : [];
-
-  const [data, setData] = React.useState({ nodes: [], links: [], zoom: 0, centerLatitude: 0, centerLongitude: 0 });
-
-  // Per pixel, scaling factors for the latitude/longitude mapping function.
-  const widthScale = 8.55;
-  const heightScale = 6.7;
-
-  let key = `${dimensions.width},${dimensions.height},${data.centerLatitude},${data.centerLongitude},${props.fullscreen}`;
-  useEffect(() => {
-    `${data.centerLatitude},${data.centerLongitude},${props.fullscreen}`;
-  }, [props.fullscreen]);
+  const [data, setData] = useState({ nodes: [], links: [] });
+  const [map, setMap] = useState<maplibregl.Map | undefined>(undefined);
 
   useEffect(() => {
     buildVisualizationDictionaryFromRecords(props.records);
-  }, []);
+  }, [props.records]);
+
+  // Draw the layers once the map is ready, and fit the view to the located nodes.
+  useEffect(() => {
+    if (!map) {
+      return undefined;
+    }
+    const cleanups =
+      layerType == 'heatmap'
+        ? [addHeatmapLayer(map, data.nodes, props)]
+        : [addLineLayer(map, data.links), addMarkerLayer(map, data.nodes, props)];
+    fitToPoints(
+      map,
+      data.nodes.filter((node) => node.pos).map((node) => node.pos)
+    );
+    return () => cleanups.forEach((cleanup) => cleanup());
+  }, [map, data, layerType, props.selection]);
 
   let nodes = {};
   let nodeLabels = {};
@@ -184,71 +187,11 @@ const NeoMapChart = (props: ChartProps) => {
       })
       .flat();
 
-    // Calculate center latitude and center longitude:
-
-    const latitudes = nodesList.reduce((a, b) => {
-      if (b.pos == undefined) {
-        return a;
-      }
-      a.push(b.pos[0]);
-      return a;
-    }, []);
-    const longitudes = nodesList.reduce((a, b) => {
-      if (b.pos == undefined) {
-        return a;
-      }
-      a.push(b.pos[1]);
-      return a;
-    }, []);
-    const maxLat = Math.max(...latitudes);
-    const minLat = Math.min(...latitudes);
-    const avgLat = maxLat - (maxLat - minLat) / 2.0;
-
-    let latWidthScaleFactor = (dimensions.width ? dimensions.width : 300) / widthScale;
-    let latDiff = maxLat - avgLat;
-    let latProjectedWidth = latDiff / latWidthScaleFactor;
-    let latZoomFit = Math.ceil(Math.log2(1.0 / latProjectedWidth));
-
-    const maxLong = Math.min(...longitudes);
-    const minLong = Math.min(...longitudes);
-    const avgLong = maxLong - (maxLong - minLong) / 2.0;
-
-    let longHeightScaleFactor = (dimensions.height ? dimensions.height : 300) / heightScale;
-    let longDiff = maxLong - avgLong;
-    let longProjectedHeight = longDiff / longHeightScaleFactor;
-    let longZoomFit = Math.ceil(Math.log2(1.0 / longProjectedHeight));
     // Set data based on result values.
-    setData({
-      zoom: Math.min(latZoomFit, longZoomFit),
-      centerLatitude: latitudes ? latitudes.reduce((a, b) => a + b, 0) / latitudes.length : 0,
-      centerLongitude: longitudes ? longitudes.reduce((a, b) => a + b, 0) / longitudes.length : 0,
-      nodes: nodesList,
-      links: linksList,
-    });
+    setData({ nodes: nodesList, links: linksList });
   }
 
-  // TODO this should definitely be refactored as an if/case statement.
-  const markers = layerType == 'markers' ? createMarkers(data, props) : '';
-  const lines = layerType == 'markers' ? createLines(data) : '';
-  const heatmap = layerType == 'heatmap' ? createHeatmap(data, props) : '';
-  // Draw the component.
-  // Ideally, we want to have one component for each layer on the map, different files
-  // https://stackoverflow.com/questions/69751481/i-want-to-use-useref-to-access-an-element-in-a-reat-leaflet-and-use-the-flyto
-  return (
-    <MapContainer
-      key={key}
-      style={{ width: '100%', height: '100%' }}
-      center={[data.centerLatitude ? data.centerLatitude : 0, data.centerLongitude ? data.centerLongitude : 0]}
-      zoom={data.zoom ? data.zoom : 0}
-      maxZoom={18}
-      scrollWheelZoom={false}
-    >
-      {heatmap}
-      {mapProviderURL ? <TileLayer attribution={attribution} url={mapProviderURL} /> : <></>}
-      {markers}
-      {lines}
-    </MapContainer>
-  );
+  return <MapView tileUrl={mapProviderURL} attribution={attribution} onReady={setMap} />;
 };
 
 export default NeoMapChart;

@@ -45,9 +45,13 @@ const rules = (production) => [
   },
   {
     test: /\.js$/,
-    exclude: /(node_modules\/react-leaflet-heatmap-layer-v3)/,
     enforce: 'pre',
     use: ['source-map-loader'],
+  },
+  {
+    // MapLibre's web worker, emitted as its own file; MapView passes its URL to maplibregl.setWorkerUrl.
+    test: /maplibre-gl-worker\.mjs$/,
+    type: 'asset/resource',
   },
   {
     // Images and fonts referenced from CSS or code (file-loader is replaced by asset modules).
@@ -108,6 +112,10 @@ module.exports = (env) => {
     },
     // The upstream build uploaded source maps to Neo4j's Sentry; this fork does not report anywhere.
     plugins: production ? [] : [new ReactRefreshWebpackPlugin()],
-    ignoreWarnings: [/Failed to parse source map/],
+    ignoreWarnings: [
+      /Failed to parse source map/,
+      // MapLibre loads its worker with a dynamic import of a runtime URL (see MapView.tsx); that's intended.
+      { module: /maplibre-gl/, message: /Critical dependency/ },
+    ],
   };
 };

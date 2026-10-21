@@ -529,32 +529,149 @@ body {
   font-size: var(--nd-text-sm);
 }
 
-/* ---------- Maps ---------- */
+/* ---------- Maps (MapLibre) ---------- */
 
-.leaflet-container {
-  background: var(--nd-surface-variant) !important;
-  font-family: var(--nd-font-sans) !important;
+.nd-map .maplibregl-map {
+  font-family: var(--nd-font-sans);
 }
 
-.leaflet-popup-content-wrapper,
-.leaflet-popup-tip,
-.leaflet-tooltip {
-  background: var(--nd-surface-raised) !important;
-  color: var(--nd-text) !important;
+/* Pin markers: coloured with currentColor, a light outline keeps them visible on any background. */
+.nd-map-pin {
+  cursor: pointer;
+  line-height: 0;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.9)) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+
+.nd-map-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--nd-primary) 35%, transparent);
+  background: var(--nd-primary);
+  background-clip: padding-box;
+  color: var(--nd-on-primary, #fff);
+  font-size: var(--nd-text-sm);
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: var(--nd-shadow);
+}
+
+.nd-map .maplibregl-popup-content {
+  padding: 10px 12px;
   border: 1px solid var(--nd-border);
-  box-shadow: var(--nd-shadow-raised) !important;
+  border-radius: 10px;
+  background: var(--nd-surface-raised);
+  color: var(--nd-text);
+  box-shadow: var(--nd-shadow-raised);
+  font-size: var(--nd-text-sm);
 }
 
-.leaflet-bar a,
-.leaflet-bar a:hover {
-  background: var(--nd-surface-raised) !important;
-  color: var(--nd-text) !important;
-  border-color: var(--nd-border) !important;
+.nd-map .maplibregl-popup-close-button {
+  color: var(--nd-text-muted);
+  font-size: 18px;
+  padding: 0 6px;
 }
 
-.leaflet-control-attribution {
-  background: color-mix(in srgb, var(--nd-surface) 80%, transparent) !important;
-  color: var(--nd-text-muted) !important;
+/* The popup's pointer takes the popup's background whichever side it is on. */
+.nd-map .maplibregl-popup-anchor-top .maplibregl-popup-tip,
+.nd-map .maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+.nd-map .maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+  border-bottom-color: var(--nd-surface-raised);
+}
+.nd-map .maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+.nd-map .maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+.nd-map .maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+  border-top-color: var(--nd-surface-raised);
+}
+.nd-map .maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: var(--nd-surface-raised);
+}
+.nd-map .maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: var(--nd-surface-raised);
+}
+
+.nd-map-popup-content table {
+  margin-top: 6px;
+  border-collapse: collapse;
+}
+
+.nd-map-popup-content td {
+  padding: 2px 0;
+  vertical-align: top;
+}
+
+.nd-map-popup-key {
+  padding-right: 10px !important;
+  color: var(--nd-text-secondary);
+}
+
+/* Hover labels: compact, no pointer or close button. */
+.nd-map .nd-map-tooltip .maplibregl-popup-content {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: var(--nd-text-xs);
+  pointer-events: none;
+}
+.nd-map .nd-map-tooltip .maplibregl-popup-tip {
+  display: none;
+}
+
+/* Zoom buttons and attribution follow the appearance. */
+.nd-map .maplibregl-ctrl-group {
+  background: var(--nd-surface-raised);
+  border: 1px solid var(--nd-border);
+  box-shadow: var(--nd-shadow);
+}
+.nd-map .maplibregl-ctrl-group button + button {
+  border-top-color: var(--nd-border);
+}
+.ndl-theme-dark .nd-map .maplibregl-ctrl-icon {
+  filter: invert(1);
+}
+.nd-map .maplibregl-ctrl-attrib {
+  background: color-mix(in srgb, var(--nd-surface) 80%, transparent);
+  color: var(--nd-text-muted);
+}
+.nd-map .maplibregl-ctrl-attrib a {
+  color: var(--nd-text-secondary);
+}
+
+/* Area map legend and drill-down reset button. */
+.nd-map-legend {
+  position: absolute;
+  right: 12px;
+  bottom: 28px;
+  z-index: 2;
+  min-width: 110px;
+  max-width: 180px;
+  padding: 6px 10px;
+  border: 1px solid var(--nd-border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--nd-surface-raised) 90%, transparent);
+  color: var(--nd-text);
+  font-size: var(--nd-text-xs);
+  box-shadow: var(--nd-shadow);
+}
+
+.nd-map-legend td {
+  padding: 1px 4px 1px 0;
+  white-space: nowrap;
+}
+
+.nd-map-legend i {
+  display: block;
+  width: 16px;
+  height: 14px;
+  border-radius: 3px;
+  opacity: 0.85;
+}
+
+.nd-map-reset {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
 }
 
 /* ---------- Misc ---------- */

@@ -1,37 +1,52 @@
-import { HeatmapLayer } from 'react-leaflet-heatmap-layer-v3';
-import 'leaflet/dist/leaflet.css';
-import React from 'react';
+import * as maplibregl from 'maplibre-gl';
+import { toLngLat } from '../maplibre/MapView';
 
-/**
- *  Create Heatmap layer to add on top of the map
- */
-export function createHeatmap(data, props) {
-  /**
-   *  Extract the intensity property from a node.
-   */
-  const extractIntensityProperty = (node, intensityProp) => {
-    //
-    if (node.properties[intensityProp]) {
-      // Parse int from Neo4j Integer type if it has this type
-      // Or return plain value if already parsed as Integer or Float
-      return node.properties[intensityProp].low ?? node.properties[intensityProp];
+const SOURCE = 'nd-heat';
+const LAYER = 'nd-heat';
+
+/** A node's intensity: the chosen property (Neo4j integers included), or 1 when none is set. */
+const intensityOf = (node, intensityProp: string) => {
+  if (!intensityProp) {
+    return 1;
+  }
+  const value = node.properties[intensityProp];
+  const number = parseFloat(value?.low ?? value);
+  return Number.isFinite(number) ? number : 0;
+};
+
+/** Draws the located nodes as a heatmap, weighted by the `intensityProp` setting. */
+export function addHeatmapLayer(map: maplibregl.Map, nodes: any[], props): () => void {
+  const intensityProp = props.settings?.intensityProp ?? '';
+  const points = nodes.filter((node) => node.pos && !isNaN(node.pos[0]) && !isNaN(node.pos[1]));
+  // Weights are scaled to 0..1, so the strongest point is fully hot whatever the property's range.
+  const max = Math.max(1e-9, ...points.map((node) => intensityOf(node, intensityProp)));
+  map.addSource(SOURCE, {
+    type: 'geojson',
+    data: {
+      type: 'FeatureCollection',
+      features: points.map((node) => ({
+        type: 'Feature',
+        properties: { weight: intensityOf(node, intensityProp) / max },
+        geometry: { type: 'Point', coordinates: toLngLat(node.pos) },
+      })),
+    },
+  });
+  map.addLayer({
+    id: LAYER,
+    type: 'heatmap',
+    source: SOURCE,
+    paint: {
+      'heatmap-weight': ['get', 'weight'],
+      'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 12, 9, 28],
+      'heatmap-opacity': 0.85,
+    },
+  });
+  return () => {
+    if (map.getLayer(LAYER)) {
+      map.removeLayer(LAYER);
     }
-    return 0;
+    if (map.getSource(SOURCE)) {
+      map.removeSource(SOURCE);
+    }
   };
-  const intensityProp = props.settings && props.settings.intensityProp ? props.settings.intensityProp : '';
-
-  let points = data.nodes
-    .filter((node) => node.pos && !isNaN(node.pos[0]) && !isNaN(node.pos[1]))
-    .map((node) => [node.pos[0], node.pos[1], intensityProp == '' ? 1 : extractIntensityProperty(node, intensityProp)]);
-
-  return (
-    <HeatmapLayer
-      fitBoundsOnLoad
-      fitBoundsOnUpdate
-      points={points}
-      longitudeExtractor={(m) => m[1]}
-      latitudeExtractor={(m) => m[0]}
-      intensityExtractor={(m) => parseFloat(m[2])}
-    />
-  );
 }

@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useMap, GeoJSON } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
+import React, { useEffect, useMemo, useState } from 'react';
+import * as maplibregl from 'maplibre-gl';
 import { Button } from '@mui/material';
-import './styles/PolygonStyle.css';
 import { categoricalColorSchemes } from '../../../../config/ColorConfig';
 import { abbreviateNumber } from '../../../../chart/map/MapUtils';
+
+const SOURCE = 'nd-areas';
+const FILL = 'nd-areas-fill';
+const OUTLINE = 'nd-areas-outline';
+const NO_DATA_COLOR = 'gray';
 
 /**
  * Creates the list of values that will be used for the legend
  * @param min Minimum of the legend
  * @param max Maximum of the legend
- * @param lenRange Number of buckets
+ * @param legendLength Number of buckets
  * @returns List of numbers
  */
 function getLegendRange(min, max, legendLength) {
@@ -23,14 +26,6 @@ function getLegendRange(min, max, legendLength) {
   return [...Array(legendLength).keys()].map((i) => {
     return Math.round((min + diff * i) * 100) / 100;
   });
-}
-
-/**
- * Function to return a random string, right now useful to retrigger the GeoJson rendering
- * @returns A random string
- */
-function randomString() {
-  return `${Math.random().toString(36)}00000000000000000`.slice(2, 16);
 }
 
 /**
@@ -82,8 +77,6 @@ function bindDataToMap(geoData, geoJsonData) {
       tmp.properties.neo_value = geoData[key];
       listValues.push(geoData[key]);
       newValues[key] = tmp;
-    } else {
-      // console.log(`Missing key in Polygon Map :  ${key} with value ${geoData[key]}`);
     }
   });
 
@@ -99,8 +92,42 @@ function bindDataToMap(geoData, geoJsonData) {
   return [Object.values(res), listValues[0], listValues.slice(-1)[0]];
 }
 
-// Wraps the boundary logic function
-export const MapBoundary = ({ dimensions, data, props, featureLevel0, featureLevel1 }) => {
+/**
+ * The colour of a value: the legend bucket it falls in.
+ * @param weight value inside the polygon
+ * @param legendRange List that is used to define the legend range
+ * @param listColors List of colors in the palette
+ */
+function getColor(weight, legendRange, listColors) {
+  let index = legendRange.findIndex((number) => {
+    return number >= weight;
+  });
+  return listColors.slice(index)[0];
+}
+
+/** Bounding box of a GeoJSON feature, for zooming to it. */
+function featureBounds(feature): maplibregl.LngLatBounds | undefined {
+  const bounds = new maplibregl.LngLatBounds();
+  const visit = (coords) => {
+    if (typeof coords[0] === 'number') {
+      bounds.extend(coords as [number, number]);
+    } else {
+      coords.forEach(visit);
+    }
+  };
+  if (feature?.geometry?.coordinates) {
+    visit(feature.geometry.coordinates);
+  }
+  return bounds.isEmpty() ? undefined : bounds;
+}
+
+const WORLD_VIEW = { center: [0, 20] as [number, number], zoom: 0.5 };
+
+/**
+ * Draws country (and, with drill-down, region) polygons coloured by the report's values on a
+ * MapLibre map, with an optional legend and a "Reset view" button after drilling down.
+ */
+export const MapBoundary = ({ map, dimensions, data, props, featureLevel0, featureLevel1 }) => {
   // Keys used for the drill down
   // (right now only 0 is useful but important to keep in mind that we can add more levels)
   const level0key = 'SHORT_COUNTRY_CODE';
@@ -118,177 +145,135 @@ export const MapBoundary = ({ dimensions, data, props, featureLevel0, featureLev
       : colorScheme
     : colorScheme;
 
-  // Final polygon data
-  const [polygonData, setPolygonData] = useState([]);
+  // The polygon whose regions are shown (after a drill-down click), or undefined for the world view.
+  const [drilledInto, setDrilledInto] = useState<any>(undefined);
 
-  // Key of the current geoJson viz and currently selected geoJson
-  const [state, setState] = useState({ key: 'firstAll', geoJson: undefined });
-  // Key used to prevent race condition
-  const [key, setKey] = React.useState('firstAll');
-
-  const [legendRange, setLegendRange] = React.useState([]);
-  const [rangeValues, setRangeValues] = React.useState({ min: NaN, max: NaN });
-
-  useEffect(() => {
+  // Polygons with their values and colours, and the legend buckets.
+  const { polygonData, legendRange, hasValues } = useMemo(() => {
     let currentKey =
-      state.geoJson != undefined && Object.keys(state.geoJson.properties).includes(level1key) ? level1key : level0key;
-    let tmp = state.geoJson === undefined ? featureLevel0 : getDrillDown(state.geoJson, featureLevel1, currentKey);
-
-    // Getting the new data and the distribution of the values
+      drilledInto != undefined && Object.keys(drilledInto.properties).includes(level1key) ? level1key : level0key;
+    let tmp = drilledInto === undefined ? featureLevel0 : getDrillDown(drilledInto, featureLevel1, currentKey);
     let [newData, minValue, maxValue] = bindDataToMap(data, tmp);
+    const range = !isNaN(minValue) && !isNaN(maxValue) ? getLegendRange(minValue, maxValue, listColors.length) : [];
+    return { polygonData: newData as any[], legendRange: range, hasValues: !(isNaN(minValue) && isNaN(maxValue)) };
+  }, [drilledInto, data, featureLevel0, featureLevel1, props.settings?.colors]);
 
-    // Saving the new polygon data and their value range
-    setPolygonData(newData);
-    setRangeValues({ min: minValue, max: maxValue });
-
-    // Getting the new legend numbers
-    let legendRange = !isNaN(minValue) && !isNaN(maxValue) ? getLegendRange(minValue, maxValue, listColors.length) : [];
-    setLegendRange(legendRange);
-
-    // Synchronizing the key with the state key to retrigger rendering
-    setKey(state.key);
-  }, [state]);
-
-  // Getting the upper level Map
-  const map = useMap();
-
-  function onDrillDown(e) {
-    setState({ key: randomString(), geoJson: e.target.feature });
-    map.fitBounds(e.target.getBounds());
-  }
-
-  function onEachFeature(_, layer) {
-    if (isDrillDownEnabled) {
-      layer.on({
-        click: onDrillDown,
-      });
+  // Draw (or redraw) the polygons.
+  useEffect(() => {
+    if (!map || polygonData.length == 0) {
+      return undefined;
     }
-  }
+    const collection = {
+      type: 'FeatureCollection',
+      features: polygonData.map((feature, i) => ({
+        type: 'Feature',
+        geometry: feature.geometry,
+        properties: {
+          i,
+          fill: !isNaN(feature.properties.neo_value)
+            ? getColor(feature.properties.neo_value, legendRange, listColors)
+            : NO_DATA_COLOR,
+        },
+      })),
+    } as any;
+    map.addSource(SOURCE, { type: 'geojson', data: collection });
+    map.addLayer({
+      id: FILL,
+      type: 'fill',
+      source: SOURCE,
+      paint: { 'fill-color': ['get', 'fill'], 'fill-opacity': 0.8 },
+    });
+    map.addLayer({ id: OUTLINE, type: 'line', source: SOURCE, paint: { 'line-color': '#1f2021', 'line-width': 1 } });
 
-  /**
-   * For each polygon, we have a defined style that we want to apply
-   * @param _feature : Features of the current polygon
-   * @returns A style that will be applied to its polygon
-   */
-  const geoJSONStyle = (_feature) => {
-    /**
-     * A polygon has a fill color based on its value
-     * @param weight value inside the polygon
-     * @param legendRange List that is used to define the legend range
-     * @param listColors List of colors in the palette
-     * @returns color assigned to the polygon based on it's position in the legend
-     */
-    function getColor(weight, legendRange, listColors) {
-      let index = legendRange.findIndex((number) => {
-        return number >= weight;
-      });
-      return listColors.slice(index)[0];
-    }
-    let color = !isNaN(_feature.properties.neo_value)
-      ? getColor(_feature.properties.neo_value, legendRange, listColors)
-      : 'gray';
-    let style = {
-      color: '#1f2021',
-      weight: 1,
-      fillOpacity: 0.8,
-      fillColor: color,
+    // Hover: the region's name or code, and its value.
+    const tooltip = new maplibregl.Popup({ closeButton: false, closeOnClick: false, className: 'nd-map-tooltip' });
+    const onMove = (e: maplibregl.MapLayerMouseEvent) => {
+      const feature = polygonData[e.features?.[0]?.properties?.i];
+      if (!feature) {
+        return;
+      }
+      const p = feature.properties;
+      const name = p.REGION_NAME || p.name || p.COUNTRY_CODE || p.code || '';
+      const value = feature.properties.neo_value;
+      map.getCanvas().style.cursor = isDrillDownEnabled ? 'pointer' : '';
+      tooltip
+        .setLngLat(e.lngLat)
+        .setText(value !== undefined && !isNaN(value) ? `${name}: ${value}` : name)
+        .addTo(map);
     };
-    return style;
-  };
+    const onLeave = () => {
+      map.getCanvas().style.cursor = '';
+      tooltip.remove();
+    };
+    // Drill-down: show the regions of the clicked country and zoom to it.
+    const onClick = (e: maplibregl.MapLayerMouseEvent) => {
+      const feature = polygonData[e.features?.[0]?.properties?.i];
+      if (!isDrillDownEnabled || !feature) {
+        return;
+      }
+      tooltip.remove();
+      setDrilledInto(feature);
+      const bounds = featureBounds(feature);
+      if (bounds) {
+        map.fitBounds(bounds, { padding: 30, maxZoom: 8 });
+      }
+    };
+    map.on('mousemove', FILL, onMove);
+    map.on('mouseleave', FILL, onLeave);
+    map.on('click', FILL, onClick);
+    return () => {
+      map.off('mousemove', FILL, onMove);
+      map.off('mouseleave', FILL, onLeave);
+      map.off('click', FILL, onClick);
+      tooltip.remove();
+      [OUTLINE, FILL].forEach((layer) => map.getLayer(layer) && map.removeLayer(layer));
+      if (map.getSource(SOURCE)) {
+        map.removeSource(SOURCE);
+      }
+    };
+  }, [map, polygonData, legendRange]);
 
-  /**
-   * Functional component for a button to reset the visualization
-   * @returns button component binded to the current map
-   */
-  function ResetButton() {
-    // Binding the button to the map
-    const map = useMap();
-    function onClick() {
-      setState({ key: randomString(), geoJson: undefined });
-      map.setZoom(1);
-      return null;
-    }
-
-    return (
-      <div className='btnWrapper' style={{ zIndex: 1001, position: 'absolute', top: 10, right: 10 }}>
-        <Button variant='contained' onClick={onClick}>
-          Reset View
-        </Button>
-      </div>
-    );
-  }
-
-  const resetButton = isDrillDownEnabled ? ResetButton() : <></>;
-
-  /**
-   * Creates Legend component
-   * @param colors Color palette selected defined in the ReportSettings
-   * @param legendRange List of numbers that will be used to define the legend buckets
-   * @param dimensions dimensions object passed down from AreaMapChart
-   * @returns Legend component
-   */
-  function Legend(colors, legendRange, dimensions) {
-    return (
-      <div
-        className='info legend'
-        style={{
-          zIndex: 1001,
-          position: 'absolute',
-          bottom: 30,
-          right: 30,
-          minWidth: 110,
-          maxWidth: 180,
-          width: dimensions.width * 0.25,
+  const resetButton = (
+    <div className='nd-map-reset'>
+      <Button
+        variant='contained'
+        onClick={() => {
+          setDrilledInto(undefined);
+          map?.easeTo(WORLD_VIEW);
         }}
       >
-        <table>
-          {legendRange.map((from, i, legendRange) => {
+        Reset View
+      </Button>
+    </div>
+  );
+
+  const legend = (
+    <div className='nd-map-legend' style={{ width: dimensions.width * 0.25 }}>
+      <table>
+        <tbody>
+          {legendRange.map((from, i) => {
             let to = legendRange[i + 1];
             return (
-              <tr>
+              <tr key={i}>
                 <td>
-                  <i style={{ background: colors[i] }}> &nbsp; </i>
+                  <i style={{ background: listColors[i] }} />
                 </td>
                 <td>
-                  <p style={{ fontSize: 'small', margin: 0, marginTop: 2, overflow: 'hidden', height: 20 }}>
-                    {''}
-                    {abbreviateNumber(from, 2)}
-                    {!isNaN(to) ? ` - ${abbreviateNumber(to, 2)}` : i > 0 ? '+' : ''}{' '}
-                  </p>
+                  {abbreviateNumber(from, 2)}
+                  {!isNaN(to) ? ` - ${abbreviateNumber(to, 2)}` : i > 0 ? '+' : ''}
                 </td>
               </tr>
             );
           })}
-        </table>
-      </div>
-    );
-  }
-
-  // Create a legend only if the values are ready
-  const legend = !(isNaN(rangeValues.min) && isNaN(rangeValues.min)) ? (
-    Legend(listColors, legendRange, dimensions)
-  ) : (
-    <></>
-  );
-
-  // We need data or synchronized keys to enable re-render
-  if (polygonData.length == 0 || key !== state.key) {
-    return <></>;
-  }
-
-  const geoJsonLayer = (
-    <div>
-      {isDrillDownEnabled && state.geoJson !== undefined ? resetButton : <></>}
-      {isLegendEnabled ? legend : <></>}
-      <GeoJSON
-        id='polygonId'
-        key={state.key}
-        data={polygonData}
-        style={geoJSONStyle}
-        onEachFeature={onEachFeature}
-      ></GeoJSON>
+        </tbody>
+      </table>
     </div>
   );
 
-  return geoJsonLayer;
+  return (
+    <>
+      {isDrillDownEnabled && drilledInto !== undefined ? resetButton : <></>}
+      {isLegendEnabled && hasValues && legendRange.length > 0 ? legend : <></>}
+    </>
+  );
 };
