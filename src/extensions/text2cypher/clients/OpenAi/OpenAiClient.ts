@@ -1,7 +1,47 @@
-import { ChatCompletionRequestMessage, ChatCompletionRequestMessageRoleEnum, Configuration, OpenAIApi } from 'openai';
+// Calls the OpenAI REST API with fetch. (The openai 3 SDK used before is unmaintained and pulled in an
+// axios version with security advisories; these two endpoints are all the extension needs.)
 import { reportTypesToDesc, reportExampleQueries } from '../const';
 import { ModelClient } from '../ModelClient';
 import { Status } from '../../util/Status';
+
+export interface ChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+/** Minimal client for the OpenAI REST API (models list and chat completions). */
+export class OpenAiRestClient {
+  constructor(
+    private apiKey: string,
+    private baseUrl = 'https://api.openai.com/v1'
+  ) {}
+
+  private async request(path: string, init: RequestInit = {}) {
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      ...init,
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.apiKey}`, ...(init.headers || {}) },
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(body?.error?.message || `Request returned with status: ${response.status}`);
+    }
+    return body;
+  }
+
+  async listModels(): Promise<string[]> {
+    const body = await this.request('/models');
+    return (body.data || []).map((model) => model.id);
+  }
+
+  async chatCompletion(model: string | undefined, messages: ChatMessage[]): Promise<ChatMessage> {
+    const body = await this.request('/chat/completions', { method: 'POST', body: JSON.stringify({ model, messages }) });
+    const message = body?.choices?.[0]?.message;
+    if (!message) {
+      throw new Error('The model returned no message');
+    }
+    return message;
+  }
+}
 
 const consoleLogAsync = async (message: string, other?: any) => {
   await new Promise((resolve) => setTimeout(resolve, 0)).then(() => console.info(message, other));
@@ -12,7 +52,7 @@ export class OpenAiClient extends ModelClient {
 
   createSystemMessage: any;
 
-  modelClient!: OpenAIApi;
+  modelClient!: OpenAiRestClient;
 
   driver: any;
 
@@ -38,10 +78,7 @@ export class OpenAiClient extends ModelClient {
    * Function used to create the OpenAiApi object.
    * */
   setModelClient() {
-    const configuration = new Configuration({
-      apiKey: this.apiKey,
-    });
-    this.modelClient = new OpenAIApi(configuration);
+    this.modelClient = new OpenAiRestClient(this.apiKey);
   }
 
   /**
@@ -76,9 +113,7 @@ export class OpenAiClient extends ModelClient {
       if (!this.modelClient) {
         throw new Error('no client defined');
       }
-      let req = await this.modelClient.listModels();
-      // Extracting the names
-      res = req.data.data.map((x) => x.id).filter((x) => x.includes('gpt-'));
+      res = (await this.modelClient.listModels()).filter((x) => x.includes('gpt-'));
     } catch (e) {
       consoleLogAsync('Error while loading the model list: ', e);
       res = [];
@@ -89,10 +124,7 @@ export class OpenAiClient extends ModelClient {
 
   setApiKey(apiKey) {
     this.apiKey = apiKey;
-    const configuration = new Configuration({
-      apiKey: apiKey,
-    });
-    this.modelClient = new OpenAIApi(configuration);
+    this.modelClient = new OpenAiRestClient(apiKey);
   }
 
   setDriver(driver) {
@@ -119,36 +151,27 @@ export class OpenAiClient extends ModelClient {
     let finalMessage = `${content}. Please respect the structure of the result based on this description: ${reportTypesToDesc[reportType]}.
   Here an example of a query: ${queryExample}.
   Remember that every $ prefixed word is a parameter.`;
-    return { role: ChatCompletionRequestMessageRoleEnum.User, content: plain ? content : finalMessage };
+    return { role: 'user', content: plain ? content : finalMessage };
   }
 
   addSystemMessage(content) {
-    return { role: ChatCompletionRequestMessageRoleEnum.System, content: content };
+    return { role: 'system', content: content };
   }
 
   addAssistantMessage(content) {
-    return { role: ChatCompletionRequestMessageRoleEnum.Assistant, content: content };
+    return { role: 'assistant', content: content };
   }
 
   addErrorMessage(error) {
     let finalMessage = `Error: ${error}. Please correct the query based on the provided error message. Ensure the query follows the expected format, adheres to the schema, and does not contain any comments, explanations, or unnecessary symbols. Please remove any comments or explanations from the query result.`;
-    return { role: ChatCompletionRequestMessageRoleEnum.User, content: finalMessage };
+    return { role: 'user', content: finalMessage };
   }
 
-  getMessageContent(message: ChatCompletionRequestMessage) {
+  getMessageContent(message: ChatMessage) {
     return message.content;
   }
 
   async chatCompletion(history) {
-    const completion = await this.modelClient.createChatCompletion({
-      model: this.modelType,
-      messages: history,
-    });
-    // If the status is correct
-    if (completion.status == 200 && completion.data && completion.data.choices && completion.data.choices[0].message) {
-      let { message } = completion.data.choices[0];
-      return message;
-    }
-    throw Error(`Request returned with status: ${completion.status}`);
+    return this.modelClient.chatCompletion(this.modelType, history);
   }
 }

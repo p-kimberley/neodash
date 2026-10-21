@@ -1,6 +1,7 @@
-import { AzureKeyCredential, OpenAIClient } from '@azure/openai';
-
 import { OpenAiClient } from '../OpenAi/OpenAiClient';
+
+// Azure OpenAI REST API version for chat completions (the @azure/openai beta SDK used before was retired).
+const AZURE_API_VERSION = '2024-10-21';
 
 const consoleLogAsync = async (message: string, other?: any) => {
   await new Promise((resolve) => setTimeout(resolve, 0)).then(() => console.info(message, other));
@@ -11,7 +12,8 @@ export class AzureOpenAiClient extends OpenAiClient {
 
   createSystemMessage: any;
 
-  modelClient!: OpenAIClient;
+  // Azure calls are made directly with fetch (see chatCompletion and getListModels).
+  modelClient!: any;
 
   driver: any;
 
@@ -24,7 +26,7 @@ export class AzureOpenAiClient extends OpenAiClient {
    * */
   setModelClient() {
     if (typeof this.endpoint === 'string') {
-      this.modelClient = new OpenAIClient(this.endpoint, new AzureKeyCredential(this.apiKey));
+      this.modelClient = { endpoint: this.endpoint };
     }
   }
 
@@ -56,15 +58,22 @@ export class AzureOpenAiClient extends OpenAiClient {
   }
 
   async chatCompletion(history) {
-    let completion;
-    if (typeof this.modelType === 'string') {
-      completion = await this.modelClient.getChatCompletions(this.modelType, history);
+    if (typeof this.modelType !== 'string' || typeof this.endpoint !== 'string') {
+      throw Error('No deployment selected');
     }
-    // If the status is correct
-    if (completion?.choices?.[0]?.message) {
-      let { message } = completion.choices[0];
-      return message;
+    const base = this.endpoint + (this.endpoint.endsWith('/') ? '' : '/');
+    const response = await fetch(
+      `${base}openai/deployments/${encodeURIComponent(this.modelType)}/chat/completions?api-version=${AZURE_API_VERSION}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'api-key': this.apiKey },
+        body: JSON.stringify({ messages: history }),
+      }
+    );
+    const completion = await response.json().catch(() => ({}));
+    if (response.ok && completion?.choices?.[0]?.message) {
+      return completion.choices[0].message;
     }
-    throw Error(`Request returned with status: ${completion.id}`);
+    throw Error(completion?.error?.message || `Request returned with status: ${response.status}`);
   }
 }
