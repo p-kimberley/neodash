@@ -4,16 +4,24 @@ updates:
     directory: '/'
     schedule:
       interval: 'weekly'
-    target-branch: 'develop'
 
   - package-ecosystem: 'npm'
-    directory: '/gallery'
+    directory: '/server'
     schedule:
       interval: 'weekly'
-    target-branch: 'develop'
 
   - package-ecosystem: 'npm'
     directory: '/docs'
     schedule:
       interval: 'weekly'
-    target-branch: 'develop'
+
+  # Base images in the Dockerfile (the distroless runtime is pinned by digest).
+  - package-ecosystem: 'docker'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'

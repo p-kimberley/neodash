@@ -1,6 +1,6 @@
 # NeoDash: the UI and its backend in one image. The backend (server/) serves the built UI, handles
 # sign-in and runs every Neo4j query, so browsers never connect to Neo4j.
-# See server/README.md for configuration. The previous nginx-only image is Dockerfile.legacy.
+# See docs/deployment.md for deployment and server/README.md for configuration.
 #
 # The runtime image is distroless: no shell or package manager, runs as an unprivileged user
 # (UID 65532) and needs no writable filesystem. It makes no outbound internet requests, so it can

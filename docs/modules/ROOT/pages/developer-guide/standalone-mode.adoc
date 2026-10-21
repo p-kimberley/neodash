@@ -2,6 +2,14 @@ include::../banner.adoc[]
 
 = Standalone Mode
 
+[IMPORTANT]
+====
+Standalone mode is replaced by the viewer role: one deployment serves viewers and editors. This fork serves NeoDash from a backend with OIDC sign-in and viewer/editor roles, so
+browser-side connection settings, `config.json` and standalone mode no longer apply. See
+https://github.com/p-kimberley/neodash/blob/master/docs/deployment.md[docs/deployment.md] for
+deploying this version.
+====
+
 include::../banner.adoc[]
 
 Next to being a dashboard editor, NeoDash can be deployed in a

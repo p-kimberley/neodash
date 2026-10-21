@@ -1,3 +1,20 @@
+## NeoDash 3.0.0 - Platform uplift (this fork)
+NeoDash as a shared, self-hosted service on Kubernetes. Existing dashboards keep working unchanged.
+See [docs/deployment.md](docs/deployment.md) for deployment and migration.
+
+- **Backend**: serves the UI and runs every Neo4j query; browsers no longer connect to Neo4j. Credentials come from Kubernetes Secrets.
+- **OIDC sign-in** (e.g. Keycloak) with global viewer and editor roles in one deployment, replacing standalone mode. Viewers can only run saved queries, in read transactions.
+- **Multiple dashboards**: start page, sidebar switcher, Save button and unsaved-changes indicator.
+- **URL state and browser titles** for every dashboard, page and parameter; back/forward navigation.
+- **Audit logging** of sign-ins, dashboard access and changes, and every query (JSON lines).
+- **Helm chart 2.0**: Ingress (ingress-nginx) or Gateway API HTTPRoute, TLS, Secrets mounted as files, network policy, PDB/HPA, branding, offline (air-gapped) installs.
+- **Image**: distroless, non-root, read-only filesystem, no outbound internet requests.
+- **UI**: refreshed design; per-user light/dark/system appearance with WCAG AA contrast across the app, charts, code editors, maps and graphs; syntax-highlighted JSON viewer.
+- **Tables**: "Rows per page" setting (default 25, previously a fixed 5); each reader's choice is remembered per table.
+- **Fixes**: grouped/stacked bar colours match their legend, numeric style-rule values, date pickers showing today when unset, `?page=` deep links, oversized single values, tab hover jumps, unreadable rule-based row colours in dark mode.
+- **CI**: tests, image (with SBOM and provenance) and chart published to GHCR; GitHub Releases with the offline bundle; optional Helm deploy workflow.
+- Removed the nginx-only image (`Dockerfile.legacy`, `compose.yaml`, `conf/`, `ssl/`), which can't serve this version.
+
 ## NeoDash 2.4.10 - Community contributions
 This is a minor release containing bug fixes and improvements contributed by the NeoDash community.
 - [#1039](https://github.com/neo4j-contrib/neodash/pull/1039) - Fix default color scheme for bar charts

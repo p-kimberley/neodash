@@ -2,6 +2,14 @@ include::../banner.adoc[]
 
 = Configuration
 
+[IMPORTANT]
+====
+These settings configure the upstream, browser-only NeoDash. This fork serves NeoDash from a backend with OIDC sign-in and viewer/editor roles, so
+browser-side connection settings, `config.json` and standalone mode no longer apply. See
+https://github.com/p-kimberley/neodash/blob/master/docs/deployment.md[docs/deployment.md] for
+deploying this version.
+====
+
 include::../banner.adoc[]
 
 When using a custom NeoDash deployment, there are several settings that

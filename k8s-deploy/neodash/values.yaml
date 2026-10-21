@@ -86,7 +86,8 @@ maps:
   # Empty: no tiles, so nothing is fetched from the internet.
   tileUrl: ''
   tileAttribution: ''
-  # Where choropleth / area map charts load country shapes; served by NeoDash by default.
+  # Where choropleth / area map charts load country shapes. Not yet included in the image: host
+  # the files internally and point this at them.
   dataUrl: /maps
 
 branding:
@@ -124,10 +125,29 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-body-size: 20m
     # Allow queries up to query.timeoutSecondsMax (plus headroom).
     nginx.ingress.kubernetes.io/proxy-read-timeout: '150'
+    # The sign-in response sets a session cookie of up to ~4 KB, more than nginx's default 4 KB
+    # header buffer ("upstream sent too big header", 502 after sign-in).
+    nginx.ingress.kubernetes.io/proxy-buffer-size: 16k
   tls:
     enabled: true
     # Secret with the certificate (e.g. created by cert-manager or imported by hand).
     secretName: ''
+
+# Gateway API alternative to the Ingress (e.g. Envoy Gateway, Istio, Cilium, NGINX Gateway Fabric).
+# Attaches an HTTPRoute to an existing Gateway, which terminates TLS. Disable ingress when using it.
+httpRoute:
+  enabled: false
+  # REQUIRED when enabled: the Gateway listener(s) to attach to, e.g.
+  #   - name: shared-gateway
+  #     namespace: gateway-system
+  #     sectionName: https
+  parentRefs: []
+  # Defaults to the host of publicUrl.
+  hostnames: []
+  annotations: {}
+  # Route timeouts, if your Gateway implementation supports them; allow for query.timeoutSecondsMax.
+  #   request: 150s
+  timeouts: {}
 
 resources:
   requests:
@@ -184,10 +204,11 @@ podDisruptionBudget:
   minAvailable: 1
 
 # Restrict traffic to and from the pods. Egress is limited to DNS, Neo4j and the identity provider
-# when their addresses are given below.
+# when their addresses are given below. The chart's own `helm test` pod is always allowed in.
 networkPolicy:
   enabled: false
-  # Pods allowed to reach NeoDash (default: the ingress controller namespace).
+  # Pods allowed to reach NeoDash (default: the ingress controller namespace). For a Gateway, use
+  # the namespace its data-plane pods run in.
   ingressFrom:
     - namespaceSelector:
         matchLabels:

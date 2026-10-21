@@ -1,5 +1,13 @@
 = Deploy a Build
 
+[IMPORTANT]
+====
+This page describes deploying the upstream, browser-only NeoDash build. This fork serves NeoDash from a backend with OIDC sign-in and viewer/editor roles, so
+browser-side connection settings, `config.json` and standalone mode no longer apply. See
+https://github.com/p-kimberley/neodash/blob/master/docs/deployment.md[docs/deployment.md] for
+deploying this version.
+====
+
 include::../banner.adoc[]
 
 If you have a pre-built NeoDash application, you can easily deploy it on an any webserver.

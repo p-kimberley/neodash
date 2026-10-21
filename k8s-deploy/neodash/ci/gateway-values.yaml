@@ -1,0 +1,9 @@
+# Gateway API variant: an HTTPRoute instead of the Ingress, with an internal CA and pinned digest.
+image: { repository: example/neodash, digest: 'sha256:0000000000000000000000000000000000000000000000000000000000000000' }
+global: { imageRegistry: registry.internal:5000 }
+publicUrl: https://neodash.example.com
+neo4j: { auth: { existingSecret: neo4j-credentials } }
+oidc: { issuerUrl: https://keycloak.example.com/realms/acme, existingSecret: neodash-oidc, caBundle: { existingConfigMap: internal-ca } }
+session: { existingSecret: neodash-session }
+ingress: { enabled: false }
+httpRoute: { enabled: true, parentRefs: [{ name: shared-gateway, namespace: gateway-system, sectionName: https }], timeouts: { request: 150s } }

@@ -17,6 +17,14 @@ spec:
       from:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+    # The `helm test` pod.
+    - ports:
+        - port: http
+      from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ include "neodash.name" . }}-test
+              app.kubernetes.io/instance: {{ .Release.Name }}
   egress:
     # DNS
     - ports:

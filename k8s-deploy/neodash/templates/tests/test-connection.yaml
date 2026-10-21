@@ -3,7 +3,7 @@ kind: Pod
 metadata:
   name: "{{ include "neodash.fullname" . }}-test"
   labels:
-    {{- include "neodash.labels" . | nindent 4 }}
+    {{- include "neodash.testLabels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded

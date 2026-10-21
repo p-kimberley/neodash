@@ -141,3 +141,6 @@ All of these reproduce in `neodash-legacy` with the dashboards above. Status in 
 | Dark mode is stored in each dashboard, so viewers see whatever the last editor saved | Per-user appearance (light / dark / match system); the dashboard field is kept but ignored |
 | Reports wait for every parameter unless they enable `ignoreNonDefinedParams` | Unchanged on purpose: changing it would alter how existing dashboards behave |
 | Grouped bar legends use one colour; horizontal stacked bars colour by category | Fixed: multi-series bars are coloured by series, matching the legend |
+| Tables always open at 5 rows per page | "Rows per page" report setting (default 25); a reader's own choice is remembered per table in the browser |
+| Rule-based row/cell colours keep the theme's text colour, unreadable in dark mode | Text colour picked for contrast with the rule's background (an explicit text-colour rule still wins) |
+| Graph right-click menu has a transparent background; maximised reports and editors are always white | Fixed: both follow the appearance |

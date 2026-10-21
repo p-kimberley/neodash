@@ -1,16 +1,32 @@
 name: NeoDash
 
-# Tests, image and Helm chart for this fork. Images go to GitHub Container Registry
-# (ghcr.io/<owner>/neodash); version tags (v*) also get an offline install bundle.
+# Tests, then publishes the image and Helm chart to GitHub Container Registry:
+#
+#   image  ghcr.io/<owner>/neodash          tags: sha-<short sha>, latest (master), <version> (tags)
+#   chart  oci://ghcr.io/<owner>/charts/neodash
+#            master:  <chart version>-dev.<run number>, defaulting to image sha-<short sha>
+#            v* tags: <chart version>, defaulting to image <version>
+#
+# A v<version> tag must match appVersion in k8s-deploy/neodash/Chart.yaml, and the chart version
+# must not have been published before. Tags also create a GitHub Release with the offline
+# (air-gapped) install bundle. See docs/deployment.md.
 
 on:
   push:
     branches: [master]
     tags: ['v*']
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CHART_DIR: k8s-deploy/neodash
 
 jobs:
   server:
@@ -60,37 +76,72 @@ jobs:
           node-version: 22
           cache: yarn
       - run: yarn install --frozen-lockfile --ignore-engines
+      - name: Lint
+        run: yarn eslint --quiet --ext .ts,.tsx src
       - run: yarn run build-minimal
 
   chart:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.chart }}
+      app-version: ${{ steps.version.outputs.app }}
     steps:
       - uses: actions/checkout@v4
       - uses: azure/setup-helm@v4
-      - name: Lint and render
+        with:
+          version: v3.19.0
+      - name: Lint, render and validate against Kubernetes schemas
         run: |
-          cat > ci-values.yaml <<'EOF'
-          image: { repository: example/neodash }
-          publicUrl: https://neodash.example.com
-          neo4j: { auth: { existingSecret: neo4j-credentials } }
-          oidc: { issuerUrl: https://keycloak.example.com/realms/acme, existingSecret: neodash-oidc }
-          ingress: { host: neodash.example.com, tls: { secretName: neodash-tls } }
-          networkPolicy: { enabled: true }
-          EOF
-          helm lint k8s-deploy/neodash -f ci-values.yaml
-          helm template neodash k8s-deploy/neodash -f ci-values.yaml > /dev/null
+          curl -sSL https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz | tar xz kubeconform
+          for values in "$CHART_DIR"/ci/*-values.yaml; do
+            echo "::group::$values"
+            helm lint "$CHART_DIR" -f "$values"
+            helm template neodash "$CHART_DIR" -f "$values" > rendered.yaml
+            ./kubeconform -strict -summary -kubernetes-version 1.30.0 \
+              -schema-location default \
+              -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+              rendered.yaml
+            echo "::endgroup::"
+          done
+      - name: Required values are enforced
+        run: |
+          if helm template neodash "$CHART_DIR" > /dev/null 2> err.txt; then
+            echo "The chart rendered without required values"; exit 1
+          fi
+          grep -q 'publicUrl is required' err.txt
+      - id: version
+        name: Work out versions
+        run: |
+          chart=$(sed -n 's/^version: *//p' "$CHART_DIR/Chart.yaml")
+          app=$(sed -n 's/^appVersion: *"\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' "$CHART_DIR/Chart.yaml")
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            if [ "${GITHUB_REF_NAME#v}" != "$app" ]; then
+              echo "::error::Tag $GITHUB_REF_NAME does not match appVersion $app in Chart.yaml"; exit 1
+            fi
+          else
+            # Development builds: a prerelease chart pointing at this commit's image.
+            chart="$chart-dev.$GITHUB_RUN_NUMBER"
+            app="sha-${GITHUB_SHA::7}"
+          fi
+          echo "chart=$chart" >> "$GITHUB_OUTPUT"
+          echo "app=$app" >> "$GITHUB_OUTPUT"
+          echo "Chart $chart, image tag $app"
 
   image:
     needs: [server, ui, chart]
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+      id-token: write
+      attestations: write
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
+      - if: github.event_name == 'push'
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -103,22 +154,104 @@ jobs:
             type=sha
             type=raw,value=latest,enable={{is_default_branch}}
             type=semver,pattern={{version}}
-      - uses: docker/build-push-action@v6
+          labels: |
+            org.opencontainers.image.title=NeoDash
+            org.opencontainers.image.description=NeoDash dashboards for Neo4j, with OIDC sign-in and role-based access
+      # Pull requests build the image too (without pushing), so Dockerfile breakage shows up early.
+      - id: build
+        uses: docker/build-push-action@v6
         with:
           context: .
-          push: true
+          platforms: linux/amd64
+          push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+          provenance: ${{ github.event_name == 'push' && 'mode=max' || 'false' }}
+          sbom: ${{ github.event_name == 'push' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - if: github.event_name == 'push'
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ghcr.io/${{ github.repository_owner }}/neodash
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
 
-  offline-bundle:
-    needs: image
-    if: startsWith(github.ref, 'refs/tags/v')
+  publish-chart:
+    needs: [chart, image]
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      CHART_REPO: oci://ghcr.io/${{ github.repository_owner }}/charts
+      VERSION: ${{ needs.chart.outputs.version }}
+      APP_VERSION: ${{ needs.chart.outputs.app-version }}
     steps:
       - uses: actions/checkout@v4
       - uses: azure/setup-helm@v4
-      - run: sh scripts/offline-bundle.sh
-      - uses: actions/upload-artifact@v4
         with:
-          name: neodash-offline
-          path: neodash-offline-*/
+          version: v3.19.0
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Refuse to overwrite a released chart version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          if helm show chart "$CHART_REPO/neodash" --version "$VERSION" > /dev/null 2>&1; then
+            echo "::error::Chart $VERSION is already published; bump 'version' in $CHART_DIR/Chart.yaml"; exit 1
+          fi
+      - name: Package and push
+        run: |
+          helm package "$CHART_DIR" --version "$VERSION" --app-version "$APP_VERSION" --destination dist
+          helm push "dist/neodash-$VERSION.tgz" "$CHART_REPO"
+          {
+            echo "### Published"
+            echo "- Image: \`ghcr.io/${{ github.repository_owner }}/neodash:$APP_VERSION\` (\`${{ needs.image.outputs.digest }}\`)"
+            echo "- Chart: \`helm install neodash $CHART_REPO/neodash --version $VERSION\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  release:
+    needs: [chart, image, publish-chart]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.19.0
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build the offline bundle from the published image
+        env:
+          SOURCE_IMAGE: ghcr.io/${{ github.repository_owner }}/neodash@${{ needs.image.outputs.digest }}
+        run: sh scripts/offline-bundle.sh
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.chart.outputs.app-version }}
+          CHART_VERSION: ${{ needs.chart.outputs.version }}
+        run: |
+          dir="neodash-offline-$VERSION"
+          tar czf "$dir.tar.gz" "$dir"
+          cat > notes.md <<EOF
+          ## Install
+
+          \`\`\`sh
+          helm install neodash oci://ghcr.io/${{ github.repository_owner }}/charts/neodash --version $CHART_VERSION -f my-values.yaml
+          \`\`\`
+
+          Image: \`ghcr.io/${{ github.repository_owner }}/neodash:$VERSION\` (\`${{ needs.image.outputs.digest }}\`)
+
+          **Air-gapped clusters:** download \`$dir.tar.gz\` (image, chart, checksums, INSTALL.md).
+          See [docs/deployment.md](https://github.com/${{ github.repository }}/blob/$GITHUB_REF_NAME/docs/deployment.md).
+          EOF
+          gh release create "$GITHUB_REF_NAME" --title "NeoDash $VERSION" --notes-file notes.md --verify-tag \
+            "$dir.tar.gz" "$dir/SHA256SUMS" "$dir/neodash-$CHART_VERSION.tgz"

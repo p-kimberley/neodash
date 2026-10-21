@@ -1,0 +1,9 @@
+# Values used by CI to lint and render the chart (see .github/workflows/neodash.yml).
+image: { repository: example/neodash }
+publicUrl: https://neodash.example.com
+neo4j: { auth: { existingSecret: neo4j-credentials } }
+oidc: { issuerUrl: https://keycloak.example.com/realms/acme, existingSecret: neodash-oidc }
+ingress: { host: neodash.example.com, tls: { secretName: neodash-tls } }
+networkPolicy: { enabled: true }
+autoscaling: { enabled: true }
+branding: { appName: Acme Dashboards, style: { '--palette-light-primary-bg-strong': '0, 94, 184' } }

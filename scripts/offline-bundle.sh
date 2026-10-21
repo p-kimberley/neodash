@@ -9,6 +9,10 @@
 #
 # Run on a machine with internet access, Docker and Helm, from the repository root:
 #   scripts/offline-bundle.sh [image-name]      (default image name: neodash)
+#
+# By default the image is built from this checkout. Set SOURCE_IMAGE to bundle an image that was
+# already published instead (CI does this, so the bundle holds exactly the released image):
+#   SOURCE_IMAGE=ghcr.io/<owner>/neodash:3.0.0 scripts/offline-bundle.sh
 set -eu
 
 IMAGE_NAME="${1:-neodash}"
@@ -18,8 +22,14 @@ CHART_VERSION="$(sed -n 's/^version: *//p' "$CHART_DIR/Chart.yaml")"
 OUT="neodash-offline-$VERSION"
 IMAGE="$IMAGE_NAME:$VERSION"
 
-echo "Building $IMAGE"
-docker build -t "$IMAGE" .
+if [ -n "${SOURCE_IMAGE:-}" ]; then
+  echo "Pulling $SOURCE_IMAGE"
+  docker pull --platform linux/amd64 "$SOURCE_IMAGE"
+  docker tag "$SOURCE_IMAGE" "$IMAGE"
+else
+  echo "Building $IMAGE"
+  docker build -t "$IMAGE" .
+fi
 
 rm -rf "$OUT"
 mkdir -p "$OUT"
@@ -44,7 +54,10 @@ cat > "$OUT/INSTALL.md" <<EOF
        helm install neodash neodash-$CHART_VERSION.tgz -n neodash \\
          --set global.imageRegistry=<registry> --set image.repository=neodash -f my-values.yaml
 
-See the chart README (inside the .tgz) for the values and Secrets it expects.
+   The chart's README and defaults: \`helm show readme neodash-$CHART_VERSION.tgz\` and
+   \`helm show values neodash-$CHART_VERSION.tgz\`.
+
+See docs/deployment.md in the NeoDash repository for the full deployment guide.
 The image makes no outbound internet requests; the chart references no other images.
 EOF
 

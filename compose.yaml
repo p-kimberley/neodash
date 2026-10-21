@@ -1,9 +1,0 @@
-services:
-  neodash:
-    build:
-      context: .
-      dockerfile: Dockerfile.legacy
-    ports:
-      - "5005:5005"
-    environment:
-      - NGINX_PORT=5005

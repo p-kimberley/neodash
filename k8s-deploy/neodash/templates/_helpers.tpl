@@ -51,6 +51,17 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Labels for the `helm test` pod: deliberately not the selector labels, so the Deployment, Service
+and NetworkPolicy don't treat it as a NeoDash pod.
+*/}}
+{{- define "neodash.testLabels" -}}
+helm.sh/chart: {{ include "neodash.chart" . }}
+app.kubernetes.io/name: {{ include "neodash.name" . }}-test
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "neodash.serviceAccountName" -}}
@@ -96,6 +107,9 @@ Fail early, with a helpful message, on missing required values.
 {{- if .Values.ingress.tls.enabled -}}
 {{- $_ := required "ingress.tls.secretName is required when ingress.tls.enabled is true" .Values.ingress.tls.secretName -}}
 {{- end -}}
+{{- end -}}
+{{- if and .Values.httpRoute.enabled (not .Values.httpRoute.parentRefs) -}}
+{{- fail "httpRoute.parentRefs is required when httpRoute.enabled is true: the Gateway to attach to" -}}
 {{- end -}}
 {{- if and .Values.oidc.caBundle.existingSecret .Values.oidc.caBundle.existingConfigMap -}}
 {{- fail "set only one of oidc.caBundle.existingSecret and oidc.caBundle.existingConfigMap" -}}

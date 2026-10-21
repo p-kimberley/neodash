@@ -3,7 +3,12 @@
 Deploys NeoDash as one stateless Deployment: a single container serves the UI, handles OIDC
 sign-in and runs all Neo4j queries. Browsers never connect to Neo4j and never see its credentials.
 
-- **Ingress with TLS**: one host, one path (`/`); works with ingress-nginx or any other controller.
+This is the chart reference. For the full guide (Keycloak set-up, air-gapped installs, security,
+audit logs, CI/CD and migrating from upstream NeoDash), see
+[`docs/deployment.md`](../../docs/deployment.md).
+
+- **Ingress or Gateway API**: one host, one path (`/`), with TLS; ingress-nginx by default, any
+  other Ingress controller, or an HTTPRoute on a Gateway.
 - **Secrets, not values**: the Neo4j password and OIDC client secret come from existing Secrets,
   mounted as files. A session key is generated on install unless you supply one.
 - **Roles**: users need the viewer or editor role from your identity provider (e.g. Keycloak).
@@ -46,8 +51,7 @@ kubectl -n neodash create secret tls neodash-tls --cert=tls.crt --key=tls.key
 
 ```yaml
 image:
-  registry: registry.example.com
-  repository: platform/neodash
+  repository: <owner>/neodash # ghcr.io/<owner>/neodash; set image.registry for another registry
 publicUrl: https://neodash.example.com
 neo4j:
   uri: neo4j://neo4j.neo4j.svc.cluster.local:7687
@@ -62,46 +66,88 @@ ingress:
     secretName: neodash-tls
 ```
 
+Install the published chart (released versions, and `<version>-dev.<n>` builds of `master`):
+
 ```sh
-helm install neodash k8s-deploy/neodash -n neodash -f my-values.yaml
+helm install neodash oci://ghcr.io/<owner>/charts/neodash --version <chart version> \
+  -n neodash -f my-values.yaml
 helm test neodash -n neodash
 ```
 
+Or install from a checkout with `helm install neodash k8s-deploy/neodash -n neodash -f my-values.yaml`.
 The chart stops with a clear message if a required value is missing.
+
+Published charts default to the image built from the same commit (`appVersion`). Pin by digest in
+production with `image.digest`.
+
+**GitOps** (Argo CD, or anything else that renders the chart without cluster access): create the
+session key yourself and set `session.existingSecret`. Otherwise every render generates a new key,
+which signs everyone out.
 
 ## Common settings
 
 | Value | Default | |
 | --- | --- | --- |
 | `publicUrl` | required | URL users open; `https://<ingress.host>` |
-| `image.registry` / `image.repository` / `image.tag` / `image.digest` | – / required / appVersion / – | `digest` wins over `tag` |
+| `image.registry` / `image.repository` / `image.tag` / `image.digest` | `ghcr.io` / required / appVersion / – | `digest` wins over `tag` |
 | `global.imageRegistry` | – | Overrides `image.registry` (air-gapped mirrors) |
+| `imagePullSecrets` | `[]` | e.g. for a private GHCR package |
 | `replicaCount` | `2` | Pods are stateless; scale freely |
 | `neo4j.uri` | in-cluster `neo4j` service | `neo4j+s://` for TLS |
 | `neo4j.databases` | `[neo4j]` | Databases reports may query; first is the default |
+| `neo4j.dashboardDatabase` | first database | Where `_Neodash_Dashboard` nodes live |
 | `neo4j.auth.existingSecret` | required | Keys `username`, `password` (configurable) |
 | `oidc.issuerUrl` | required | Issuer as browsers see it |
 | `oidc.discoveryUrl` | – | In-cluster URL for the pods to fetch the issuer's metadata |
 | `oidc.existingSecret` | required | Key `client-secret` (configurable) |
 | `oidc.rolesClaim` | `realm_access.roles` | Dot path to the roles claim |
 | `oidc.roles.viewer` / `.editor` | `neodash-viewer` / `neodash-editor` | |
-| `oidc.caBundle.existingSecret` / `.existingConfigMap` | – | PEM CA bundle to trust, e.g. an internal CA |
+| `oidc.caBundle.existingSecret` / `.existingConfigMap` | – | PEM CA bundle to trust, e.g. an internal CA (also used for `neo4j+s://`) |
 | `session.existingSecret` | generated | Cookie-encryption key; shared by all replicas |
 | `session.maxAgeSeconds` | `28800` | Users sign in again after this; role changes apply then |
 | `query.timeoutSecondsMax` / `query.rowLimitMax` | `120` / `10000` | Server-side limits for every query |
 | `audit.logParameters` | `true` | Include query parameter values in audit logs |
 | `maps.tileUrl` | – | Map tile server, e.g. `https://tiles.internal/{z}/{x}/{y}.png`; empty = no tiles |
-| `maps.dataUrl` | `/maps` | Where choropleth/area-map country shapes are served from |
+| `maps.dataUrl` | `/maps` | Where choropleth/area-map country shapes load from. Not yet included in the image: host them internally |
 | `branding.appName` | `NeoDash` | Product name in the header and browser tab |
 | `branding.logo.base64` / `fileName` | – / `logo.png` | Header logo (base64 PNG/SVG, e.g. `--set-file branding.logo.base64=logo.b64`), served from the pod |
 | `branding.style` | `{}` | Extra `style.config.json` entries, e.g. `--palette-light-primary-bg-strong: '0, 94, 184'` and the `--palette-dark-…` equivalent for the primary colour |
 | `ingress.enabled` / `className` / `host` | `true` / `nginx` / required | |
 | `ingress.tls.enabled` / `secretName` | `true` / required | |
-| `ingress.annotations` | body size 20m, read timeout 150s | ingress-nginx annotations; adjust for other controllers |
+| `ingress.annotations` | see below | ingress-nginx annotations; adjust for other controllers |
+| `httpRoute.enabled` / `parentRefs` | `false` / required | Gateway API HTTPRoute instead of the Ingress |
+| `httpRoute.hostnames` / `timeouts` | host of `publicUrl` / – | |
 | `autoscaling.enabled` | `false` | CPU-based HPA |
 | `podDisruptionBudget.enabled` | `true` | Applied when more than one replica |
-| `networkPolicy.enabled` | `false` | Ingress from the ingress controller; egress to DNS + `egressTo` |
+| `networkPolicy.enabled` | `false` | Ingress from `ingressFrom` (and the test pod); egress to DNS + `egressTo` |
 | `extraEnv` | `[]` | Any other backend setting (see `server/README.md`) |
+
+## Ingress and Gateway API
+
+The default Ingress targets ingress-nginx with three annotations. Keep their equivalents if you
+use another controller:
+
+| Annotation | Default | Why |
+| --- | --- | --- |
+| `nginx.ingress.kubernetes.io/proxy-body-size` | `20m` | Dashboards are saved as one JSON document |
+| `nginx.ingress.kubernetes.io/proxy-read-timeout` | `150` | Queries may run up to `query.timeoutSecondsMax` |
+| `nginx.ingress.kubernetes.io/proxy-buffer-size` | `16k` | The sign-in response's session cookie (up to ~4 KB) overflows nginx's default buffer, causing a 502 after sign-in |
+
+The ingress-nginx project was retired in March 2026. To use the Gateway API instead, attach an
+HTTPRoute to an existing Gateway (the Gateway terminates TLS):
+
+```yaml
+ingress:
+  enabled: false
+httpRoute:
+  enabled: true
+  parentRefs:
+    - name: shared-gateway
+      namespace: gateway-system
+      sectionName: https
+  timeouts:
+    request: 150s
+```
 
 ## Audit logs
 
@@ -119,7 +165,8 @@ Nothing in the running system needs internet access:
 - Map charts use `maps.tileUrl` (an internal tile server, or none) and `maps.dataUrl`.
 - The optional text-to-Cypher extension calls an external LLM API only if an editor configures it.
 
-On a connected machine, from the repository root:
+Each GitHub Release includes `neodash-offline-<version>.tar.gz`. To build one yourself, run this
+on a connected machine, from the repository root:
 
 ```sh
 scripts/offline-bundle.sh
@@ -136,7 +183,10 @@ Chart 1.x deployed the browser-only NeoDash (nginx) with optional viewer-mode cr
 
 - `enable_reader_mode`, `env`, `envFromSecrets` → roles from your identity provider, plus
   `neo4j.auth.existingSecret` and `oidc.*`.
-- `service.type: LoadBalancer` on port 5005 → `ClusterIP` behind the Ingress (container port 3000).
+- `service.type: LoadBalancer` on port 5005 → `ClusterIP` behind the Ingress or HTTPRoute
+  (container port 3000).
 - Separate viewer and editor releases → one release; each user's role decides what they can do.
 
-Dashboards stored in Neo4j are unchanged and keep working.
+Dashboards stored in Neo4j are unchanged and keep working. See
+[Migrating](../../docs/deployment.md#migrating-from-upstream-neodash-or-chart-1x) for a step-by-step
+plan.

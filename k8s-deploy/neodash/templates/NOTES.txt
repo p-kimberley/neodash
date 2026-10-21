@@ -1,8 +1,8 @@
 NeoDash {{ .Chart.AppVersion }} is deployed as "{{ include "neodash.fullname" . }}" in namespace {{ .Release.Namespace }}.
 
 Open: {{ .Values.publicUrl }}
-{{- if not .Values.ingress.enabled }}
-  (ingress is disabled; e.g. kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "neodash.fullname" . }} 3000:{{ .Values.service.port }})
+{{- if not (or .Values.ingress.enabled .Values.httpRoute.enabled) }}
+  (no Ingress or HTTPRoute; e.g. kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "neodash.fullname" . }} 3000:{{ .Values.service.port }})
 {{- end }}
 
 Identity provider checklist ({{ .Values.oidc.issuerUrl }}):

@@ -1,0 +1,98 @@
+name: Deploy
+
+# Installs or upgrades NeoDash in a cluster from the chart published by the NeoDash workflow.
+# Optional: it does nothing until a GitHub Environment is configured (see docs/deployment.md):
+#
+#   Environment secrets   KUBECONFIG    kubeconfig for a service account allowed to deploy
+#                         HELM_VALUES   the release's values file (YAML)
+#   Environment variables NAMESPACE     target namespace (default: neodash)
+#                         RELEASE       Helm release name (default: neodash)
+#   Repository variables  DEPLOY_RUNNER runner label, e.g. a self-hosted runner inside the network
+#                                       (default: ubuntu-latest)
+#                         AUTO_DEPLOY_TEST  'true' to deploy every successful master build to "test"
+#
+# Air-gapped clusters that no runner can reach are installed from the offline bundle instead.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: GitHub Environment to deploy to
+        type: environment
+        required: true
+      version:
+        description: Chart version, e.g. 2.0.0 or 2.0.0-dev.42
+        type: string
+        required: true
+  workflow_run:
+    workflows: [NeoDash]
+    types: [completed]
+    branches: [master]
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (vars.AUTO_DEPLOY_TEST == 'true' && github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
+    runs-on: ${{ vars.DEPLOY_RUNNER || 'ubuntu-latest' }}
+    environment: ${{ inputs.environment || 'test' }}
+    concurrency:
+      group: deploy-${{ inputs.environment || 'test' }}
+      cancel-in-progress: false
+    env:
+      CHART: oci://ghcr.io/${{ github.repository_owner }}/charts/neodash
+      NAMESPACE: ${{ vars.NAMESPACE || 'neodash' }}
+      RELEASE: ${{ vars.RELEASE || 'neodash' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          sparse-checkout: k8s-deploy/neodash/Chart.yaml
+          sparse-checkout-cone-mode: false
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.19.0
+      - name: Chart version
+        id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          RUN_NUMBER: ${{ github.event.workflow_run.run_number }}
+        run: |
+          if [ -n "$INPUT_VERSION" ]; then
+            version="$INPUT_VERSION"
+          else
+            # The dev chart that NeoDash workflow run published for this commit.
+            version="$(sed -n 's/^version: *//p' k8s-deploy/neodash/Chart.yaml)-dev.$RUN_NUMBER"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Credentials
+        env:
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG }}
+          HELM_VALUES: ${{ secrets.HELM_VALUES }}
+        run: |
+          if [ -z "$KUBECONFIG_CONTENT" ] || [ -z "$HELM_VALUES" ]; then
+            echo "::error::Set the KUBECONFIG and HELM_VALUES secrets on the '${{ inputs.environment || 'test' }}' environment"; exit 1
+          fi
+          install -m 600 /dev/null "$RUNNER_TEMP/kubeconfig"
+          printf '%s' "$KUBECONFIG_CONTENT" > "$RUNNER_TEMP/kubeconfig"
+          install -m 600 /dev/null "$RUNNER_TEMP/values.yaml"
+          printf '%s' "$HELM_VALUES" > "$RUNNER_TEMP/values.yaml"
+          echo "KUBECONFIG=$RUNNER_TEMP/kubeconfig" >> "$GITHUB_ENV"
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Upgrade
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # Rolling update with maxUnavailable 0: if new pods never become ready, the old ones keep serving.
+          helm upgrade --install "$RELEASE" "$CHART" --version "$VERSION" \
+            --namespace "$NAMESPACE" -f "$RUNNER_TEMP/values.yaml" --wait --timeout 10m
+          helm test "$RELEASE" --namespace "$NAMESPACE" --logs
+          echo "Deployed chart $VERSION to $NAMESPACE/$RELEASE" >> "$GITHUB_STEP_SUMMARY"
+      - name: Clean up credentials
+        if: always()
+        run: rm -f "$RUNNER_TEMP/kubeconfig" "$RUNNER_TEMP/values.yaml"
