@@ -32,7 +32,7 @@ const Dashboard = ({ standaloneSettings, sidebarOpen, closeSidebar }) => {
     <Neo4jProvider driver={driver as any}>
       <div className='dashboard-body'>
         {!standaloneSettings.standalone || (standaloneSettings.standalone && standaloneSettings.standaloneAllowLoad) ? (
-          // A fixed-width slot: the expanded panel floats over the dashboard instead of squeezing it.
+          // A zero-width slot: the open panel floats over the dashboard instead of squeezing it.
           <div className='dashboard-sidebar-slot'>
             <NeoDashboardSidebar />
           </div>

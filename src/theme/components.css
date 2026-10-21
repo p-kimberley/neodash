@@ -22,10 +22,11 @@ body {
 
 /* ---------- Dashboards panel (overlays the dashboard) ---------- */
 
+/* The panel has no collapsed rail: closed, it takes no space; open, it overlays the dashboard. */
 .dashboard-sidebar-slot {
   position: relative;
   flex: none;
-  width: 4rem;
+  width: 0;
   height: 100%;
   z-index: 25;
 }
@@ -57,6 +58,16 @@ body {
   overflow: hidden;
   transition: width 220ms cubic-bezier(0.2, 0, 0, 1), min-width 220ms cubic-bezier(0.2, 0, 0, 1), box-shadow 220ms ease;
   will-change: width;
+}
+
+/* Closed: zero width, and hidden (after the slide) so its controls can't be tabbed to. */
+.dashboard-sidebar-slot .ndl-side-navigation:not(.ndl-expanded) {
+  width: 0 !important;
+  min-width: 0 !important;
+  border-right-width: 0;
+  visibility: hidden;
+  transition: width 220ms cubic-bezier(0.2, 0, 0, 1), min-width 220ms cubic-bezier(0.2, 0, 0, 1), box-shadow 220ms ease,
+    visibility 0s linear 220ms;
 }
 
 .dashboard-sidebar-slot .ndl-side-navigation.ndl-expanded .ndl-side-navigation-nav {
