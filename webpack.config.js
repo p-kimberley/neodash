@@ -16,7 +16,7 @@ const stripRemoteImports = () => ({
 });
 stripRemoteImports.postcss = true;
 
-const rules = [
+const rules = (production) => [
   {
     test: /\.(js|jsx|ts|tsx)$/,
     exclude: /(node_modules)/,
@@ -25,7 +25,8 @@ const rules = [
       // preset-typescript here (not only in .babelrc) so shared files outside src/, such as
       // server/src/codec.ts, are compiled too.
       presets: ['@babel/env', '@babel/preset-typescript'],
-      //plugins: [isDevelopment && require.resolve('react-refresh/babel')].filter(Boolean),
+      // React Fast Refresh in development (the webpack plugin below needs this Babel half).
+      plugins: production ? [] : [require.resolve('react-refresh/babel')],
     },
   },
   {
@@ -47,8 +48,9 @@ const rules = [
     use: ['source-map-loader'],
   },
   {
+    // Images and fonts referenced from CSS or code (file-loader is replaced by asset modules).
     test: /.(png|svg|jpe?g|gif|woff2?|ttf|eot)$/,
-    use: ['file-loader'],
+    type: 'asset/resource',
   },
 ];
 
@@ -69,11 +71,13 @@ module.exports = (env) => {
       : undefined,
     devtool: production ? 'source-map' : 'eval-cheap-module-source-map',
     module: {
-      rules: rules,
+      rules: rules(production),
     },
     resolve: { extensions: ['*', '.js', '.jsx', '.ts', '.tsx'] },
     output: {
       filename: 'bundle.js',
+      // Remove files from earlier builds (the build script copies public/ in afterwards).
+      clean: true,
     },
     devServer: {
       // The backend (server/) listens on 3000; the dev server proxies its routes so the app is
