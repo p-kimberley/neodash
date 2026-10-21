@@ -1,21 +1,6 @@
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
-const CircularDependencyPlugin = require('circular-dependency-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const os = require('os');
-
-const circularPlugin = new CircularDependencyPlugin({
-  // exclude detection of files based on a RegExp
-  exclude: /a\.js|node_modules/,
-  // add errors to webpack instead of warnings
-  failOnError: false,
-  // allow import cycles that include an asyncronous import,
-  // e.g. via import(/* webpackMode: "weak" */ './file.js')
-  allowAsyncCycles: false,
-  // set the current working directory for displaying module paths
-  cwd: process.cwd(),
-});
-
-const circularValidation = false;
 
 // Removes @import of remote stylesheets (e.g. Google Fonts) from third-party CSS, so the app makes no
 // requests outside its own origin. The fonts themselves are bundled in src/fonts.ts.
@@ -110,9 +95,7 @@ module.exports = (env) => {
       },
     },
     // The upstream build uploaded source maps to Neo4j's Sentry; this fork does not report anywhere.
-    plugins: production
-      ? []
-      : [new ReactRefreshWebpackPlugin(), ...(circularValidation ? [circularPlugin] : [])],
+    plugins: production ? [] : [new ReactRefreshWebpackPlugin()],
     ignoreWarnings: [/Failed to parse source map/],
   };
 };
