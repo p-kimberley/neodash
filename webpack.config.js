@@ -1,3 +1,4 @@
+const path = require('path');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const os = require('os');
@@ -16,6 +17,7 @@ const stripRemoteImports = () => ({
 });
 stripRemoteImports.postcss = true;
 
+// CSS source maps are left out of production builds: css-loader 7 would embed them in the JS bundle.
 const rules = (production) => [
   {
     test: /\.(js|jsx|ts|tsx)$/,
@@ -33,13 +35,13 @@ const rules = (production) => [
     test: /\.css$/,
     use: [
       'style-loader',
-      'css-loader',
+      { loader: 'css-loader', options: { sourceMap: !production } },
       { loader: 'postcss-loader', options: { postcssOptions: { config: false, plugins: [stripRemoteImports] } } },
     ],
   },
   {
     test: /\.pcss$/,
-    use: ['style-loader', 'css-loader', 'postcss-loader'],
+    use: ['style-loader', { loader: 'css-loader', options: { sourceMap: !production } }, 'postcss-loader'],
   },
   {
     test: /\.js$/,
@@ -73,7 +75,13 @@ module.exports = (env) => {
     module: {
       rules: rules(production),
     },
-    resolve: { extensions: ['*', '.js', '.jsx', '.ts', '.tsx'] },
+    resolve: {
+      extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      alias: {
+        // Only used for opt-in WebGPU rendering in the 3D graph library; see src/stubs/three-webgpu.js.
+        'three/webgpu$': path.resolve(__dirname, 'src/stubs/three-webgpu.js'),
+      },
+    },
     output: {
       filename: 'bundle.js',
       // Remove files from earlier builds (the build script copies public/ in afterwards).
