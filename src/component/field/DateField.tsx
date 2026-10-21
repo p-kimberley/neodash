@@ -1,28 +1,28 @@
 import React from 'react';
-import TextField from '@mui/material/TextField';
+import dayjs from 'dayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DesktopDatePicker } from '@mui/x-date-pickers';
+import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 
+const MAX_DATE = dayjs('9999-12-31');
+
+/** A YYYY-MM-DD date field with a calendar; `value` and `onChange` use Day.js dates (or null). */
 const NeoDatePicker = ({ label, value, onChange, disabled = false }) => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <DesktopDatePicker
         label={label}
-        inputFormat='YYYY-MM-DD'
+        format='YYYY-MM-DD'
         value={value}
         disabled={disabled}
-        onChange={(event) => {
-          onChange(event);
+        onChange={(newValue) => onChange(newValue)}
+        maxDate={MAX_DATE}
+        slotProps={{
+          textField: {
+            variant: 'outlined',
+            style: { width: 'calc(100% - 30px)', marginLeft: '15px', marginTop: '5px' },
+          },
         }}
-        maxDate={new Date('9999-12-31')}
-        renderInput={(params) => (
-          <TextField
-            variant='outlined'
-            style={{ width: 'calc(100% - 30px)', marginLeft: '15px', marginTop: '5px' }}
-            {...params}
-          />
-        )}
       />
     </LocalizationProvider>
   );
