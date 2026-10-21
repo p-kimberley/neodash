@@ -22,6 +22,8 @@ declare module 'fastify' {
 }
 
 const SESSION_COOKIE = 'neodash_session';
+// Browsers reject cookies over 4096 bytes (name, value and attributes); leave room for the rest.
+const MAX_SESSION_COOKIE_LENGTH = 3800;
 const LOGIN_COOKIE = 'neodash_login';
 // Report types whose "query" is not Cypher.
 const NON_CYPHER_REPORTS = new Set(['text', 'iframe']);
@@ -136,12 +138,21 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
         .type('text/html')
         .send(page('No access', `You are signed in as <b>${escapeHtml(user.username)}</b>, but you have not been given access to NeoDash.`, true));
     }
+    // Keep the cookie small: only the NeoDash roles are needed after sign-in (all roles are in the
+    // audit line below), and the ID token is only a logout hint, so it is dropped if the cookie would
+    // pass the browsers' ~4 KB limit (they silently discard larger cookies, causing a sign-in loop).
+    const { roleViewer, roleEditor } = config.oidc;
     const session: Session = {
-      user: user as User,
+      user: { ...(user as User), roles: user.roles.filter((r) => r === roleViewer || r === roleEditor) },
       idToken,
       expiresAt: Math.floor(Date.now() / 1000) + config.session.maxAgeSeconds,
     };
-    reply.setCookie(SESSION_COOKIE, sessions.seal(session), { ...cookieBase, maxAge: config.session.maxAgeSeconds });
+    let sealed = sessions.seal(session);
+    if (sealed.length > MAX_SESSION_COOKIE_LENGTH) {
+      delete session.idToken;
+      sealed = sessions.seal(session);
+    }
+    reply.setCookie(SESSION_COOKIE, sealed, { ...cookieBase, maxAge: config.session.maxAgeSeconds });
     request.user = session.user;
     request.authMethod = 'session';
     audit(request, 'auth.login', { roles: user.roles });
