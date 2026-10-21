@@ -108,7 +108,7 @@ which signs everyone out.
 | `query.timeoutSecondsMax` / `query.rowLimitMax` | `120` / `10000` | Server-side limits for every query |
 | `audit.logParameters` | `true` | Include query parameter values in audit logs |
 | `maps.tileUrl` | – | Map tile server, e.g. `https://tiles.internal/{z}/{x}/{y}.png`; empty = no tiles |
-| `maps.dataUrl` | `/maps` | Where choropleth/area-map country shapes load from. Not yet included in the image: host them internally |
+| `maps.dataUrl` | `/maps` | Where choropleth/area-map country shapes load from; bundled in the image |
 | `branding.appName` | `NeoDash` | Product name in the header and browser tab |
 | `branding.logo.base64` / `fileName` | – / `logo.png` | Header logo (base64 PNG/SVG, e.g. `--set-file branding.logo.base64=logo.b64`), served from the pod |
 | `branding.style` | `{}` | Extra `style.config.json` entries, e.g. `--palette-light-primary-bg-strong: '0, 94, 184'` and the `--palette-dark-…` equivalent for the primary colour |

@@ -86,8 +86,8 @@ maps:
   # Empty: no tiles, so nothing is fetched from the internet.
   tileUrl: ''
   tileAttribution: ''
-  # Where choropleth / area map charts load country shapes. Not yet included in the image: host
-  # the files internally and point this at them.
+  # Where choropleth / area map charts load country and region shapes. They are bundled in the
+  # image and served at /maps; change this only to serve them from elsewhere.
   dataUrl: /maps
 
 branding:

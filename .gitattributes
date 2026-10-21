@@ -1,2 +1,5 @@
 # Shell scripts must keep LF endings, also when checked out on Windows.
 *.sh text eol=lf
+
+# Bundled map data: keep byte-for-byte (checksums in public/maps/SHA256SUMS) and skip text diffs.
+public/maps/*.json -text -diff

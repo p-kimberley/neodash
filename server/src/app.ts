@@ -369,7 +369,9 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
 
   if (config.staticDir) {
     const root = path.resolve(config.staticDir);
-    await app.register(fastifyStatic, { root, wildcard: false, index: false });
+    // preCompressed: send the .br / .gz copies written at build time (scripts/precompress.mjs) to
+    // browsers that accept them; the map data shrinks from ~8 MB to well under 1 MB.
+    await app.register(fastifyStatic, { root, wildcard: false, index: false, preCompressed: true });
     const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
     app.setNotFoundHandler((request, reply) => {
       const pathname = request.url.split('?')[0] ?? '';

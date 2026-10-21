@@ -16,7 +16,10 @@ COPY public ./public
 COPY src ./src
 # The typed JSON codec is shared with the backend.
 COPY server/src/codec.ts ./server/src/codec.ts
-RUN yarn run build-minimal && rm -f dist/config.json dist/embed-test.html dist/*.map
+COPY scripts/precompress.mjs ./scripts/
+# Map data (public/maps) is bundled so map charts work offline; .br/.gz copies keep it small on the wire.
+RUN yarn run build-minimal && rm -f dist/config.json dist/embed-test.html dist/*.map \
+    && node scripts/precompress.mjs dist
 
 # Same libc (glibc) as the distroless runtime below.
 FROM node:22-bookworm-slim AS server

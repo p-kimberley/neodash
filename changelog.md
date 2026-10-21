@@ -1,3 +1,7 @@
+## Unreleased
+- **Map data bundled**: choropleth and area map reports work out of the box and offline (country and region shapes served from `/maps`).
+- UI assets, including the map data, are sent Brotli/gzip-compressed (about 19 MB down to 2 MB).
+
 ## NeoDash 3.0.0 - Platform uplift (this fork)
 NeoDash as a shared, self-hosted service on Kubernetes. Existing dashboards keep working unchanged.
 See [docs/deployment.md](docs/deployment.md) for deployment and migration.

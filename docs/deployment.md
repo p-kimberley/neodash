@@ -256,9 +256,9 @@ Nothing in the running system needs internet access:
   other images (`helm test` reuses the NeoDash image).
 - Sign-in only talks to your identity provider.
 - Map reports draw no background tiles unless you set `maps.tileUrl` to an internal tile server.
-- Choropleth and area-map reports load country shapes from `maps.dataUrl`. The image doesn't
-  include those files yet; host them internally (from NeoDash's upstream map data) and set
-  `maps.dataUrl`, or those two report types show no shapes. Other map reports are unaffected.
+- Choropleth and area-map reports load country and region shapes from the image itself
+  (`/maps`, about 8 MB, sent compressed at under 1 MB). Set `maps.dataUrl` only to serve them
+  from elsewhere.
 - The optional text-to-Cypher extension calls an external LLM only if an editor configures it.
 
 Each release on GitHub has an offline bundle, `neodash-offline-<version>.tar.gz`, containing the

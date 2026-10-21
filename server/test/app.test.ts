@@ -133,13 +133,28 @@ describe('serving the UI', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'neodash-static-'));
     fs.writeFileSync(path.join(dir, 'index.html'), '<!doctype html><title>shell</title>');
     fs.writeFileSync(path.join(dir, 'bundle.js'), 'console.log(1)');
+    const zlib = await import('node:zlib');
+    const SHAPES = JSON.stringify({ type: 'FeatureCollection', features: [] });
+    fs.mkdirSync(path.join(dir, 'maps'));
+    fs.writeFileSync(path.join(dir, 'maps', 'shapes.json'), SHAPES);
+    fs.writeFileSync(path.join(dir, 'maps', 'shapes.json.br'), zlib.brotliCompressSync(SHAPES));
+    fs.writeFileSync(path.join(dir, 'maps', 'shapes.json.gz'), zlib.gzipSync(SHAPES));
     const { makeApp: make, testConfig } = await import('./helpers.js');
     const { app: staticApp, driver: staticDriver } = await make({ config: testConfig({ STATIC_DIR: dir }) });
     try {
       expect((await staticApp.inject({ url: '/dashboards/abc?page=1' })).body).toContain('shell');
       expect((await staticApp.inject({ url: '/' })).body).toContain('shell');
       expect((await staticApp.inject({ url: '/bundle.js' })).statusCode).toBe(200);
-      expect((await staticApp.inject({ url: '/maps/world_polymap.json' })).statusCode).toBe(404);
+      expect((await staticApp.inject({ url: '/maps/missing.json' })).statusCode).toBe(404);
+      // Pre-compressed copies go to browsers that accept them; others get the original.
+      const br = await staticApp.inject({ url: '/maps/shapes.json', headers: { 'accept-encoding': 'br, gzip' } });
+      expect(br.headers['content-encoding']).toBe('br');
+      expect(zlib.brotliDecompressSync(br.rawPayload).toString()).toBe(SHAPES);
+      const gz = await staticApp.inject({ url: '/maps/shapes.json', headers: { 'accept-encoding': 'gzip' } });
+      expect(gz.headers['content-encoding']).toBe('gzip');
+      const plain = await staticApp.inject({ url: '/maps/shapes.json' });
+      expect(plain.headers['content-encoding']).toBeUndefined();
+      expect(plain.body).toBe(SHAPES);
       expect((await staticApp.inject({ url: '/api/nope' })).statusCode).toBe(401);
     } finally {
       await staticApp.close();
