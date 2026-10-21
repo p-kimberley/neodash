@@ -69,6 +69,7 @@
     "chroma-js": "^2.4.2",
     "classnames": "^2.3.1",
     "d3-format": "^3.1.2",
+    "d3-hierarchy": "^3.1.2",
     "d3-scale-chromatic": "^3.0.0",
     "d3-time-format": "^4.1.0",
     "dayjs": "^1.11.7",

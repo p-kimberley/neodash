@@ -1,45 +1,31 @@
-import React, { useEffect } from 'react';
-import { ResponsiveTreeMap } from '@nivo/treemap';
-import { mutateName, processHierarchyFromRecords, findObject, flatten } from '../../../../chart/ChartUtils';
-import { useState } from 'react';
-
+import React from 'react';
+import * as echarts from 'echarts/core';
+import { TreemapChart } from 'echarts/charts';
+import { TooltipComponent } from 'echarts/components';
 import { ChartProps } from '../../../../chart/Chart';
 import { NoDrawableDataErrorMessage } from '../../../../component/editor/CodeViewerComponent';
-import { LABEL_ON_COLOR, themeNivo } from '../../../../chart/Utils';
-import RefreshButton from '../../component/RefreshButton';
+import { EChart } from '../../../../chart/echarts/EChart';
+import { darker, labelOnColor, tooltipRow } from '../../../../chart/echarts/helpers';
+import { schemeColors } from '../../../../chart/echarts/theme';
+import { buildHierarchy, HierarchyNode, ordinalColors, totalOf, useDrillDown } from '../hierarchy/Hierarchy';
+
+echarts.use([TreemapChart, TooltipComponent]);
 
 /**
- * Embeds a TreeMap (from Charts) into NeoDash.
+ * Treemap of a hierarchy (path + value): one colour per top-level branch, parent names in a band at
+ * the top of each group, and leaf tiles labelled with their value (as with nivo). Clicking a group
+ * drills into it. Settings keep their nivo-era names and defaults.
  */
 const NeoTreeMapChart = (props: ChartProps) => {
-  if (props.records == null || props.records.length == 0 || props.records[0].keys == null) {
+  const { records, selection } = props;
+  const root = buildHierarchy(records, selection);
+  const { current, drillInto, resetButton } = useDrillDown(root);
+
+  if (records == null || records.length == 0 || records[0].keys == null) {
     return <>No data, re-run the report.</>;
   }
-  const { records } = props;
-  const { selection } = props;
-  const [data, setData] = useState(undefined);
-  const [commonProperties, setCommonProperties] = useState({ data: { name: 'Total', children: [] } });
-  const [refreshable, setRefreshable] = useState(false);
-
-  if (!selection || props.records == null || props.records.length == 0 || props.records[0].keys == null) {
+  if (!selection || !current || !current.children || current.children.length == 0) {
     return <NoDrawableDataErrorMessage />;
-  }
-
-  useEffect(() => {
-    let dataPre = processHierarchyFromRecords(records, selection);
-    dataPre.forEach((currentNode) => mutateName(currentNode));
-    setCommonProperties({ data: dataPre.length == 1 ? dataPre[0] : { name: 'Total', children: dataPre } });
-  }, [records]);
-
-  useEffect(() => {
-    setData(commonProperties.data);
-  }, [props.selection, commonProperties]);
-
-  // Where a user give us the hierarchy with a common root, in that case we can push the entire tree.
-  // Where a user give us just the tree starting one hop away from the root.
-  // as Nivo needs a common root, so in that case, we create it for them.
-  if (data == undefined) {
-    setData(commonProperties.data);
   }
 
   const settings = props.settings ? props.settings : {};
@@ -48,70 +34,51 @@ const NeoTreeMapChart = (props: ChartProps) => {
   const marginLeft = settings.marginLeft ? settings.marginLeft : 24;
   const marginTop = settings.marginTop ? settings.marginTop : 24;
   const marginBottom = settings.marginBottom ? settings.marginBottom : 40;
-  const interactive = settings.interactive ? settings.interactive : true;
   const borderWidth = settings.borderWidth ? settings.borderWidth : 0;
   const legend = settings.legend ? settings.legend : false;
   const colorScheme = settings.colors ? settings.colors : 'nivo';
+  const colorOf = ordinalColors(schemeColors(colorScheme));
 
-  /**
-   * Helper function to determine which label to draw on a node in the hierarchy.
-   * @param n  the node.
-   * @returns a string (label).
-   */
-  const getLabelForNode = (n) => {
-    return n.formattedValue;
+  const toData = (node: HierarchyNode, branchColor: string) => {
+    const isParent = Boolean(node.children && node.children.length);
+    return {
+      name: node.name,
+      value: totalOf(node),
+      itemStyle: { color: branchColor, borderColor: darker(branchColor, 0.4), borderWidth, gapWidth: borderWidth },
+      // Parent groups show their name in a band at the top.
+      upperLabel: { show: isParent, color: labelOnColor(branchColor), formatter: '{b}', height: 20, fontWeight: 600 },
+      label: { color: labelOnColor(branchColor) },
+      children: isParent ? node.children.map((child) => toData(child, branchColor)) : undefined,
+    };
   };
 
-  // Final sanity check - only draw the visualization if we are sure the data is there and formatted correctly.
-  if (!data || !data.children || data.children.length == 0) {
-    return <NoDrawableDataErrorMessage />;
-  }
+  const option = {
+    tooltip: { trigger: 'item', formatter: (p) => tooltipRow(p.color, p.name, p.value) },
+    series: [
+      {
+        type: 'treemap',
+        left: marginLeft,
+        right: marginRight,
+        top: marginTop,
+        bottom: legend ? legendHeight + marginBottom : marginBottom,
+        roam: false,
+        nodeClick: false,
+        breadcrumb: { show: false },
+        // Leaf tiles show their value; tiles too small for it stay blank.
+        label: { show: true, formatter: (p) => Number(p.value).toLocaleString(), fontSize: 12 },
+        // Only parents (set per node above) get a band; not the hidden root.
+        upperLabel: { show: false },
+        levels: [{ itemStyle: { gapWidth: borderWidth } }],
+        data: current.children.map((child) => toData(child, colorOf(child.name))),
+      },
+    ],
+  };
+
   return (
-    <>
-      <div style={{ position: 'relative', overflow: 'hidden', width: '100%', height: '100%' }}>
-        {refreshable ? (
-          <RefreshButton
-            onClick={() => {
-              setData(commonProperties.data);
-              setRefreshable(false);
-            }}
-          ></RefreshButton>
-        ) : (
-          <div></div>
-        )}
-        <ResponsiveTreeMap
-          {...commonProperties}
-          theme={themeNivo}
-          identity='name'
-          value='loc'
-          data={data}
-          onClick={(clickedData) => {
-            const foundObject = findObject(flatten(data.children), clickedData.id);
-            if (foundObject && foundObject.children) {
-              setData(foundObject);
-              setRefreshable(true);
-            }
-          }}
-          isInteractive={interactive}
-          borderWidth={borderWidth}
-          margin={{
-            top: marginTop,
-            right: marginRight,
-            bottom: legend ? legendHeight + marginBottom : marginBottom,
-            left: marginLeft,
-          }}
-          animate={true}
-          colors={{ scheme: colorScheme }}
-          // Opaque tiles with contrasting labels read well on light and dark backgrounds.
-          nodeOpacity={1}
-          labelSkipSize={18}
-          labelTextColor={LABEL_ON_COLOR}
-          parentLabelTextColor={LABEL_ON_COLOR}
-          borderColor={{ from: 'color', modifiers: [['darker', 0.4]] }}
-          label={getLabelForNode}
-        />
-      </div>
-    </>
+    <div style={{ position: 'relative', overflow: 'hidden', width: '100%', height: '100%' }}>
+      {resetButton}
+      <EChart option={option} onClick={(p) => drillInto(p.name)} />
+    </div>
   );
 };
 
