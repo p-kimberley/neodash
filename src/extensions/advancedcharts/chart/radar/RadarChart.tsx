@@ -1,13 +1,24 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
+import * as echarts from 'echarts/core';
+import { RadarChart } from 'echarts/charts';
+import { LegendComponent, RadarComponent, TooltipComponent } from 'echarts/components';
 import { ChartProps } from '../../../../chart/Chart';
-import { ResponsiveRadar } from '@nivo/radar';
 import { NoDrawableDataErrorMessage } from '../../../../component/editor/CodeViewerComponent';
-import { themeNivo } from '../../../../chart/Utils';
+import { EChart } from '../../../../chart/echarts/EChart';
+import { escapeHtml, toNumber, tooltipRow } from '../../../../chart/echarts/helpers';
+import { schemeColors } from '../../../../chart/echarts/theme';
+import { palettes } from '../../../../theme/palette';
+import { getDashboardTheme } from '../../../../dashboard/DashboardSelectors';
+
+echarts.use([RadarChart, RadarComponent, LegendComponent, TooltipComponent]);
 
 /**
- * Embeds a RadarChart (from Charts) into NeoDash.
+ * Radar chart: each record is a spoke (the index field), each selected value field a shape.
+ * Settings keep their nivo-era names and defaults.
  */
 const NeoRadarChart = (props: ChartProps) => {
+  const mode = useSelector(getDashboardTheme) === 'dark' ? 'dark' : 'light';
   if (
     !props.selection ||
     props.selection.values == undefined ||
@@ -21,9 +32,6 @@ const NeoRadarChart = (props: ChartProps) => {
   const selection = props.selection ? props.selection : {};
   const settings = props.settings ? props.settings : {};
   const legendHeight = 20;
-  const legendWidth = 20;
-  const marginRight = settings.marginRight ? settings.marginRight : 24;
-  const marginLeft = settings.marginLeft ? settings.marginLeft : 24;
   const marginTop = settings.marginTop ? settings.marginTop : 40;
   const marginBottom = settings.marginBottom ? settings.marginBottom : 40;
   const dotSize = settings.dotSize ? settings.dotSize : 10;
@@ -34,81 +42,74 @@ const NeoRadarChart = (props: ChartProps) => {
   const animate = settings.animate !== undefined ? settings.animate : true;
   const legend = settings.legend !== undefined ? settings.legend : false;
   const colorScheme = settings.colors ? settings.colors : 'set2';
-  const blendMode = settings.blendMode ? settings.blendMode : 'normal';
-  const motionConfig = settings.motionConfig ? settings.motionConfig : 'gentle';
-  const curve = settings.curve ? settings.curve : 'linearClosed';
-
-  const keys = selection.values;
+  const keys: string[] = selection.values;
 
   let valid = true;
-  const data = records.map((r) => {
-    const entry = {};
-    selection.values.concat([selection.index]).forEach((k) => {
-      const fieldIndex = r._fieldLookup[k];
-      if (k !== selection.index && isNaN(r._fields[fieldIndex])) {
+  const rows = records.map((r) => {
+    const values = keys.map((k) => {
+      const value = toNumber(r._fields[r._fieldLookup[k]]);
+      if (isNaN(value)) {
         valid = false;
       }
-      entry[k] = `${r._fields[fieldIndex]}`;
+      return value;
     });
-    return entry;
+    return { index: `${r._fields[r._fieldLookup[selection.index]]}`, values };
   });
-
-  // If we find inconsitent data, return an error/
   if (!valid) {
     return <NoDrawableDataErrorMessage />;
   }
-  return (
-    <ResponsiveRadar
-      theme={themeNivo}
-      data={data}
-      isInteractive={interactive}
-      animate={animate}
-      margin={{
-        top: legend ? legendHeight + marginTop : marginTop,
-        right: legend ? legendWidth + marginRight : marginRight,
-        bottom: marginBottom,
-        left: legend ? legendHeight + marginLeft : marginLeft,
-      }}
-      gridLevels={gridLevels}
-      keys={keys}
-      indexBy={selection.index}
-      valueFormat='>-.2f'
-      borderColor={{ from: 'color' }}
-      gridLabelOffset={gridLabelOffset}
-      dotSize={dotSize}
-      dotColor={{ theme: 'background' }}
-      dotBorderWidth={dotBorderWidth}
-      // colors={styleRules.length >= 1 ? getCircleColor : { scheme: colorScheme }}
-      colors={{ scheme: colorScheme }}
-      blendMode={blendMode}
-      motionConfig={motionConfig}
-      curve={curve}
-      legends={
-        legend
-          ? [
-              {
-                anchor: 'top-left',
-                direction: 'column',
-                translateX: 0,
-                translateY: -40,
-                itemWidth: 100,
-                itemHeight: 14,
-                symbolSize: 14,
-                symbolShape: 'circle',
-                effects: [
-                  {
-                    on: 'hover',
-                    style: {
-                      itemTextColor: '#000',
-                    },
-                  },
-                ],
-              },
-            ]
-          : []
-      }
-    />
-  );
+
+  const scheme = schemeColors(colorScheme);
+  const max = Math.max(0, ...rows.flatMap((row) => row.values));
+  const surface = palettes[mode].surface;
+
+  const option = {
+    animation: animate,
+    tooltip: interactive
+      ? {
+          trigger: 'item',
+          formatter: (p) =>
+            `${escapeHtml(p.name)}<br/>${rows
+              .map((row, i) => tooltipRow(p.color, row.index, Number(p.value[i]).toFixed(2)))
+              .join('<br/>')}`,
+        }
+      : { show: false },
+    legend: legend
+      ? { show: true, orient: 'vertical', left: 0, top: 0, icon: 'circle', itemWidth: 12, itemHeight: 12 }
+      : { show: false },
+    radar: {
+      center: ['50%', `${50 + (marginTop + (legend ? legendHeight : 0) - marginBottom) / 2 / 3}%`],
+      radius: '68%',
+      shape: 'circle',
+      splitNumber: gridLevels,
+      axisNameGap: gridLabelOffset,
+      indicator: rows.map((row) => ({ name: row.index, max: max || 1 })),
+    },
+    series: keys.map((key, k) => {
+      const color = scheme[k % scheme.length];
+      return {
+        type: 'radar',
+        name: key,
+        silent: !interactive,
+        symbol: 'circle',
+        symbolSize: dotSize,
+        itemStyle: { color: surface, borderColor: color, borderWidth: dotBorderWidth },
+        lineStyle: { color, width: 2 },
+        areaStyle: { color, opacity: 0.25 },
+        emphasis: { areaStyle: { opacity: 0.4 } },
+        data: [{ name: key, value: rows.map((row) => row.values[k]) }],
+      };
+    }),
+  };
+  // Legend icons in the series colours (the dots themselves use the background colour).
+  if (legend) {
+    (option.legend as any).data = keys.map((key, k) => ({
+      name: key,
+      itemStyle: { color: scheme[k % scheme.length] },
+    }));
+  }
+
+  return <EChart option={option} />;
 };
 
 export default NeoRadarChart;

@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { ResponsiveSankey } from '@nivo/sankey';
+import * as echarts from 'echarts/core';
+import { SankeyChart } from 'echarts/charts';
+import { LegendComponent, TooltipComponent } from 'echarts/components';
+import { useSelector } from 'react-redux';
+import { EChart } from '../../../../chart/echarts/EChart';
+import { darker, escapeHtml, toNumber } from '../../../../chart/echarts/helpers';
+import { schemeColors } from '../../../../chart/echarts/theme';
+import { ordinalColors } from '../hierarchy/Hierarchy';
+import { palettes } from '../../../../theme/palette';
+import { getDashboardTheme } from '../../../../dashboard/DashboardSelectors';
 import { ChartProps } from '../../../../chart/Chart';
 import { valueIsArray, valueIsNode, valueIsPath, valueIsRelationship } from '../../../../chart/ChartUtils';
 import { categoricalColorSchemes } from '../../../../config/ColorConfig';
-import { evaluateRulesOnDict, evaluateRulesOnNode, useStyleRules } from '../../../styling/StyleRuleEvaluator';
+import { evaluateRulesOnNode, useStyleRules } from '../../../styling/StyleRuleEvaluator';
 import NeoCodeViewerComponent from '../../../../component/editor/CodeViewerComponent';
 import { isCyclic } from '../../Utils';
-import { themeNivo } from '../../../../chart/Utils';
 import { extensionEnabled } from '../../../../utils/ReportUtils';
+
+echarts.use([SankeyChart, LegendComponent, TooltipComponent]);
 
 const UNWEIGHTED_SANKEY_PROPERTY = 'SANKEY_UNWEIGHTED';
 
@@ -45,6 +55,7 @@ const NeoSankeyChart = (props: ChartProps) => {
   const update = (state, mutations) => Object.assign({}, state, mutations);
 
   const [data, setData] = useState({ nodes: [], links: [] });
+  const mode = useSelector(getDashboardTheme) === 'dark' ? 'dark' : 'light';
 
   useEffect(() => {
     buildVisualizationDictionaryFromRecords(props.records);
@@ -139,19 +150,6 @@ const NeoSankeyChart = (props: ChartProps) => {
   }
 
   // Compute slice color based on rules - overrides default color scheme completely.
-  const getSliceColor = (slice) => {
-    const data = {};
-    if (!props.selection) {
-      return 'grey';
-    }
-    data[props.selection.value] = slice.value;
-    data[props.selection.index] = slice.id;
-    const validRuleIndex = evaluateRulesOnDict(data, styleRules, ['slice color']);
-    if (validRuleIndex !== -1) {
-      return styleRules[validRuleIndex].customizationValue;
-    }
-    return 'grey';
-  };
 
   const getArcLabel = (item) => {
     let lbl = '';
@@ -188,67 +186,90 @@ const NeoSankeyChart = (props: ChartProps) => {
     );
   }
 
-  return (
-    <ResponsiveSankey
-      theme={themeNivo}
-      data={data}
-      margin={{
+  // Nodes coloured by the scheme in order of appearance (as nivo's ordinal colours were); links take
+  // a gradient between their ends.
+  const colorOf = ordinalColors(schemeColors(colorScheme));
+  // Each node's column (longest path from a source), so labels in the last column can sit on its
+  // inner side, as nivo's "inside" labels did, instead of running off the edge.
+  const depth: Record<string, number> = {};
+  const incoming = new Set(data.links.map((l) => `${l.target}`));
+  let frontier = data.nodes.map((n) => `${n.id}`).filter((id) => !incoming.has(id));
+  frontier.forEach((id) => (depth[id] = 0));
+  for (let step = 0; frontier.length && step < data.nodes.length; step++) {
+    const next: string[] = [];
+    const current = new Set(frontier);
+    data.links.forEach((l) => {
+      const from = `${l.source}`;
+      const to = `${l.target}`;
+      if (current.has(from) && (depth[to] ?? -1) < depth[from] + 1) {
+        depth[to] = depth[from] + 1;
+        next.push(to);
+      }
+    });
+    frontier = next;
+  }
+  const lastColumn = Math.max(0, ...Object.values(depth));
+  const nodeData = data.nodes.map((node) => {
+    const color = colorOf(`${node.id}`);
+    return {
+      name: `${node.id}`,
+      label: {
+        formatter: () => `${getArcLabel(node) ?? ''}`,
+        ...(labelPosition !== 'outside' && lastColumn > 0 && depth[`${node.id}`] === lastColumn
+          ? { position: layout !== 'vertical' ? 'left' : 'top' }
+          : {}),
+      },
+      itemStyle: { color, borderColor: darker(color, 0.8), borderWidth: nodeBorderWidth },
+      node,
+    };
+  });
+  const nodeById = Object.fromEntries(nodeData.map((n) => [n.name, n]));
+  const labelOf = (id) => {
+    const node = nodeById[`${id}`];
+    return node ? `${getArcLabel(node.node) ?? ''}` : `${id}`;
+  };
+  const horizontal = layout !== 'vertical';
+  const option = {
+    tooltip: interactive
+      ? {
+          trigger: 'item',
+          formatter: (p) =>
+            p.dataType === 'edge'
+              ? `${escapeHtml(labelOf(p.data.source))} → ${escapeHtml(labelOf(p.data.target))}: <b>${escapeHtml(p.data.value)}</b>`
+              : `<b>${escapeHtml(labelOf(p.name))}</b>: ${escapeHtml(p.value)}`,
+        }
+      : { show: false },
+    series: [
+      {
+        type: 'sankey',
+        left: marginLeft,
         top: marginTop,
         right: legend ? legendWidth + marginRight : marginRight,
         bottom: legend ? legendHeight + marginBottom : marginBottom,
-        left: marginLeft,
-      }}
-      isInteractive={interactive}
-      layout={layout}
-      label={getArcLabel}
-      nodeBorderWidth={nodeBorderWidth}
-      align='justify'
-      nodeOpacity={1}
-      nodeHoverOthersOpacity={0.35}
-      nodeThickness={nodeThickness}
-      nodeSpacing={nodeSpacing}
-      nodeBorderColor={{
-        from: 'color',
-        modifiers: [['darker', 0.8]],
-      }}
-      nodeBorderRadius={3}
-      linkOpacity={0.5}
-      linkHoverOthersOpacity={0.1}
-      linkContract={3}
-      enableLinkGradient={true}
-      labelPosition={labelPosition}
-      labelOrientation={labelOrientation}
-      labelPadding={16}
-      // Labels sit beside the nodes, on the card background.
-      labelTextColor='var(--nd-chart-text)'
-      colors={styleRules.length >= 1 ? getSliceColor : { scheme: colorScheme }}
-      legends={
-        legend
-          ? [
-              {
-                anchor: 'bottom-right',
-                direction: 'column',
-                translateX: 120,
-                itemWidth: 100,
-                itemHeight: 14,
-                itemDirection: 'right-to-left',
-                itemsSpacing: 2,
-                symbolSize: 14,
-                effects: [
-                  {
-                    on: 'hover',
-                    style: {
-                      itemTextColor: '#000',
-                    },
-                  },
-                ],
-              },
-            ]
-          : []
-      }
-      animate={true}
-    />
-  );
+        orient: horizontal ? 'horizontal' : 'vertical',
+        nodeAlign: 'justify',
+        nodeWidth: nodeThickness,
+        nodeGap: nodeSpacing,
+        draggable: false,
+        silent: !interactive,
+        emphasis: { focus: 'adjacency' },
+        label: {
+          position: labelPosition === 'outside' ? (horizontal ? 'left' : 'top') : horizontal ? 'right' : 'bottom',
+          rotate: labelOrientation === 'vertical' ? 90 : 0,
+          color: palettes[mode].chartText,
+        },
+        lineStyle: { color: 'gradient', opacity: 0.5, curveness: 0.5 },
+        data: nodeData,
+        links: data.links.map((link) => ({
+          source: `${link.source}`,
+          target: `${link.target}`,
+          value: toNumber(link.value),
+        })),
+      },
+    ],
+  };
+
+  return <EChart option={option} />;
 };
 
 export default NeoSankeyChart;
