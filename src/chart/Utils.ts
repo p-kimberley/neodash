@@ -1,4 +1,4 @@
-import { tokens } from '@neo4j-ndl/base';
+import { FONT_SANS, palettes } from '../theme/palette';
 import { QueryResult, Record as Neo4jRecord } from 'neo4j-driver';
 export function recordToNative(input: any): any {
   if (!input && input !== false) {
@@ -117,67 +117,84 @@ export enum EntityType {
   Relationship,
 }
 
-export const themeNivo = {
-  textColor: 'rgb(var(--palette-neutral-text-default))',
-  text: { fill: 'rgb(var(--palette-neutral-text-default))' },
-  axis: {
-    ticks: { text: { fill: 'rgb(var(--palette-neutral-text-default))' } },
-    legend: { text: { fill: 'rgb(var(--palette-neutral-text-default))' } },
-  },
-  legends: {
-    text: { fill: 'rgb(var(--palette-neutral-text-default))' },
-    title: { text: { fill: 'rgb(var(--palette-neutral-text-default))' } },
-    ticks: { text: { fill: 'rgb(var(--palette-neutral-text-default))' } },
-    hidden: { text: { fill: 'rgb(var(--palette-neutral-text-default))' } },
-  },
-  markers: {
-    text: { fill: 'rgb(var(--palette-neutral-text-default))' },
-  },
-  labels: {
-    text: { fill: 'rgb(var(--palette-neutral-text-default))' },
-  },
-  annotations: {
-    text: { fill: 'rgb(var(--palette-neutral-text-default))' },
-  },
-  tooltip: {
-    container: {
-      fill: 'rgb(var(--palette-neutral-text-default))',
-      background: 'rgb(var(--palette-neutral-bg-strong))',
-    },
-  },
-};
-
-export const themeNivoCanvas = (theme) => {
-  let baseDefault =
-    theme === 'light' ? tokens.palette.light.neutral.text.default : tokens.palette.dark.neutral.text.default;
-  let baseWeak = theme === 'light' ? tokens.palette.light.neutral.text.weak : tokens.palette.dark.neutral.text.weak;
+/**
+ * Builds the shared nivo chart theme. `c` gives the colours: CSS variables for SVG charts (so they
+ * follow the appearance without re-rendering), concrete values for canvas charts.
+ */
+function nivoTheme(c: {
+  text: string;
+  muted: string;
+  grid: string;
+  axis: string;
+  tooltipBg: string;
+  tooltipText: string;
+  border: string;
+}) {
+  const font = { fontFamily: FONT_SANS, fontSize: 12 };
   return {
-    // textColor: 'rgb(var(--palette-neutral-text-default))',
-    text: { fill: baseDefault },
+    ...font,
+    textColor: c.text,
+    text: { ...font, fill: c.text },
+    grid: { line: { stroke: c.grid, strokeWidth: 1 } },
+    crosshair: { line: { stroke: c.muted, strokeWidth: 1, strokeOpacity: 0.6, strokeDasharray: '4 4' } },
     axis: {
-      ticks: { text: { fill: baseDefault } },
-      legend: { text: { fill: baseDefault } },
+      domain: { line: { stroke: c.axis, strokeWidth: 1 } },
+      ticks: { line: { stroke: c.axis, strokeWidth: 1 }, text: { ...font, fill: c.text } },
+      legend: { text: { ...font, fontSize: 13, fontWeight: 600, fill: c.text } },
     },
     legends: {
-      text: { fill: baseWeak },
-      title: { text: { fill: baseWeak } },
-      ticks: { text: { fill: baseWeak } },
-      hidden: { text: { fill: baseWeak } },
+      text: { ...font, fill: c.text },
+      title: { text: { ...font, fontWeight: 600, fill: c.text } },
+      ticks: { text: { ...font, fill: c.text } },
+      hidden: { text: { ...font, fill: c.muted } },
     },
-    markers: {
-      text: { fill: baseDefault },
-    },
-    labels: {
-      text: { fill: baseDefault },
-    },
-    annotations: {
-      text: { fill: baseDefault },
-    },
+    markers: { text: { ...font, fill: c.text }, lineColor: c.axis },
+    // Labels outside shapes. Labels drawn on top of coloured shapes pick a contrasting shade of the
+    // shape's own colour instead (see LABEL_ON_COLOR).
+    labels: { text: { ...font, fontWeight: 600, fill: c.text } },
+    annotations: { text: { ...font, fill: c.text }, link: { stroke: c.muted }, outline: { stroke: c.muted } },
     tooltip: {
       container: {
-        fill: 'rgb(var(--palette-neutral-text-default))',
-        background: 'rgb(var(--palette-neutral-bg-strong))',
+        ...font,
+        fontSize: 13,
+        color: c.tooltipText,
+        background: c.tooltipBg,
+        border: `1px solid ${c.border}`,
+        borderRadius: 8,
+        boxShadow: '0 6px 20px rgba(0, 0, 0, 0.18)',
+        padding: '6px 10px',
       },
     },
   };
+}
+
+/** Theme for SVG charts; colours are CSS variables, so they follow light/dark automatically. */
+export const themeNivo = nivoTheme({
+  text: 'var(--nd-chart-text)',
+  muted: 'var(--nd-text-muted)',
+  grid: 'var(--nd-chart-grid)',
+  axis: 'var(--nd-chart-axis)',
+  tooltipBg: 'var(--nd-surface-raised)',
+  tooltipText: 'var(--nd-text)',
+  border: 'var(--nd-border)',
+});
+
+/** Theme for canvas charts, which need concrete colours. */
+export const themeNivoCanvas = (theme) => {
+  const p = palettes[theme === 'dark' ? 'dark' : 'light'];
+  return nivoTheme({
+    text: p.chartText,
+    muted: p.textMuted,
+    grid: p.chartGrid,
+    axis: p.chartAxis,
+    tooltipBg: p.surfaceRaised,
+    tooltipText: p.text,
+    border: p.border,
+  });
 };
+
+/**
+ * Text colour for labels drawn on coloured shapes (pie slices, bars, treemap tiles...): a much
+ * darker shade of the shape's colour, which stays readable on both light and saturated fills.
+ */
+export const LABEL_ON_COLOR = { from: 'color', modifiers: [['darker', 2.6]] } as any;

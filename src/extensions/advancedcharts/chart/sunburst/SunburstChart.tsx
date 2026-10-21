@@ -3,7 +3,7 @@ import { processHierarchyFromRecords, findObject, flatten, mutateName } from '..
 import { ResponsiveSunburst } from '@nivo/sunburst';
 import { ChartProps } from '../../../../chart/Chart';
 import { NoDrawableDataErrorMessage } from '../../../../component/editor/CodeViewerComponent';
-import { themeNivo } from '../../../../chart/Utils';
+import { LABEL_ON_COLOR, themeNivo } from '../../../../chart/Utils';
 import RefreshButton from '../../component/RefreshButton';
 /**
  * Embeds a SunburstChart (from Charts) into NeoDash.
@@ -101,6 +101,7 @@ const NeoSunburstChart = (props: ChartProps) => {
           }}
           animate={true}
           arcLabelsSkipAngle={arcLabelsSkipAngle}
+          arcLabelsTextColor={LABEL_ON_COLOR}
           colors={{ scheme: colorScheme }}
         />
       </div>

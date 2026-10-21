@@ -1,0 +1,165 @@
+/*
+ * NeoDash design tokens: one source of colour, type and spacing for the whole app.
+ *
+ * Built on the Neo4j design system (NDL) palette, with Material-style roles: surfaces, on-surface text
+ * (primary / secondary / muted), outlines, accent, plus chart and code colours. Every text colour meets
+ * WCAG AA (4.5:1) on the surfaces it is used on, in both appearances. The dark set applies under
+ * .ndl-theme-dark, which the app toggles on <body>. JavaScript that needs concrete colours (canvas
+ * charts, Material UI) uses the same values from src/theme/palette.ts; keep the two in sync.
+ */
+
+:root {
+  --nd-font-sans: 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --nd-font-mono: 'Fira Code', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  /* Type scale (px): captions, body, titles. */
+  --nd-text-xs: 12px;
+  --nd-text-sm: 13px;
+  --nd-text-md: 14px;
+  --nd-text-lg: 16px;
+  --nd-text-xl: 18px;
+  --nd-text-2xl: 24px;
+  --nd-text-3xl: 30px;
+  --nd-leading: 1.5;
+
+  --nd-radius-sm: 6px;
+  --nd-radius-md: 10px;
+  --nd-radius-lg: 14px;
+
+  /* Surfaces */
+  --nd-bg: #f5f7fa;
+  --nd-surface: #ffffff;
+  --nd-surface-raised: #ffffff;
+  --nd-surface-variant: #f0f3f7;
+  --nd-hover: rgba(21, 30, 41, 0.06);
+  --nd-selected: rgba(0, 111, 214, 0.1);
+  --nd-border: #e1e6ed;
+  --nd-border-strong: #c4c9d1;
+  --nd-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
+  --nd-shadow-raised: 0 8px 24px rgba(16, 24, 40, 0.14);
+
+  /* On-surface text and icons */
+  --nd-text: #151e29;
+  --nd-text-secondary: #46505d;
+  --nd-text-muted: #636c78;
+  --nd-text-disabled: #9aa1ab;
+  --nd-icon: #46505d;
+
+  /* Accent and status */
+  --nd-primary: #006fd6;
+  --nd-on-primary: #ffffff;
+  --nd-primary-soft: #e6f4ff;
+  --nd-on-primary-soft: #00539f;
+  --nd-focus: #006fd6;
+  --nd-danger: #c8243f;
+  --nd-success: #2b7a58;
+  --nd-warning: #8a5a00;
+
+  /* Charts */
+  --nd-chart-text: #46505d;
+  --nd-chart-grid: #e6eaef;
+  --nd-chart-axis: #b8bfc8;
+  --nd-chart-surface: #ffffff;
+
+  /* Code */
+  --nd-code-bg: #f6f8fa;
+  --nd-code-fg: #1f2328;
+  --nd-code-gutter: #5f6873;
+  --nd-code-gutter-bg: #f0f3f6;
+  --nd-code-selection: #cce5ff;
+  --nd-code-keyword: #cf222e;
+  --nd-code-string: #0a3069;
+  --nd-code-number: #0550ae;
+  --nd-code-property: #8250df;
+  --nd-code-label: #116329;
+  --nd-code-variable: #953800;
+  --nd-code-function: #6639ba;
+  --nd-code-comment: #5c6670;
+  --nd-code-punctuation: #57606a;
+}
+
+.ndl-theme-dark {
+  --nd-bg: #121922;
+  --nd-surface: #1b2430;
+  --nd-surface-raised: #232e3b;
+  --nd-surface-variant: #202a36;
+  --nd-hover: rgba(245, 247, 250, 0.07);
+  --nd-selected: rgba(124, 200, 255, 0.14);
+  --nd-border: #2c3744;
+  --nd-border-strong: #475363;
+  --nd-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --nd-shadow-raised: 0 12px 32px rgba(0, 0, 0, 0.5);
+
+  --nd-text: #f1f4f8;
+  --nd-text-secondary: #c6ccd4;
+  --nd-text-muted: #9ca5b1;
+  --nd-text-disabled: #6b7582;
+  --nd-icon: #c6ccd4;
+
+  --nd-primary: #7cc8ff;
+  --nd-on-primary: #08233a;
+  --nd-primary-soft: #1f3a52;
+  --nd-on-primary-soft: #b8e2ff;
+  --nd-focus: #7cc8ff;
+  --nd-danger: #ff8fa3;
+  --nd-success: #7fe0b6;
+  --nd-warning: #ffd866;
+
+  --nd-chart-text: #c6ccd4;
+  --nd-chart-grid: #2c3744;
+  --nd-chart-axis: #4f5b6b;
+  --nd-chart-surface: #1b2430;
+
+  --nd-code-bg: #121a24;
+  --nd-code-fg: #e6edf3;
+  --nd-code-gutter: #8893a1;
+  --nd-code-gutter-bg: #0f161f;
+  --nd-code-selection: #264f78;
+  --nd-code-keyword: #ff7b72;
+  --nd-code-string: #a5d6ff;
+  --nd-code-number: #79c0ff;
+  --nd-code-property: #d2a8ff;
+  --nd-code-label: #7ee787;
+  --nd-code-variable: #ffa657;
+  --nd-code-function: #d2a8ff;
+  --nd-code-comment: #8b949e;
+  --nd-code-punctuation: #9ca5b1;
+}
+
+/*
+ * Align the Neo4j design system's own variables (used by its components and n-* utility classes)
+ * with the tokens above. Its values are "R, G, B" triples. The selectors are more specific than
+ * the design system's, so they win regardless of stylesheet order.
+ */
+html:root {
+  --palette-neutral-bg-default: 245, 247, 250;
+  --palette-neutral-bg-weak: 255, 255, 255;
+  --palette-neutral-bg-strong: 236, 240, 245;
+  --palette-neutral-border-weak: 225, 230, 237;
+  --palette-neutral-border-strong: 196, 201, 209;
+  --palette-neutral-text-default: 21, 30, 41;
+  --palette-neutral-text-weak: 70, 80, 93;
+  --palette-neutral-text-weaker: 99, 108, 120;
+  /* NDL's weakest text (178, 183, 189) is 2:1 on white; raise it to 4.5:1. */
+  --palette-neutral-text-weakest: 112, 120, 132;
+  --palette-neutral-icon: 70, 80, 93;
+}
+
+body.ndl-theme-dark {
+  --palette-neutral-bg-default: 18, 25, 34;
+  --palette-neutral-bg-weak: 27, 36, 48;
+  --palette-neutral-bg-strong: 35, 46, 59;
+  --palette-neutral-border-weak: 44, 55, 68;
+  --palette-neutral-border-strong: 71, 83, 99;
+  --palette-neutral-text-default: 241, 244, 248;
+  --palette-neutral-text-weak: 198, 204, 212;
+  --palette-neutral-text-weaker: 168, 176, 187;
+  /* NDL's weakest dark text (113, 119, 128) is 3.6:1; raise it to 4.5:1+. */
+  --palette-neutral-text-weakest: 140, 150, 163;
+  --palette-neutral-icon: 198, 204, 212;
+  --palette-primary-text: 124, 200, 255;
+  --palette-primary-icon: 124, 200, 255;
+  --palette-primary-bg-strong: 124, 200, 255;
+  --palette-primary-border-strong: 124, 200, 255;
+  --palette-primary-bg-weak: 31, 58, 82;
+}

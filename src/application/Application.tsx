@@ -20,6 +20,8 @@ import { NeoDashboardPlaceholder } from '../dashboard/placeholder/DashboardPlace
 import { downloadComponentAsImage } from '../chart/ChartUtils';
 import '@neo4j-ndl/base/lib/neo4j-ds-styles.css';
 import { getDashboardTheme } from '../dashboard/DashboardSelectors';
+import { ThemeProvider } from '@mui/material/styles';
+import { createAppTheme } from '../theme/muiTheme';
 
 const NeoReportHelpModal = React.lazy(() => import('../modal/ReportHelpModal'));
 const NeoNotificationModal = React.lazy(() => import('../modal/NotificationModal'));
@@ -72,6 +74,8 @@ const Application = ({
     return () => media.removeEventListener('change', update);
   }, []);
 
+  // One Material UI theme for the whole app, matching the current appearance.
+  const muiTheme = React.useMemo(() => createAppTheme(themeMode === 'dark' ? 'dark' : 'light'), [themeMode]);
   const ref = React.useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (themeMode === 'dark') {
@@ -82,33 +86,35 @@ const Application = ({
   }, [themeMode]);
 
   return (
-    <div
-      ref={ref}
-      className={`n-bg-palette-neutral-bg-default n-h-screen n-w-screen n-flex n-flex-col n-overflow-hidden`}
-    >
-      {connected ? (
-        <>
-          <AppHeader
-            onHome={onHome}
-            onDownloadImage={() => downloadComponentAsImage(ref)}
-            onAboutModalOpen={onAboutModalOpen}
-          />
-          <Suspense fallback=''>{homeOpen ? <DashboardSelector /> : <Dashboard />}</Suspense>
-        </>
-      ) : (
-        <NeoDashboardPlaceholder></NeoDashboardPlaceholder>
-      )}
-      {/* TODO - move all models into a pop-ups (or modals) component. */}
-      <Suspense fallback=''>
-        <NeoAboutModal open={aboutModalOpen} handleClose={onAboutModalClose} getDebugState={getDebugState} />
-      </Suspense>
-      <Suspense fallback=''>
-        <NeoReportHelpModal open={reportHelpModalOpen} handleClose={onReportHelpModalClose} />
-      </Suspense>
-      <Suspense fallback=''>
-        <NeoNotificationModal></NeoNotificationModal>
-      </Suspense>
-    </div>
+    <ThemeProvider theme={muiTheme}>
+      <div
+        ref={ref}
+        className={`n-bg-palette-neutral-bg-default n-h-screen n-w-screen n-flex n-flex-col n-overflow-hidden`}
+      >
+        {connected ? (
+          <>
+            <AppHeader
+              onHome={onHome}
+              onDownloadImage={() => downloadComponentAsImage(ref)}
+              onAboutModalOpen={onAboutModalOpen}
+            />
+            <Suspense fallback=''>{homeOpen ? <DashboardSelector /> : <Dashboard />}</Suspense>
+          </>
+        ) : (
+          <NeoDashboardPlaceholder></NeoDashboardPlaceholder>
+        )}
+        {/* TODO - move all models into a pop-ups (or modals) component. */}
+        <Suspense fallback=''>
+          <NeoAboutModal open={aboutModalOpen} handleClose={onAboutModalClose} getDebugState={getDebugState} />
+        </Suspense>
+        <Suspense fallback=''>
+          <NeoReportHelpModal open={reportHelpModalOpen} handleClose={onReportHelpModalClose} />
+        </Suspense>
+        <Suspense fallback=''>
+          <NeoNotificationModal></NeoNotificationModal>
+        </Suspense>
+      </div>
+    </ThemeProvider>
   );
 };
 

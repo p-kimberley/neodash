@@ -1,5 +1,5 @@
 import React from 'react';
-import { CardActions, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import { CardActions, FormControl, MenuItem, Select } from '@mui/material';
 import { categoricalColorSchemes } from '../../config/ColorConfig';
 import { getReportTypes } from '../../extensions/ExtensionUtils';
 import { SELECTION_TYPES } from '../../config/CardConfig';
@@ -13,7 +13,6 @@ const NeoCardViewFooter = ({
   extensions,
   showOptionalSelections,
   onSelectionUpdate,
-  dashboardSettings,
 }) => {
   /**
    * For each selectable field in the visualization, give the user an option to select them from the query output fields.
@@ -28,15 +27,7 @@ const NeoCardViewFooter = ({
     return <div></div>;
   }
   return (
-    <CardActions
-      style={{
-        position: 'relative',
-        paddingLeft: '15px',
-        overflowX: 'scroll',
-        paddingBottom: '100px',
-      }}
-      disableSpacing
-    >
+    <CardActions className='nd-card-footer' disableSpacing>
       {selectables.map((selectable, index) => {
         const selectionIsMandatory = !selectableFields[selectable].optional;
 
@@ -62,19 +53,22 @@ const NeoCardViewFooter = ({
               const color =
                 totalColors > 0 && !ignoreLabelColors
                   ? categoricalColorSchemes[nodeColorScheme][i % totalColors]
-                  : 'lightgrey';
-              const inputColor =
-                dashboardSettings.theme === 'dark' ? 'var(--palette-dark-neutral-border-strong)' : 'rgba(0, 0, 0, 0.6)';
+                  : 'var(--nd-border-strong)';
+              // Same look as the other field selectors: caption above, outlined compact select. The
+              // node label's colour is shown as a dot, so the legend role is kept.
               return (
-                <FormControl key={nodeLabel} size={'small'} variant='standard'>
-                  <InputLabel id={nodeLabel} style={{ color: inputColor }}>
+                <div key={nodeLabel} className='nd-field-select'>
+                  <label className='nd-field-select-label' id={`${nodeLabel}-label`}>
                     {nodeLabel}
-                  </InputLabel>
+                  </label>
                   <Select
-                    labelId={nodeLabel}
+                    labelId={`${nodeLabel}-label`}
                     id={nodeLabel}
-                    className={'MuiChip-root'}
-                    style={{ backgroundColor: color, paddingLeft: 10, minWidth: 75, marginRight: 5 }}
+                    size='small'
+                    className='nd-field-select-input'
+                    startAdornment={
+                      <span className='nd-field-select-dot' style={{ backgroundColor: color }} aria-hidden />
+                    }
                     onChange={(e) => onSelectionUpdate(nodeLabel, e.target.value)}
                     value={selection && selection[nodeLabel] ? selection[nodeLabel] : ''}
                   >
@@ -89,7 +83,7 @@ const NeoCardViewFooter = ({
                         );
                       })}
                   </Select>
-                </FormControl>
+                </div>
               );
             });
             return fieldSelections;
@@ -107,19 +101,22 @@ const NeoCardViewFooter = ({
 
             const fieldsToRender = selectionIsMandatory ? sortedFields : sortedFields.concat(['(none)']);
             return (
-              <FormControl key={index} size={'small'}>
+              <FormControl key={index} size={'small'} className='nd-field-select'>
                 <Dropdown
                   id={selectable}
                   label={selectableFields[selectable].label}
                   type='select'
                   selectProps={{
-                    onChange: (newValue) =>
-                      (newValue && selectableFields[selectable].multiple
-                        ? onSelectionUpdate(
-                            selectable,
-                            newValue.map((v) => v.value)
-                          )
-                        : onSelectionUpdate(selectable, newValue.value)),
+                    onChange: (newValue) => {
+                      if (newValue && selectableFields[selectable].multiple) {
+                        onSelectionUpdate(
+                          selectable,
+                          newValue.map((v) => v.value)
+                        );
+                      } else {
+                        onSelectionUpdate(selectable, newValue.value);
+                      }
+                    },
                     options: fieldsToRender.map((option) => ({ label: option, value: option })),
                     value: selectableFields[selectable].multiple
                       ? selection[selectable].map((sel) => ({ label: sel, value: sel }))
@@ -130,8 +127,7 @@ const NeoCardViewFooter = ({
                   }}
                   fluid
                   style={{
-                    minWidth: selectableFields[selectable].multiple ? 170 : 120,
-                    marginRight: 20,
+                    minWidth: selectableFields[selectable].multiple ? 180 : 140,
                     display: 'inline-block',
                   }}
                   placeholder={selectableFields[selectable].multiple ? 'Select (multiple)' : 'Select'}

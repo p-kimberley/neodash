@@ -20,19 +20,12 @@ import {
 
 import { IconButton } from '@neo4j-ndl/react';
 import { CloudArrowDownIconOutline, XMarkIconOutline } from '@neo4j-ndl/react/icons';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Button from '@mui/material/Button';
 import { extensionEnabled } from '../../utils/ReportUtils';
 import { getCheckboxes, hasCheckboxes, updateCheckBoxes } from './TableActionsHelper';
 
 const TABLE_ROW_HEIGHT = 52;
 const HIDDEN_COLUMN_PREFIX = '__';
-const theme = createTheme({
-  typography: {
-    fontFamily: "'Nunito Sans', sans-serif !important",
-    allVariants: { color: 'rgb(var(--palette-neutral-text-default))' },
-  },
-});
 const fallbackRenderer = (value) => {
   return JSON.stringify(value);
 };
@@ -283,7 +276,7 @@ export const NeoTableChart = (props: ChartProps) => {
   };
 
   return (
-    <ThemeProvider theme={theme}>
+    <>
       <div className={classes.root} style={{ height: '100%', width: '100%', position: 'relative' }}>
         <Snackbar
           anchorOrigin={{
@@ -339,7 +332,7 @@ export const NeoTableChart = (props: ChartProps) => {
           <DataGrid {...commonGridProps} sx={customStyles} />
         )}
       </div>
-    </ThemeProvider>
+    </>
   );
 };
 

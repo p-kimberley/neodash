@@ -5,7 +5,7 @@ import { getD3ColorsByScheme } from '../../config/ColorConfig';
 import { evaluateRulesOnDict, useStyleRules } from '../../extensions/styling/StyleRuleEvaluator';
 import { ChartProps } from '../Chart';
 import { convertRecordObjectToString, recordToNative } from '../ChartUtils';
-import { themeNivo, themeNivoCanvas } from '../Utils';
+import { LABEL_ON_COLOR, themeNivo, themeNivoCanvas } from '../Utils';
 import { extensionEnabled } from '../../utils/ReportUtils';
 import { getPageNumbersAndNamesList, getRule, performActionOnElement } from '../../extensions/advancedcharts/Utils';
 import { getOriginalRecordForNivoClickEvent } from './util';
@@ -168,7 +168,9 @@ const NeoBarChart = (props: ChartProps) => {
   const chartColorsByScheme = getD3ColorsByScheme(colorScheme);
   // Compute bar color based on rules - overrides default color scheme completely.
   const getBarColor = (bar) => {
-    let { index: colorIndex } = bar;
+    // With several series (grouped / stacked bars), colour by series so bars match the legend;
+    // a single series keeps one colour per bar.
+    let colorIndex = keys.length > 1 ? Math.max(0, keys.indexOf(bar.id)) : bar.index ?? 0;
     if (colorIndex >= chartColorsByScheme.length) {
       colorIndex %= chartColorsByScheme.length;
     }
@@ -425,7 +427,7 @@ const NeoBarChart = (props: ChartProps) => {
           enableGridY={displayYGridLines}
           labelSkipWidth={labelSkipWidth}
           labelSkipHeight={labelSkipHeight}
-          labelTextColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+          labelTextColor={LABEL_ON_COLOR}
           {...extraProperties}
           legends={calculateLegendConfig()}
           animate={false}

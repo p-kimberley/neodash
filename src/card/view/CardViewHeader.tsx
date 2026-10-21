@@ -17,7 +17,6 @@ import {
   InformationCircleIconOutline,
   XMarkIconOutline,
 } from '@neo4j-ndl/react/icons';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const NeoCardViewHeader = ({
   title,
@@ -62,75 +61,58 @@ const NeoCardViewHeader = ({
     }
   }, [title]);
 
-  const theme = createTheme({
-    typography: {
-      fontFamily: "'Nunito Sans', sans-serif !important",
-      allVariants: { color: 'rgb(var(--palette-neutral-text-weak))' },
-    },
-    palette: {
-      text: {
-        primary: 'rgb(var(--palette-neutral-text))',
-      },
-      action: {
-        disabled: 'rgb(var(--palette-neutral-text-weak))',
-      },
-    },
-  });
-
   const cardTitle = (
-    <ThemeProvider theme={theme}>
-      <table style={{ width: '100%' }}>
-        <tbody>
-          <tr>
-            {editable ? (
-              <td>
-                <IconButton
-                  className='n-mb-3 n-relative -n-left-3 drag-handle'
-                  clean
-                  size='medium'
-                  aria-label={'drag'}
-                  onClick={() => {}}
-                >
-                  <DragIcon />
-                </IconButton>
-              </td>
-            ) : (
-              <></>
-            )}
-            <td style={{ width: '100%' }}>
-              <TextField
-                id='standard-outlined'
-                onFocus={() => {
-                  setEditing(true);
-                }}
-                onBlur={() => {
-                  setEditing(false);
-                }}
-                className={'no-underline large'}
-                label=''
-                disabled={!editable}
-                placeholder='Report name...'
-                fullWidth
-                maxRows={4}
-                value={editing ? text : parsedText !== ' ' ? parsedText : ''}
-                onChange={(event) => {
-                  setText(event.target.value);
-                  debouncedTitleUpdate(event.target.value);
-                }}
-                size={'small'}
-                style={{ paddingTop: '0px important!' }}
-                variant={'standard'}
-                sx={{
-                  '& .MuiInputBase-input.Mui-disabled': {
-                    WebkitTextFillColor: 'inherit',
-                  },
-                }}
-              />
+    <table className='nd-card-header' style={{ width: '100%' }}>
+      <tbody>
+        <tr>
+          {editable ? (
+            <td>
+              <IconButton
+                className='n-mb-3 n-relative -n-left-3 drag-handle'
+                clean
+                size='medium'
+                aria-label={'drag'}
+                onClick={() => {}}
+              >
+                <DragIcon />
+              </IconButton>
             </td>
-          </tr>
-        </tbody>
-      </table>
-    </ThemeProvider>
+          ) : (
+            <></>
+          )}
+          <td style={{ width: '100%' }}>
+            <TextField
+              id='standard-outlined'
+              onFocus={() => {
+                setEditing(true);
+              }}
+              onBlur={() => {
+                setEditing(false);
+              }}
+              className={'no-underline large nd-card-title'}
+              label=''
+              disabled={!editable}
+              placeholder='Report name...'
+              fullWidth
+              maxRows={4}
+              value={editing ? text : parsedText !== ' ' ? parsedText : ''}
+              onChange={(event) => {
+                setText(event.target.value);
+                debouncedTitleUpdate(event.target.value);
+              }}
+              size={'small'}
+              style={{ paddingTop: '0px important!' }}
+              variant={'standard'}
+              sx={{
+                '& .MuiInputBase-input.Mui-disabled': {
+                  WebkitTextFillColor: 'inherit',
+                },
+              }}
+            />
+          </td>
+        </tr>
+      </tbody>
+    </table>
   );
 
   const descriptionEnabled = description && description.length > 0;

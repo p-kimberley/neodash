@@ -141,3 +141,7 @@ export const applicationIsHomeOpen = (state: any) => {
 export const applicationGetThemePreference = (state: any): 'light' | 'dark' | 'system' => {
   return state.application.themePreference ?? 'system';
 };
+
+export const applicationIsSidebarOpen = (state: any) => {
+  return Boolean(state.application.sidebarOpen);
+};

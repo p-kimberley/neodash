@@ -43,6 +43,7 @@ import {
   SET_HOME_OPEN,
   SET_THEME_PREFERENCE,
   SET_SYSTEM_DARK,
+  SET_SIDEBAR_OPEN,
 } from './ApplicationActions';
 import {
   SET_LOGGING_MODE,
@@ -78,6 +79,7 @@ const initialState = {
   homeOpen: false,
   themePreference: 'system',
   systemDark: false,
+  sidebarOpen: false,
   logging: LOGGING_INITIAL_STATE,
 };
 export const applicationReducer = (state = initialState, action: { type: any; payload: any }) => {
@@ -135,6 +137,9 @@ export const applicationReducer = (state = initialState, action: { type: any; pa
     }
     case SET_THEME_PREFERENCE: {
       return update(state, { themePreference: payload.preference });
+    }
+    case SET_SIDEBAR_OPEN: {
+      return update(state, { sidebarOpen: payload.open });
     }
     case SET_SYSTEM_DARK: {
       return update(state, { systemDark: payload.dark });

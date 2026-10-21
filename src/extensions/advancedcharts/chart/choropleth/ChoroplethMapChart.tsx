@@ -4,6 +4,7 @@ import { ResponsiveChoropleth } from '@nivo/geo';
 import { useState, useEffect } from 'react';
 import { recordToNative } from '../../../../chart/ChartUtils';
 import { NoDrawableDataErrorMessage } from '../../../../component/editor/CodeViewerComponent';
+import { themeNivo } from '../../../../chart/Utils';
 import { fetchMapData } from '../../../../config/MapConfig';
 
 /**
@@ -69,11 +70,12 @@ const NeoChoroplethMapChart = (props: ChartProps) => {
         <ResponsiveChoropleth
           data={data}
           isInteractive={interactive}
+          theme={themeNivo}
           features={feature.features}
           domain={[0, m]}
           margin={{ top: marginTop, right: marginRight, bottom: marginBottom, left: marginLeft }}
           colors={colorScheme}
-          unknownColor='#666666'
+          unknownColor='var(--nd-surface-variant)'
           label={labelProperty}
           valueFormat='.2s'
           match={matchAccessor}
@@ -81,9 +83,9 @@ const NeoChoroplethMapChart = (props: ChartProps) => {
           projectionTranslation={[projectionTranslationX, projectionTranslationY]}
           projectionRotation={[0, 0, 0]}
           enableGraticule={true}
-          graticuleLineColor='#dddddd'
+          graticuleLineColor='var(--nd-chart-grid)'
           borderWidth={borderWidth}
-          borderColor='#152538'
+          borderColor='var(--nd-border-strong)'
           legends={
             legend
               ? [

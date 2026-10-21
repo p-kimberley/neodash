@@ -220,10 +220,8 @@ const NeoSankeyChart = (props: ChartProps) => {
       labelPosition={labelPosition}
       labelOrientation={labelOrientation}
       labelPadding={16}
-      labelTextColor={{
-        from: 'color',
-        modifiers: [['darker', 1]],
-      }}
+      // Labels sit beside the nodes, on the card background.
+      labelTextColor='var(--nd-chart-text)'
       colors={styleRules.length >= 1 ? getSliceColor : { scheme: colorScheme }}
       legends={
         legend

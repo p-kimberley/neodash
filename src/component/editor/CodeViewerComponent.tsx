@@ -1,31 +1,13 @@
-import { TextareaAutosize } from '@mui/material';
 import React from 'react';
+import CodeBlock from './CodeBlock';
 
 /**
- * Returns a static code block, without line numbers.
+ * Returns a static, wrapped text block (messages, raw values), without line numbers.
  */
 const NeoCodeViewerComponent = ({ value = '', placeholder = '' }) => {
   return (
-    <div
-      className={'n-text-palette-neutral-text-default'}
-      style={{ overflowY: 'auto', marginLeft: '10px', marginRight: '10px', height: '100%' }}
-    >
-      <TextareaAutosize
-        style={{
-          width: '100%',
-          overflowY: 'hidden',
-          scrollbarWidth: 'auto',
-          paddingLeft: '10px',
-          background: 'none',
-          overflow: 'scroll !important',
-          marginTop: '5px',
-          border: '1px solid lightgray',
-        }}
-        className={'textinput-linenumbers'}
-        aria-label=''
-        value={value}
-        placeholder={placeholder}
-      />
+    <div style={{ overflowY: 'auto', margin: '4px 12px', height: '100%' }}>
+      <CodeBlock value={value} placeholder={placeholder} lineNumbers={false} wrap />
     </div>
   );
 };

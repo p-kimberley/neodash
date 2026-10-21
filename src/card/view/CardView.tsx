@@ -222,13 +222,7 @@ const NeoCardView = ({
             value={query}
             language={'cypher'}
             editable={false}
-            style={{
-              border: '1px solid lightgray',
-              borderRight: '35px solid #eee',
-              marginTop: '0px',
-              marginLeft: '10px',
-              marginRight: '10px',
-            }}
+            className='nd-code-editor-preview'
             onChange={() => {}}
             placeholder={'No query specified...'}
           />

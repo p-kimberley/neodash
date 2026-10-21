@@ -18,8 +18,14 @@ import { downloadCSV } from '../ChartUtils';
 import { generateSafeColumnKey } from '../table/TableChart';
 import { GraphChartContextMenu } from './component/GraphChartContextMenu';
 import { getSettings } from '../SettingsUtils';
+import { palettes } from '../../theme/palette';
+
 import { getPageNumbersAndNamesList } from '../../extensions/advancedcharts/Utils';
 import { CloudArrowDownIconOutline } from '@neo4j-ndl/react/icons';
+
+/** Whether a colour setting is unset or still the built-in default (and so may follow the theme). */
+const isDefault = (value: unknown, builtIn: string) =>
+  value === undefined || value === null || value === '' || value === builtIn;
 
 export interface GraphChartProps extends ChartProps {
   lockable?: boolean;
@@ -99,6 +105,7 @@ const NeoGraphChart = (props: GraphChartProps) => {
   let icons = parseNodeIconConfig(settings.iconStyle);
   const colorScheme = categoricalColorSchemes[settings.nodeColorScheme];
   const { theme } = props;
+  const themeColors = palettes[theme === 'dark' ? 'dark' : 'light'];
 
   const generateVisualizationDataGraph = (records, _) => {
     let nodes: Record<string, any>[] = [];
@@ -150,14 +157,15 @@ const NeoGraphChart = (props: GraphChartProps) => {
     style: {
       width: width,
       height: height,
-      backgroundColor: theme == 'dark' && settings.backgroundColor == '#fafafa' ? '#040404' : settings.backgroundColor, // Temporary fix for default color adjustment in dark mode
+      // Default colours follow the appearance; colours an author picked explicitly are kept.
+      backgroundColor: isDefault(settings.backgroundColor, '#fafafa') ? themeColors.surface : settings.backgroundColor,
       linkDirectionalParticles: linkDirectionalParticles,
       linkDirectionalArrowLength: arrowLengthProp,
       linkDirectionalParticleSpeed: settings.linkDirectionalParticleSpeed,
       nodeLabelFontSize: settings.nodeLabelFontSize,
-      nodeLabelColor: theme == 'dark' && settings.nodeLabelColor == 'black' ? 'white' : settings.nodeLabelColor, // Temporary fix for default color adjustment in dark mode
+      nodeLabelColor: isDefault(settings.nodeLabelColor, 'black') ? themeColors.text : settings.nodeLabelColor,
       relLabelFontSize: settings.relLabelFontSize,
-      relLabelColor: settings.relLabelColor,
+      relLabelColor: isDefault(settings.relLabelColor, '#a0a0a0') ? themeColors.textMuted : settings.relLabelColor,
       defaultNodeSize: settings.defaultNodeSize,
       nodeIcons: icons,
       colorScheme: colorScheme,

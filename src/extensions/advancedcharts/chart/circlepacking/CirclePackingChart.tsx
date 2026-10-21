@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ChartProps } from '../../../../chart/Chart';
 import { NoDrawableDataErrorMessage } from '../../../../component/editor/CodeViewerComponent';
 import { mutateName, processHierarchyFromRecords, findObject, flatten } from '../../../../chart/ChartUtils';
-import { themeNivo } from '../../../../chart/Utils';
+import { LABEL_ON_COLOR, themeNivo } from '../../../../chart/Utils';
 import RefreshButton from '../../component/RefreshButton';
 
 /**
@@ -102,6 +102,7 @@ const NeoCirclePackingChart = (props: ChartProps) => {
           animate={true}
           enableLabels={showLabels}
           labelsFilter={showLabelsForNode}
+          labelTextColor={LABEL_ON_COLOR}
           colors={{ scheme: colorScheme }}
         />
       </div>

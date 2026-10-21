@@ -137,6 +137,7 @@ All of these reproduce in `neodash-legacy` with the dashboards above. Status in 
 | Large single values (dates, words) overflow their card | Fixed: long values shrink to fit; a value of `0` no longer shows as blank |
 | The empty "add report" placeholder is a large grey block | Restyled as a dashed placeholder |
 | Saving is hidden in a sidebar item menu and confirms with a blocking pop-up | Save button and unsaved-changes indicator in the header |
+| Dark mode: faint titles, white code editor, black graph canvas, unreadable chart labels | Fixed: one token-based theme for the app, Material UI, charts, code and maps |
 | Dark mode is stored in each dashboard, so viewers see whatever the last editor saved | Per-user appearance (light / dark / match system); the dashboard field is kept but ignored |
 | Reports wait for every parameter unless they enable `ignoreNonDefinedParams` | Unchanged on purpose: changing it would alter how existing dashboards behave |
-| Grouped bar legends use one colour; horizontal stacked bars colour by category | Not yet fixed |
+| Grouped bar legends use one colour; horizontal stacked bars colour by category | Fixed: multi-series bars are coloured by series, matching the legend |

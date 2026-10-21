@@ -5,7 +5,7 @@ import { getD3ColorsByScheme } from '../../config/ColorConfig';
 import { evaluateRulesOnDict, useStyleRules } from '../../extensions/styling/StyleRuleEvaluator';
 import { ChartProps } from '../Chart';
 import { convertRecordObjectToString, recordToNative } from '../ChartUtils';
-import { themeNivo } from '../Utils';
+import { LABEL_ON_COLOR, themeNivo } from '../Utils';
 import { extensionEnabled } from '../../utils/ReportUtils';
 import { objMerge } from '../../utils/ObjectManipulation';
 
@@ -155,6 +155,9 @@ const NeoPieChart = (props: ChartProps) => {
       arcLinkLabelsSkipAngle={arcLinkLabelsSkipAngle}
       arcLinkLabelsOffset={arcLinkLabelsOffset}
       arcLabelsSkipAngle={arcLabelsSkipAngle}
+      arcLabelsTextColor={LABEL_ON_COLOR}
+      arcLinkLabelsTextColor='var(--nd-chart-text)'
+      arcLinkLabelsColor={{ from: 'color' }}
       margin={{
         top: marginTop,
         right: marginRight,

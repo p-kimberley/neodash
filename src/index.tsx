@@ -9,6 +9,8 @@ import Application from './application/Application';
 import '/node_modules/react-grid-layout/css/styles.css';
 import '/node_modules/react-resizable/css/styles.css';
 import './index.pcss';
+import './theme/tokens.css';
+import './theme/components.css';
 import './app.css';
 import StyleConfig from './config/StyleConfig';
 import * as Sentry from '@sentry/react';

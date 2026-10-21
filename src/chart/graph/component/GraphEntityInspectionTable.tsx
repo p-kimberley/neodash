@@ -2,7 +2,7 @@ import React from 'react';
 import ShowMoreText from 'react-show-more-text';
 import { Checkbox, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { TextLink } from '@neo4j-ndl/react';
-// import DOMPurify from 'dompurify'; 
+// import DOMPurify from 'dompurify';
 
 export const formatProperty = (property) => {
   const str = property?.toString() || '';
@@ -13,7 +13,7 @@ export const formatProperty = (property) => {
       </TextLink>
     );
   }
-  return str; 
+  return str;
 };
 
 /**
@@ -21,7 +21,6 @@ export const formatProperty = (property) => {
  */
 export const GraphEntityInspectionTable = ({
   entity,
-  theme,
   setSelectedParameters = (_value) => {
     console.log('undefined function in GraphEntityInspectionTable');
   },
@@ -54,7 +53,7 @@ export const GraphEntityInspectionTable = ({
     }
   }
 
-  const tableTextColor = theme === 'dark' ? 'var(--palette-dark-neutral-border-strong)' : 'rgba(0, 0, 0, 0.6)';
+  const tableTextColor = 'var(--nd-text-secondary)';
 
   return (
     <TableContainer>
@@ -90,7 +89,7 @@ export const GraphEntityInspectionTable = ({
                     {key}
                   </TableCell>
                   <TableCell align={'left'} style={{ color: tableTextColor }}>
-                    <ShowMoreText lines={2}>{formatProperty(entity?.properties[key])}</ShowMoreText> 
+                    <ShowMoreText lines={2}>{formatProperty(entity?.properties[key])}</ShowMoreText>
                   </TableCell>
                   {checklistEnabled ? (
                     <TableCell align={'center'}>

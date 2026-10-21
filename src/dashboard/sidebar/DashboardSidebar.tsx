@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { getDashboardIsEditable, getPageNumber } from '../../settings/SettingsSelectors';
 import { getDashboardSettings, getDashboardTitle } from '../DashboardSelectors';
@@ -20,7 +20,8 @@ import {
   applicationIsStandalone,
   dashboardIsDraft,
 } from '../../application/ApplicationSelectors';
-import { setDraft } from '../../application/ApplicationActions';
+import { setDraft, setSidebarOpen } from '../../application/ApplicationActions';
+import { applicationIsSidebarOpen } from '../../application/ApplicationSelectors';
 import NeoDashboardSidebarLoadModal from './modal/DashboardSidebarLoadModal';
 import { resetDashboardState } from '../DashboardActions';
 import NeoDashboardSidebarCreateModal from './modal/DashboardSidebarCreateModal';
@@ -93,9 +94,10 @@ export const NeoDashboardSidebar = ({
   saveDashboardToNeo4j,
   deleteDashboardFromNeo4j,
   standaloneSettings,
+  expanded,
+  setOnExpanded,
 }) => {
   const { driver } = useContext<Neo4jContextState>(Neo4jContext);
-  const [expanded, setOnExpanded] = useState(false);
   const [selectedDashboardIndex, setSelectedDashboardIndex] = React.useState(UNSAVED_DASHBOARD_INDEX);
   const [dashboardDatabase, setDashboardDatabase] = React.useState(database ? database : 'neo4j');
   const [databases, setDatabases] = useState([]);
@@ -123,6 +125,13 @@ export const NeoDashboardSidebar = ({
       }
     });
   };
+
+  // Refresh the list whenever the panel opens (from its own toggle or the header menu button).
+  useEffect(() => {
+    if (expanded) {
+      getDashboardListFromNeo4j();
+    }
+  }, [expanded]);
 
   function createDashboard() {
     // Creates new dashboard in draft state (not yet saved to Neo4j)
@@ -272,16 +281,8 @@ export const NeoDashboardSidebar = ({
         position='left'
         type='overlay'
         expanded={expanded}
-        onExpandedChange={(open) => {
-          setOnExpanded(open);
-          if (open) {
-            getDashboardListFromNeo4j();
-          }
-          // Wait until the sidebar has fully opened. Then trigger a resize event to align the grid layout.
-          const timeout = setTimeout(() => {
-            window.dispatchEvent(new Event('resize'));
-          }, 300);
-        }}
+        // The panel overlays the dashboard (see .dashboard-sidebar-slot), so the grid keeps its layout.
+        onExpandedChange={(open) => setOnExpanded(open)}
       >
         <SideNavigationList>
           <NeoDashboardSidebarDatabaseMenu
@@ -563,9 +564,11 @@ const mapStateToProps = (state) => ({
   dashboardSettings: getDashboardSettings(state),
   database: applicationGetConnectionDatabase(state),
   standaloneSettings: applicationGetStandaloneSettings(state),
+  expanded: applicationIsSidebarOpen(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
+  setOnExpanded: (open: boolean) => dispatch(setSidebarOpen(open)),
   onRemovePressed: (id) => dispatch(removeReportThunk(id)),
   resetLocalDashboard: () => dispatch(resetDashboardState()),
   setDraft: (draft) => dispatch(setDraft(draft)),

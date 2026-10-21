@@ -1,0 +1,485 @@
+/*
+ * Component styles built on the design tokens (tokens.css). Covers the parts of NeoDash that are
+ * not Neo4j design-system or Material UI components, or that override their defaults:
+ * typography, report cards, chart controls, code, markdown, maps and the dashboards panel.
+ */
+
+/* ---------- Base typography ---------- */
+
+body {
+  font-family: var(--nd-font-sans);
+  font-size: var(--nd-text-md);
+  line-height: var(--nd-leading);
+  color: var(--nd-text);
+  background: var(--nd-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--nd-selected);
+}
+
+/* ---------- Dashboards panel (overlays the dashboard) ---------- */
+
+.dashboard-sidebar-slot {
+  position: relative;
+  flex: none;
+  width: 4rem;
+  height: 100%;
+  z-index: 25;
+}
+
+.dashboard-sidebar-slot .ndl-side-navigation {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--nd-surface);
+  border-right: 1px solid var(--nd-border);
+}
+
+.dashboard-sidebar-slot .ndl-side-navigation.ndl-expanded {
+  box-shadow: var(--nd-shadow-raised);
+}
+
+.dashboard-sidebar-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 24;
+  background: rgba(10, 15, 22, 0.28);
+  animation: nd-fade-in 0.15s ease-out;
+}
+
+.ndl-theme-dark .dashboard-sidebar-scrim {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+@keyframes nd-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.app-header-menu {
+  margin-left: -8px;
+  color: var(--nd-icon);
+}
+
+/* ---------- Report cards ---------- */
+
+.nd-report-card {
+  background: var(--nd-surface) !important;
+  border: 1px solid var(--nd-border) !important;
+  border-radius: var(--nd-radius-lg) !important;
+  box-shadow: var(--nd-shadow) !important;
+  color: var(--nd-text);
+}
+
+/* Report title: 16px semibold, full-contrast text (it was the faint "weak" shade at 20px). */
+.nd-card-title.large input,
+.nd-card-title input {
+  font-size: var(--nd-text-lg);
+  font-weight: 650;
+  line-height: 1.4;
+  margin-top: 0;
+  color: var(--nd-text);
+  -webkit-text-fill-color: var(--nd-text);
+  letter-spacing: 0.005em;
+}
+
+.nd-card-title input::placeholder {
+  color: var(--nd-text-muted);
+  -webkit-text-fill-color: var(--nd-text-muted);
+  opacity: 1;
+}
+
+.nd-card-header .ndl-icon-btn,
+.nd-report-card .ndl-icon-btn {
+  color: var(--nd-icon);
+}
+
+.nd-card-header .drag-handle {
+  color: var(--nd-text-muted);
+}
+
+/* The resize handle was dark grey on dark cards. */
+.react-grid-item > .react-resizable-handle::after {
+  border-right-color: var(--nd-border-strong) !important;
+  border-bottom-color: var(--nd-border-strong) !important;
+}
+
+/* ---------- Chart controls (field selectors under a chart) ---------- */
+
+.nd-card-footer {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 16px;
+  padding: 6px 16px 100px !important;
+  overflow-x: auto;
+}
+
+.nd-field-select {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nd-field-select-label,
+.nd-card-footer .ndl-dropdown label,
+.nd-card-footer .ndl-dropdown > div:first-child > span {
+  font-size: var(--nd-text-xs);
+  font-weight: 600;
+  color: var(--nd-text-secondary);
+  letter-spacing: 0.01em;
+}
+
+.nd-field-select-input {
+  min-width: 140px;
+  height: 32px;
+  font-size: var(--nd-text-sm) !important;
+}
+
+.nd-field-select-input .MuiSelect-select {
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
+
+.nd-field-select-dot {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  margin-right: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.nd-card-footer .ndl-dropdown {
+  font-size: var(--nd-text-sm);
+}
+
+/* ---------- Code editor (Cypher / Markdown) ---------- */
+
+.nd-code-editor {
+  overflow: hidden;
+  border: 1px solid var(--nd-border);
+  border-radius: var(--nd-radius-md);
+  background: var(--nd-code-bg);
+}
+
+.nd-code-editor:focus-within {
+  border-color: var(--nd-focus);
+  box-shadow: 0 0 0 3px var(--nd-selected);
+}
+
+/* The design system's editor colours, pointed at our syntax tokens (values are "R, G, B"). */
+.nd-code-editor .cm-editor.cm-light,
+.nd-code-editor .cm-editor.cm-dark {
+  --background: 246, 248, 250;
+  --color: 31, 35, 40;
+  --cursor-color: 31, 35, 40;
+  --selection-bg: 204, 229, 255;
+  --comment: 92, 102, 112;
+  --keyword: 207, 34, 46;
+  --relationship: 17, 99, 41;
+  --string: 10, 48, 105;
+  --number: 5, 80, 174;
+  --variable: 149, 56, 0;
+  --function: 102, 57, 186;
+  --procedure: 102, 57, 186;
+  --button: 0, 111, 214;
+}
+
+.ndl-theme-dark .nd-code-editor .cm-editor.cm-light,
+.ndl-theme-dark .nd-code-editor .cm-editor.cm-dark {
+  --background: 18, 26, 36;
+  --color: 230, 237, 243;
+  --cursor-color: 230, 237, 243;
+  --selection-bg: 38, 79, 120;
+  --comment: 139, 148, 158;
+  --keyword: 255, 123, 114;
+  --relationship: 126, 231, 135;
+  --string: 165, 214, 255;
+  --number: 121, 192, 255;
+  --variable: 255, 166, 87;
+  --function: 210, 168, 255;
+  --procedure: 210, 168, 255;
+  --button: 124, 200, 255;
+}
+
+.nd-code-editor .cm-editor {
+  font-size: var(--nd-text-sm);
+  padding: 6px 0;
+}
+
+.nd-code-editor .cm-editor .cm-content .cm-line {
+  font-family: var(--nd-font-mono);
+  line-height: 1.65;
+  padding: 0 12px 0 8px;
+}
+
+.nd-code-editor .cm-editor .cm-gutters {
+  background: transparent !important;
+  color: var(--nd-code-gutter);
+  border-right: 1px solid var(--nd-border) !important;
+  padding: 0 4px 0 6px;
+}
+
+.nd-code-editor .cm-editor .cm-activeLine {
+  background: var(--nd-hover);
+}
+
+.nd-code-editor .cm-editor .cm-activeLineGutter {
+  background: transparent;
+  color: var(--nd-text-secondary);
+}
+
+.nd-code-editor .cm-editor .cm-placeholder {
+  color: var(--nd-text-muted);
+}
+
+.nd-code-editor .cm-p-label,
+.nd-code-editor .cm-p-label .cm-keyword {
+  color: rgb(var(--relationship));
+}
+
+.nd-code-editor .cm-p-parameter,
+.nd-code-editor .cm-p-parameter .cm-keyword {
+  color: rgb(var(--variable));
+  font-weight: 600;
+}
+
+.nd-code-editor.is-readonly {
+  opacity: 0.92;
+}
+
+/* Query preview shown before a report runs. */
+.nd-code-editor-preview {
+  margin: 0 12px;
+}
+
+/* ---------- Read-only code blocks (JSON report, messages) ---------- */
+
+.nd-code-block {
+  height: 100%;
+  overflow: auto;
+  border: 1px solid var(--nd-border);
+  border-radius: var(--nd-radius-md);
+  background: var(--nd-code-bg);
+  color: var(--nd-code-fg);
+}
+
+.nd-code-block pre {
+  margin: 0;
+  padding: 10px 14px;
+  font-family: var(--nd-font-mono);
+  font-size: var(--nd-text-sm);
+  line-height: 1.6;
+  tab-size: 2;
+  counter-reset: nd-line;
+}
+
+.nd-code-block.is-wrapped pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--nd-font-sans);
+  font-size: var(--nd-text-md);
+}
+
+.nd-code-block.with-lines pre {
+  padding-left: 0;
+}
+
+.nd-code-block.with-lines .line::before {
+  counter-increment: nd-line;
+  content: counter(nd-line);
+  display: inline-block;
+  width: 3.2em;
+  margin-right: 1em;
+  padding-right: 0.8em;
+  text-align: right;
+  color: var(--nd-code-gutter);
+  border-right: 1px solid var(--nd-border);
+  user-select: none;
+}
+
+.nd-code-block .tok-property {
+  color: var(--nd-code-property);
+}
+.nd-code-block .tok-string {
+  color: var(--nd-code-string);
+}
+.nd-code-block .tok-number,
+.nd-code-block .tok-literal {
+  color: var(--nd-code-number);
+}
+.nd-code-block .tok-punctuation {
+  color: var(--nd-code-punctuation);
+}
+.nd-code-block .tok-comment {
+  color: var(--nd-code-comment);
+  font-style: italic;
+}
+
+.nd-code-placeholder {
+  padding: 12px 14px;
+  color: var(--nd-text-muted);
+}
+
+/* Inside a report the block fills the card body. */
+.nd-code-block-report {
+  margin: 0 12px;
+  height: calc(100% - 8px);
+}
+
+/* ---------- Markdown reports ---------- */
+
+.markdown-widget {
+  color: var(--nd-text);
+  font-size: var(--nd-text-md);
+  line-height: 1.6;
+}
+
+.markdown-widget h1,
+.markdown-widget h2,
+.markdown-widget h3,
+.markdown-widget h4 {
+  color: var(--nd-text);
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0.4em 0 0.5em;
+}
+
+.markdown-widget h1 {
+  font-size: var(--nd-text-3xl);
+}
+.markdown-widget h2 {
+  font-size: var(--nd-text-2xl);
+}
+.markdown-widget h3 {
+  font-size: var(--nd-text-xl);
+}
+
+.markdown-widget p,
+.markdown-widget ul,
+.markdown-widget ol {
+  margin: 0 0 0.75em;
+}
+
+.markdown-widget a {
+  color: var(--nd-primary);
+}
+
+.markdown-widget code {
+  padding: 0.1em 0.4em;
+  border-radius: 5px;
+  background: var(--nd-code-bg);
+  border: 1px solid var(--nd-border);
+  font-family: var(--nd-font-mono);
+  font-size: 0.9em;
+  color: var(--nd-code-fg);
+}
+
+.markdown-widget pre {
+  padding: 10px 14px;
+  border-radius: var(--nd-radius-md);
+  background: var(--nd-code-bg);
+  border: 1px solid var(--nd-border);
+  overflow: auto;
+}
+
+.markdown-widget pre code {
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.markdown-widget blockquote {
+  margin: 0 0 0.75em;
+  padding: 2px 12px;
+  border-left: 3px solid var(--nd-border-strong);
+  color: var(--nd-text-secondary);
+}
+
+.markdown-widget .markdown-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border: 1px solid var(--nd-border);
+  border-radius: var(--nd-radius-md);
+  margin-bottom: 0.75em;
+}
+
+.markdown-widget .markdown-table th,
+.markdown-widget .markdown-table td {
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 1px solid var(--nd-border);
+  text-align: left;
+}
+
+.markdown-widget .markdown-table tr:last-child td {
+  border-bottom: none;
+}
+
+.markdown-widget .markdown-table th {
+  background: var(--nd-surface-variant);
+  color: var(--nd-text-secondary);
+  font-weight: 700;
+  font-size: var(--nd-text-sm);
+}
+
+/* ---------- Maps ---------- */
+
+.leaflet-container {
+  background: var(--nd-surface-variant) !important;
+  font-family: var(--nd-font-sans) !important;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip,
+.leaflet-tooltip {
+  background: var(--nd-surface-raised) !important;
+  color: var(--nd-text) !important;
+  border: 1px solid var(--nd-border);
+  box-shadow: var(--nd-shadow-raised) !important;
+}
+
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: var(--nd-surface-raised) !important;
+  color: var(--nd-text) !important;
+  border-color: var(--nd-border) !important;
+}
+
+.leaflet-control-attribution {
+  background: color-mix(in srgb, var(--nd-surface) 80%, transparent) !important;
+  color: var(--nd-text-muted) !important;
+}
+
+/* ---------- Misc ---------- */
+
+/* Single value reports use full-contrast text. */
+.nd-report-card .MuiCardContent-root {
+  color: var(--nd-text);
+}
+
+.MuiDataGrid-root .MuiDataGrid-cell:focus,
+.MuiDataGrid-root .MuiDataGrid-columnHeader:focus {
+  outline-color: var(--nd-focus) !important;
+}
+
+/* Editable report titles: a subtle underline on hover, the accent colour while editing. */
+.nd-card-title .MuiInput-underline:before,
+.nd-card-title .MuiInput-underline:hover:not(.Mui-disabled):before {
+  border-bottom: 1px solid transparent !important;
+}
+.nd-card-title:hover .MuiInput-underline:not(.Mui-disabled):before {
+  border-bottom-color: var(--nd-border-strong) !important;
+}
+.nd-card-title .MuiInput-underline:after {
+  border-bottom: 2px solid var(--nd-primary) !important;
+}

@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Button, IconButton, Label, Menu, MenuItem, MenuItems, Typography } from '@neo4j-ndl/react';
 import {
   ArrowRightOnRectangleIconOutline,
+  Bars3IconOutline,
   CheckIconOutline,
   ChevronRightIconOutline,
   ComputerDesktopIconOutline,
@@ -16,8 +17,13 @@ import { signOut } from '../dashboard/header/DashboardHeaderLogoutButton';
 import NeoAboutButton from '../dashboard/header/DashboardHeaderAboutButton';
 import { NeoDashboardHeaderDownloadImageButton } from '../dashboard/header/DashboardHeaderDownloadImageButton';
 import { getDashboardSettings, getDashboardTheme, getDashboardTitle } from '../dashboard/DashboardSelectors';
-import { applicationGetConnection, applicationGetThemePreference, applicationIsHomeOpen } from './ApplicationSelectors';
-import { setDraft, setThemePreference } from './ApplicationActions';
+import {
+  applicationGetConnection,
+  applicationGetThemePreference,
+  applicationIsHomeOpen,
+  applicationIsSidebarOpen,
+} from './ApplicationSelectors';
+import { setDraft, setSidebarOpen, setThemePreference } from './ApplicationActions';
 import { APP_NAME, IS_CUSTOM_LOGO, DASHBOARD_HEADER_BRAND_LOGO, markText } from '../config/ApplicationConfig';
 
 const THEMES = [
@@ -165,9 +171,27 @@ export const AppHeader = ({
   onThemeChange,
   onDownloadImage,
   onAboutModalOpen,
+  sidebarOpen,
+  onToggleSidebar,
 }) => (
   <header className='app-header'>
     <nav className='app-header-crumbs' aria-label='Breadcrumb'>
+      {!homeOpen ? (
+        <Tooltip title={sidebarOpen ? 'Hide dashboards' : 'Dashboards'} disableInteractive>
+          <IconButton
+            aria-label='Dashboards menu'
+            aria-expanded={Boolean(sidebarOpen)}
+            className='app-header-menu'
+            clean
+            size='large'
+            onClick={() => onToggleSidebar(!sidebarOpen)}
+          >
+            <Bars3IconOutline />
+          </IconButton>
+        </Tooltip>
+      ) : (
+        <></>
+      )}
       <button type='button' className='app-header-brand' onClick={onHome} title='All dashboards'>
         {IS_CUSTOM_LOGO ? (
           <img src={DASHBOARD_HEADER_BRAND_LOGO} alt='' className='n-h-6 n-w-auto' />
@@ -212,10 +236,12 @@ const mapStateToProps = (state) => ({
   connection: applicationGetConnection(state),
   themePreference: applicationGetThemePreference(state),
   theme: getDashboardTheme(state),
+  sidebarOpen: applicationIsSidebarOpen(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
   onThemeChange: (preference) => dispatch(setThemePreference(preference)),
+  onToggleSidebar: (open: boolean) => dispatch(setSidebarOpen(open)),
   // Same save as the sidebar's; resolves once the backend has stored it.
   onSave: (dashboard) =>
     new Promise<void>((resolve) => {

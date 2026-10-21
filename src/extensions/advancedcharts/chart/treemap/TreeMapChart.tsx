@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import { ChartProps } from '../../../../chart/Chart';
 import { NoDrawableDataErrorMessage } from '../../../../component/editor/CodeViewerComponent';
-import { themeNivo } from '../../../../chart/Utils';
+import { LABEL_ON_COLOR, themeNivo } from '../../../../chart/Utils';
 import RefreshButton from '../../component/RefreshButton';
 
 /**
@@ -102,6 +102,12 @@ const NeoTreeMapChart = (props: ChartProps) => {
           }}
           animate={true}
           colors={{ scheme: colorScheme }}
+          // Opaque tiles with contrasting labels read well on light and dark backgrounds.
+          nodeOpacity={1}
+          labelSkipSize={18}
+          labelTextColor={LABEL_ON_COLOR}
+          parentLabelTextColor={LABEL_ON_COLOR}
+          borderColor={{ from: 'color', modifiers: [['darker', 0.4]] }}
           label={getLabelForNode}
         />
       </div>

@@ -262,3 +262,10 @@ export const setSystemDark = (dark: boolean) => ({
   type: SET_SYSTEM_DARK,
   payload: { dark },
 });
+
+// The dashboards side panel; opened from the header menu button or the panel's own toggle.
+export const SET_SIDEBAR_OPEN = 'APPLICATION/SET_SIDEBAR_OPEN';
+export const setSidebarOpen = (open: boolean) => ({
+  type: SET_SIDEBAR_OPEN,
+  payload: { open },
+});
