@@ -49,7 +49,7 @@ const NeoMarkdownChart = (props: ChartProps) => {
       className='markdown-widget'
       style={{ marginTop: '0px', marginLeft: '15px', marginRight: '15px', marginBottom: '0px' }}
     >
-      <base target='_blank' />
+      {/* Links open in a new tab via CustomATag; a <base target> tag here retargeted every link on the page. */}
       <ReactMarkdown
         children={modifiedMarkdown}
         remarkPlugins={[remarkGfm]}

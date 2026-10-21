@@ -4,6 +4,7 @@
 - Every report has a **maximise** button (the "Fullscreen enabled" setting is gone); a maximised report fills the window and Escape restores it.
 - Opening or closing the dashboards panel no longer stalls on pages with graphs: reports no longer re-render on unrelated state changes.
 - **Graph reports**: a search box (matches highlighted, the rest dimmed; Enter steps through them and centres each), a 2D/3D toggle on every graph (each viewer's choice is remembered per report), and node/relationship properties in a popup next to the click instead of a modal dialog.
+- Report descriptions render GitHub-flavoured markdown (tables, autolinks); viewing a description or a markdown report no longer makes every link in the app open in a new tab.
 - Map markers show their label on mouse-over instead of permanently (labels overlapped and hid the map).
 - Report settings use a cog icon; card corners are cleanly rounded (no square edges or corner handle sticking out).
 - The dashboards panel no longer leaves a collapsed rail: closed, the dashboard uses the full width. It closes with Escape, and its own expand button (duplicating the header menu button) is gone.

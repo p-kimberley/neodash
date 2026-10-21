@@ -18,6 +18,8 @@ import {
   XMarkIconOutline,
 } from '@neo4j-ndl/react/icons';
 
+const MarkdownLink = ({ node: _node, ...props }: any) => <a {...props} target='_blank' rel='noopener noreferrer' />;
+
 const NeoCardViewHeader = ({
   title,
   description,
@@ -186,7 +188,9 @@ const NeoCardViewHeader = ({
         </DialogTitle>
         <DialogContent style={{ minWidth: '400px' }}>
           <div>
-            <base target='_blank' /> <ReactMarkdown plugins={[gfm]} children={description} />
+            {/* remarkPlugins (the old `plugins` prop was ignored, so tables etc. never rendered). Links open
+                in a new tab via the anchor renderer, not a <base> tag, which changed every link on the page. */}
+            <ReactMarkdown remarkPlugins={[gfm]} components={{ a: MarkdownLink }} children={description} />
           </div>
         </DialogContent>
       </Dialog>

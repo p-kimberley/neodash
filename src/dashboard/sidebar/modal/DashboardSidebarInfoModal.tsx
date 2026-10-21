@@ -29,14 +29,13 @@ export const NeoDashboardSidebarInfoModal = ({ open, dashboard, handleClose }) =
           <DataGrid
             rows={rows}
             columns={columns}
-            pageSize={5}
-            rowsPerPageOptions={[5]}
-            disableSelectionOnClick
-            headerHeight={0}
+            // DataGrid v7 names (the v5 props used here before were ignored).
+            disableRowSelectionOnClick
+            columnHeaderHeight={0}
             hideFooter={true}
-            components={{
-              ColumnSortedDescendingIcon: () => <></>,
-              ColumnSortedAscendingIcon: () => <></>,
+            slots={{
+              columnSortedDescendingIcon: () => <></>,
+              columnSortedAscendingIcon: () => <></>,
             }}
           />
         </div>
