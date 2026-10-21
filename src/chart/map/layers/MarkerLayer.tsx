@@ -141,7 +141,8 @@ export function createMarkers(data, props) {
         }
       >
         {props.selection && props.selection[node.firstLabel] && props.selection[node.firstLabel] != '(no label)' ? (
-          <Tooltip direction='bottom' permanent className={'leaflet-custom-tooltip'} disableInteractive>
+          // The label shows while the pointer is over the marker (permanent labels overlapped and hid the map).
+          <Tooltip direction='bottom' className={'leaflet-custom-tooltip'}>
             {renderNodeLabel(node)}
           </Tooltip>
         ) : (
