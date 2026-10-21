@@ -1,3 +1,11 @@
+## NeoDash 3.2.1 - Maximised report fixes
+Chart 2.3.1.
+
+- Maximised tables show their rows. Before, the table had no height and appeared empty. Every report type now fills the maximised view, including its settings side.
+- The page behind a maximised report no longer scrolls.
+- The maximised report has an even margin on every side. On Windows a scrollbar used to take the right-hand margin.
+- Table rows coloured by a style rule keep their colour when hovered, slightly shaded. In dark mode the hover shade used to replace it, leaving the text unreadable.
+
 ## NeoDash 3.2.0 - Charts on Apache ECharts
 Existing dashboards keep working unchanged: report types, settings and their defaults are the same. Chart 2.3.0.
 
