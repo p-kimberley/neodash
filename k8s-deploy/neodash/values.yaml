@@ -89,6 +89,20 @@ maps:
   # Where choropleth / area map charts load country shapes; served by NeoDash by default.
   dataUrl: /maps
 
+branding:
+  # Product name in the header and browser tab.
+  appName: ''
+  # Logo shown in the header instead of the NeoDash mark: a base64-encoded PNG or SVG file
+  # (e.g. --set-file branding.logo.base64=logo.b64), served from the pod, so it works offline.
+  logo:
+    base64: ''
+    fileName: logo.png
+  # Any other style.config.json "style" entries, e.g. design-system colour overrides
+  # ("R, G, B" values) for the primary colour in both appearances:
+  #   --palette-light-primary-bg-strong: '0, 94, 184'
+  #   --palette-dark-primary-bg-strong: '120, 180, 255'
+  style: {}
+
 logLevel: info
 
 # Extra environment variables for the container (see server/README.md for all settings).

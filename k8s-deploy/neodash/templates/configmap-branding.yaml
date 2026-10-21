@@ -1,0 +1,21 @@
+{{- if include "neodash.branding.enabled" . }}
+{{- $style := deepCopy .Values.branding.style }}
+{{- with .Values.branding.appName }}
+{{- $_ := set $style "APP_NAME" . }}
+{{- end }}
+{{- if .Values.branding.logo.base64 }}
+{{- $_ := set $style "DASHBOARD_HEADER_BRAND_LOGO" (printf "brand/%s" .Values.branding.logo.fileName) }}
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "neodash.fullname" . }}-branding
+  labels:
+    {{- include "neodash.labels" . | nindent 4 }}
+data:
+  style.config.json: {{ dict "style" $style | toJson | quote }}
+{{- with .Values.branding.logo.base64 }}
+binaryData:
+  {{ $.Values.branding.logo.fileName }}: {{ . | nospace }}
+{{- end }}
+{{- end }}

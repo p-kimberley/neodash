@@ -6,7 +6,7 @@
 // - viewers send only a reference to the report in the saved dashboard, and the backend runs the
 //   Cypher it has stored. A query that is not part of the dashboard is refused for viewers.
 
-import { api, isEditor, session as apiSession } from './client';
+import { api, ApiError, isEditor, session as apiSession } from './client';
 
 export interface DashboardLookup {
   /** The dashboard currently open in the UI (Redux state). */
@@ -55,8 +55,19 @@ export class ApiDriver {
       rowLimit: options.rowLimit,
       timeoutSeconds: options.timeoutSeconds,
     };
-    if (!isEditor() && match && dashboard?.uuid) {
-      return api.query({ ...common, dashboard: dashboard.uuid, report: match });
+    if (!isEditor()) {
+      if (match && dashboard?.uuid) {
+        return api.query({ ...common, dashboard: dashboard.uuid, report: match });
+      }
+      // The backend would refuse it anyway. This happens e.g. when a report from the previous
+      // dashboard runs once more while another dashboard opens, so don't send it at all.
+      return Promise.reject(
+        new ApiError(
+          403,
+          'forbidden',
+          'This query is not part of the saved dashboard, so it can only be run by an editor.'
+        )
+      );
     }
     return api.query({
       ...common,

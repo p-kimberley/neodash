@@ -164,7 +164,6 @@ export const saveDashboardToNeo4jThunk =
         dispatch(setDashboardUuid(uuid));
       }
       await api.saveDashboard(uuid, dashboard);
-      dispatch(createNotificationThunk('🎉 Success!', 'Your current dashboard was saved.'));
       onSuccess(uuid);
     } catch (e: any) {
       dispatch(createNotificationThunk('Unable to save dashboard', e?.message ?? String(e)));

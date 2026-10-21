@@ -241,3 +241,24 @@ export const setDeprecationNotice = (deprecated: boolean) => ({
   type: SET_DEPRECATION_NOTICE,
   payload: { deprecated },
 });
+
+// The dashboard selector (start page) is shown instead of a dashboard.
+export const SET_HOME_OPEN = 'APPLICATION/SET_HOME_OPEN';
+export const setHomeOpen = (open: boolean) => ({
+  type: SET_HOME_OPEN,
+  payload: { open },
+});
+
+// The user's colour scheme choice; a per-user preference, not part of the dashboard.
+export const SET_THEME_PREFERENCE = 'APPLICATION/SET_THEME_PREFERENCE';
+export const setThemePreference = (preference: 'light' | 'dark' | 'system') => ({
+  type: SET_THEME_PREFERENCE,
+  payload: { preference },
+});
+
+// Tracks the operating system's light/dark setting, for the "system" preference.
+export const SET_SYSTEM_DARK = 'APPLICATION/SET_SYSTEM_DARK';
+export const setSystemDark = (dark: boolean) => ({
+  type: SET_SYSTEM_DARK,
+  payload: { dark },
+});

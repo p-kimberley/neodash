@@ -4,7 +4,15 @@ export const getDashboardTitle = (state: any) => state.dashboard.title;
 
 export const getDashboardSettings = (state: any) => state.dashboard.settings;
 
-export const getDashboardTheme = (state: any) => state?.dashboard?.settings?.theme ?? 'light';
+// The colour scheme is the user's preference (light, dark, or following the system), not a dashboard
+// setting. Dashboards saved with a `theme` keep it in their JSON, but it no longer decides the look.
+export const getDashboardTheme = (state: any): 'light' | 'dark' => {
+  const preference = state?.application?.themePreference ?? 'system';
+  if (preference === 'system') {
+    return state?.application?.systemDark ? 'dark' : 'light';
+  }
+  return preference;
+};
 
 export const getDashboardExtensions = (state: any) => {
   const { extensions } = state.dashboard;

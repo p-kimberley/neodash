@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChartProps } from '../../../../chart/Chart';
 import { MapContainer, TileLayer } from 'react-leaflet';
-import { mapDataUrl, tileAttributionFor, tileUrlFor } from '../../../../config/MapConfig';
+import { fetchMapData, tileAttributionFor, tileUrlFor } from '../../../../config/MapConfig';
 import 'leaflet/dist/leaflet.css';
 import { MapBoundary } from './PolygonLayer';
 import { recordToNative } from '../../../../chart/ChartUtils';
@@ -79,22 +79,18 @@ const NeoAreaMapChart = (props: ChartProps) => {
   }, [records, selection]);
 
   useEffect(() => {
-    fetch(mapDataUrl('world_polymap_level_0_entities.json'))
-      .then((res) => res.json())
-      .then((matched) => {
-        let tmp = fromFeatureListToObject(matched.features, keyLengthToKeyName[keyLength]);
-        setFeatureLevel0(tmp);
-        setIsReady(true);
-      });
+    fetchMapData('world_polymap_level_0_entities.json').then((matched) => {
+      let tmp = fromFeatureListToObject(matched.features, keyLengthToKeyName[keyLength]);
+      setFeatureLevel0(tmp);
+      setIsReady(true);
+    });
   }, [keyLength]);
 
   useEffect(() => {
-    fetch(mapDataUrl('world_polymap_level_1_entities.json'))
-      .then((res) => res.json())
-      .then((matched) => {
-        let tmp = fromFeatureListToObject(matched.features, regionCodeName);
-        setFeatureLevel1(tmp);
-      });
+    fetchMapData('world_polymap_level_1_entities.json').then((matched) => {
+      let tmp = fromFeatureListToObject(matched.features, regionCodeName);
+      setFeatureLevel1(tmp);
+    });
   }, []);
 
   if (

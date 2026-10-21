@@ -92,6 +92,9 @@ The chart stops with a clear message if a required value is missing.
 | `audit.logParameters` | `true` | Include query parameter values in audit logs |
 | `maps.tileUrl` | – | Map tile server, e.g. `https://tiles.internal/{z}/{x}/{y}.png`; empty = no tiles |
 | `maps.dataUrl` | `/maps` | Where choropleth/area-map country shapes are served from |
+| `branding.appName` | `NeoDash` | Product name in the header and browser tab |
+| `branding.logo.base64` / `fileName` | – / `logo.png` | Header logo (base64 PNG/SVG, e.g. `--set-file branding.logo.base64=logo.b64`), served from the pod |
+| `branding.style` | `{}` | Extra `style.config.json` entries, e.g. `--palette-light-primary-bg-strong: '0, 94, 184'` and the `--palette-dark-…` equivalent for the primary colour |
 | `ingress.enabled` / `className` / `host` | `true` / `nginx` / required | |
 | `ingress.tls.enabled` / `secretName` | `true` / required | |
 | `ingress.annotations` | body size 20m, read timeout 150s | ingress-nginx annotations; adjust for other controllers |

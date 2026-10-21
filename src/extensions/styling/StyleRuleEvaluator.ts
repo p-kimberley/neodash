@@ -218,7 +218,7 @@ export const generateClassDefinitionsBasedOnRules = (rules) => {
 
 export const identifyStyleRuleParameters = (rules) => {
   return rules.reduce((acc, rule) => {
-    if (rule.value.startsWith('$neodash_')) {
+    if (typeof rule.value === 'string' && rule.value.startsWith('$neodash_')) {
       acc.push(rule.value.substring(1).trim());
     }
     return acc;
@@ -228,7 +228,8 @@ export const identifyStyleRuleParameters = (rules) => {
 export const styleRulesReplaceParams = (rules, getGlobalParameter) => {
   return rules.reduce((acc, rule) => {
     let r = Object.assign({}, rule);
-    if (r.value.startsWith('$neodash_')) {
+    // Rules saved by hand or by other tools may hold numbers; only strings can reference parameters.
+    if (typeof r.value === 'string' && r.value.startsWith('$neodash_')) {
       r.value = getGlobalParameter(r.value.substring(1).trim())
         ? getGlobalParameter(r.value.substring(1).trim())
         : r.value;

@@ -12,9 +12,10 @@ function castPropsToBoltDate(dict) {
   return new Neo4jDate(dict.year, dict.month, dict.day);
 }
 
+// An unset parameter shows an empty field: showing today's date made an inactive filter look active.
 function castPropsToJsDate(dict) {
-  if (isEmptyObject(dict)) {
-    return dayjs();
+  if (dict === null || dict === undefined || dict === '' || isEmptyObject(dict)) {
+    return null;
   }
   return dayjs(new Date(dict.year, dict.month - 1, dict.day));
 }
@@ -41,7 +42,9 @@ const DatePickerParameterSelectComponent = (props: ParameterSelectProps) => {
   }, [props.parameterValue]);
 
   // If the user hasn't typed, and the parameter value mismatches the input value --> it was changed externally --> refresh the input value.
-  if (inputDate && isCastableToNeo4jDate(inputDate) && !inputDate.isSame(castPropsToJsDate(props.parameterValue))) {
+  // (Clearing is handled by the effect above, so a date being picked isn't reset while the parameter catches up.)
+  const parameterDate = castPropsToJsDate(props.parameterValue);
+  if (inputDate && parameterDate && isCastableToNeo4jDate(inputDate) && !inputDate.isSame(parameterDate)) {
     setInputDate(castPropsToJsDate(props.parameterValue));
   }
 

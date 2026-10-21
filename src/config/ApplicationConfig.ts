@@ -22,4 +22,19 @@ export const DASHBOARD_HEADER_BRAND_LOGO =
 
 export const IS_CUSTOM_LOGO = Boolean(styleConfig?.style?.DASHBOARD_HEADER_BRAND_LOGO);
 
+// Product name in the header and browser tab, e.g. your organisation's name for the tool.
+export const APP_NAME: string = styleConfig?.style?.APP_NAME || 'NeoDash';
+
 export const CUSTOM_CONNECTION_FOOTER_TEXT = ''; // ''
+
+/** Letters shown in the header mark: "ND" for NeoDash, otherwise the initials of APP_NAME. */
+export const markText = (): string => {
+  if (APP_NAME === 'NeoDash') {
+    return 'ND';
+  }
+  return APP_NAME.split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word.charAt(0).toUpperCase())
+    .join('');
+};

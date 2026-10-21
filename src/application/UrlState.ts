@@ -2,7 +2,8 @@
 // shared and bookmarked, back/forward work, and proxy/browser history shows which dashboard and page
 // was open. Format:
 //
-//   /dashboards/<uuid>?page=<n>&neodash_<parameter>=<value>
+//   /                                                       the dashboard selector (start page)
+//   /dashboards/<uuid>?page=<n>&neodash_<parameter>=<value>  a dashboard
 //
 // String parameter values appear as-is (matching NeoDash's existing ?neodash_x=value deep links);
 // other values (numbers, dates, lists) are written as json:<typed JSON> so they round-trip exactly.
@@ -11,15 +12,18 @@ import neo4j from 'neo4j-driver';
 import { decode, encode } from '../../server/src/codec';
 import { loadDashboardFromNeo4jThunk, loadDashboardThunk } from '../dashboard/DashboardThunks';
 import { setPageNumberThunk, updateGlobalParametersThunk } from '../settings/SettingsThunks';
+import { setDraft, setHomeOpen } from './ApplicationActions';
+import { APP_NAME } from '../config/ApplicationConfig';
 
 export interface UrlState {
+  /** No dashboard in the URL: show the dashboard selector. */
+  home?: boolean;
   uuid?: string;
   page?: number;
   parameters: Record<string, unknown>;
 }
 
 const DASHBOARD_PATH = /^\/dashboards\/([^/]+)\/?$/;
-const APP_NAME = 'NeoDash';
 
 function parseValue(raw: string): unknown {
   if (!raw.startsWith('json:')) {
@@ -53,12 +57,17 @@ export function parseUrl(url: string | Location = window.location): UrlState {
       parameters[key] = parseValue(value);
     }
   });
-  return { uuid: uuid ? decodeURIComponent(uuid) : undefined, page: Number.isNaN(page) ? undefined : page, parameters };
+  return {
+    home: !uuid,
+    uuid: uuid ? decodeURIComponent(uuid) : undefined,
+    page: Number.isNaN(page) ? undefined : page,
+    parameters,
+  };
 }
 
 export function buildUrl(state: any): string {
   const dashboard = state.dashboard ?? {};
-  if (!dashboard.uuid) {
+  if (state.application?.homeOpen || !dashboard.uuid) {
     return '/';
   }
   const query = new URLSearchParams();
@@ -81,8 +90,11 @@ export function buildUrl(state: any): string {
 export function buildTitle(state: any): string {
   const dashboard = state.dashboard ?? {};
   const pages: any[] = dashboard.pages ?? [];
-  if (!state.application?.connected || !dashboard.uuid) {
+  if (!state.application?.connected) {
     return APP_NAME;
+  }
+  if (state.application?.homeOpen || !dashboard.uuid) {
+    return `Dashboards · ${APP_NAME}`;
   }
   const pageTitle = pages.length > 1 ? pages[dashboard.settings?.pagenumber ?? 0]?.title : undefined;
   return [pageTitle, dashboard.title, APP_NAME].filter(Boolean).join(' · ');
@@ -92,24 +104,33 @@ export function buildTitle(state: any): string {
 export const applyUrlStateThunk =
   (target: UrlState, options: { fresh?: boolean; keepDraft?: boolean } = {}) =>
   async (dispatch: any, getState: any) => {
+    if (!target.uuid) {
+      dispatch(setHomeOpen(true));
+      return;
+    }
     const current = getState();
     const sameDashboard = Boolean(target.uuid) && target.uuid === current.dashboard?.uuid;
     // `fresh` (start-up) refetches the saved copy even if it is already cached, except for an editor's
     // unsaved draft, which survives a reload as it always has in NeoDash.
     const keepCached = sameDashboard && (!options.fresh || (options.keepDraft && current.application?.draft));
-    if (target.uuid && !keepCached) {
+    if (!keepCached) {
       const loaded = await new Promise<boolean>((resolve) => {
         dispatch(
           loadDashboardFromNeo4jThunk(undefined, undefined, target.uuid, (text: string) => {
+            // Freshly loaded from the server, so nothing is unsaved (upgrades set it again).
+            dispatch(setDraft(false));
             dispatch(loadDashboardThunk(target.uuid, text));
             resolve(true);
           })
         ).then(() => resolve(false));
       });
-      if (!loaded) {
+      // Not saved yet (e.g. an editor's new dashboard): keep showing the local copy if it is this one.
+      if (!loaded && !sameDashboard) {
+        dispatch(setHomeOpen(true));
         return;
       }
     }
+    dispatch(setHomeOpen(false));
     if (target.page !== undefined) {
       dispatch(setPageNumberThunk(target.page));
     }
@@ -138,7 +159,8 @@ export function startUrlSync(store: { getState: () => any; subscribe: (l: () => 
     }
     const before = parseUrl(last);
     const after = parseUrl(next);
-    const navigation = before.uuid !== after.uuid || (before.page ?? 0) !== (after.page ?? 0);
+    const navigation =
+      before.uuid !== after.uuid || (before.page ?? 0) !== (after.page ?? 0) || before.home !== after.home;
     window.history[navigation ? 'pushState' : 'replaceState'](null, '', next);
     last = next;
   };

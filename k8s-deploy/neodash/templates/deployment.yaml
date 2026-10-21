@@ -20,7 +20,12 @@ spec:
       maxSurge: 1
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
+      {{- $annotations := deepCopy .Values.podAnnotations }}
+      {{- if include "neodash.branding.enabled" . }}
+      {{- /* subPath mounts don't update in place, so restart the pods when branding changes. */}}
+      {{- $_ := set $annotations "checksum/branding" (include (print $.Template.BasePath "/configmap-branding.yaml") . | sha256sum) }}
+      {{- end }}
+      {{- with $annotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -137,6 +142,18 @@ spec:
               mountPath: /etc/neodash/ca
               readOnly: true
             {{- end }}
+            {{- if include "neodash.branding.enabled" . }}
+            - name: branding
+              mountPath: /app/public/style.config.json
+              subPath: style.config.json
+              readOnly: true
+            {{- if .Values.branding.logo.base64 }}
+            - name: branding
+              mountPath: /app/public/brand/{{ .Values.branding.logo.fileName }}
+              subPath: {{ .Values.branding.logo.fileName }}
+              readOnly: true
+            {{- end }}
+            {{- end }}
       volumes:
         # Secrets are mounted as files rather than environment variables.
         - name: secrets
@@ -161,6 +178,11 @@ spec:
         - name: tmp
           emptyDir:
             sizeLimit: 64Mi
+        {{- if include "neodash.branding.enabled" . }}
+        - name: branding
+          configMap:
+            name: {{ include "neodash.fullname" . }}-branding
+        {{- end }}
         {{- if .Values.oidc.caBundle.existingSecret }}
         - name: ca-bundle
           secret:

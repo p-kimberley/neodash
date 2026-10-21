@@ -124,3 +124,27 @@ describe('cross-site request protection', () => {
     expect(res.statusCode).toBe(415);
   });
 });
+
+describe('serving the UI', () => {
+  it('serves the app shell for client-side routes but 404s missing files', async () => {
+    const fs = await import('node:fs');
+    const os = await import('node:os');
+    const path = await import('node:path');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'neodash-static-'));
+    fs.writeFileSync(path.join(dir, 'index.html'), '<!doctype html><title>shell</title>');
+    fs.writeFileSync(path.join(dir, 'bundle.js'), 'console.log(1)');
+    const { makeApp: make, testConfig } = await import('./helpers.js');
+    const { app: staticApp, driver: staticDriver } = await make({ config: testConfig({ STATIC_DIR: dir }) });
+    try {
+      expect((await staticApp.inject({ url: '/dashboards/abc?page=1' })).body).toContain('shell');
+      expect((await staticApp.inject({ url: '/' })).body).toContain('shell');
+      expect((await staticApp.inject({ url: '/bundle.js' })).statusCode).toBe(200);
+      expect((await staticApp.inject({ url: '/maps/world_polymap.json' })).statusCode).toBe(404);
+      expect((await staticApp.inject({ url: '/api/nope' })).statusCode).toBe(401);
+    } finally {
+      await staticApp.close();
+      await staticDriver.close();
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});

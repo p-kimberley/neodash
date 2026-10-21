@@ -101,3 +101,10 @@ Fail early, with a helpful message, on missing required values.
 {{- fail "set only one of oidc.caBundle.existingSecret and oidc.caBundle.existingConfigMap" -}}
 {{- end -}}
 {{- end }}
+
+{{/*
+Whether any branding is configured (renders the branding ConfigMap and mounts it).
+*/}}
+{{- define "neodash.branding.enabled" -}}
+{{- if or .Values.branding.appName .Values.branding.logo.base64 .Values.branding.style -}}true{{- end -}}
+{{- end }}

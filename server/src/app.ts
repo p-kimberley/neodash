@@ -89,8 +89,8 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
   });
 
   const errorBody = (code: string, message: string, extra: Record<string, unknown> = {}) => ({ error: { code, message, ...extra } });
-  const deny = (request: FastifyRequest, reply: FastifyReply, reason: string) => {
-    audit(request, 'access.denied', { reason, method: request.method, url: request.url });
+  const deny = (request: FastifyRequest, reply: FastifyReply, reason: string, details: Record<string, unknown> = {}) => {
+    audit(request, 'access.denied', { reason, method: request.method, url: request.url, ...details });
     return reply.code(403).send(errorBody('forbidden', reason));
   };
 
@@ -278,7 +278,9 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
     let database: string;
     let source: Record<string, unknown>;
     if (body.query !== undefined) {
-      if (user.role !== 'editor') return deny(request, reply, 'Only editors can run ad-hoc queries');
+      if (user.role !== 'editor') {
+        return deny(request, reply, 'Only editors can run ad-hoc queries', { query: body.query, context: body.context });
+      }
       query = body.query;
       database = body.database ?? config.neo4j.defaultDatabase;
       source = { mode: 'adhoc', query, context: body.context };
@@ -359,7 +361,10 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
     await app.register(fastifyStatic, { root, wildcard: false, index: false });
     const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
     app.setNotFoundHandler((request, reply) => {
-      if (request.method !== 'GET' || request.url.startsWith('/api/') || request.url.startsWith('/auth/')) {
+      const pathname = request.url.split('?')[0] ?? '';
+      // Missing files (anything with an extension, e.g. /maps/x.json) are a real 404, not the app.
+      const isFile = /\.[a-z0-9]+$/i.test(pathname);
+      if (request.method !== 'GET' || isFile || pathname.startsWith('/api/') || pathname.startsWith('/auth/')) {
         return reply.code(404).send(errorBody('not_found', 'Not found'));
       }
       // Client-side routes (e.g. /dashboards/<uuid>) all get the app shell.

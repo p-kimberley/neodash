@@ -458,11 +458,8 @@ export const loadApplicationConfigThunk = () => async (dispatch: any, getState: 
     dispatch(clearNotification());
     dispatch(assignDashboardUuidIfNotPresentThunk());
 
+    // Without a dashboard in the URL, users start on the dashboard selector.
     const target = parseUrl(window.location);
-    if (!target.uuid && viewer && getState().dashboard?.uuid) {
-      // A viewer without a link sees the last dashboard they opened, refreshed from the server.
-      target.uuid = getState().dashboard.uuid;
-    }
     await dispatch(applyUrlStateThunk(target, { fresh: true, keepDraft: !viewer }));
     dispatch(setConnected(true));
   } catch (e) {

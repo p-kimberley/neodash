@@ -15,13 +15,15 @@
   }
 
   /* Tabs */
+  /* The page menu button keeps its space when hidden, so tabs don't shift on hover. */
   .visible-on-tab-hover {
-    display: none;
+    visibility: hidden;
   }
 
   .ndl-tab:hover .visible-on-tab-hover,
+  .ndl-tab:focus-within .visible-on-tab-hover,
   .ndl-tab .visible-on-tab-hover.open-menu {
-    display: inline-flex;
+    visibility: visible;
   }
 
   /* Override Mui default z-index */

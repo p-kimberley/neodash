@@ -40,6 +40,9 @@ import {
   SET_WELCOME_SCREEN_OPEN,
   SET_CUSTOM_HEADER,
   SET_DEPRECATION_NOTICE,
+  SET_HOME_OPEN,
+  SET_THEME_PREFERENCE,
+  SET_SYSTEM_DARK,
 } from './ApplicationActions';
 import {
   SET_LOGGING_MODE,
@@ -72,6 +75,9 @@ const initialState = {
   dashboardToLoadAfterConnecting: null,
   waitForSSO: false,
   standalone: false,
+  homeOpen: false,
+  themePreference: 'system',
+  systemDark: false,
   logging: LOGGING_INITIAL_STATE,
 };
 export const applicationReducer = (state = initialState, action: { type: any; payload: any }) => {
@@ -123,6 +129,15 @@ export const applicationReducer = (state = initialState, action: { type: any; pa
       const { connected } = payload;
       state = update(state, { connected: connected });
       return state;
+    }
+    case SET_HOME_OPEN: {
+      return update(state, { homeOpen: payload.open });
+    }
+    case SET_THEME_PREFERENCE: {
+      return update(state, { themePreference: payload.preference });
+    }
+    case SET_SYSTEM_DARK: {
+      return update(state, { systemDark: payload.dark });
     }
     case SET_DRAFT: {
       const { draft } = payload;

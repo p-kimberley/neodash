@@ -1,0 +1,373 @@
+/*
+ * Application shell: header, dashboard selector and page layout.
+ * Colours come from the Neo4j design system tokens, which switch with the .ndl-theme-dark class,
+ * so everything here follows the light / dark appearance automatically.
+ */
+
+:root {
+  --app-header-height: 56px;
+  --app-radius: 10px;
+}
+
+body {
+  background: rgb(var(--palette-neutral-bg-default));
+  color: rgb(var(--palette-neutral-text-default));
+}
+
+/* ---------- Header ---------- */
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: var(--app-header-height);
+  padding: 0 16px;
+  background: rgb(var(--palette-neutral-bg-weak));
+  border-bottom: 1px solid rgb(var(--palette-neutral-border-weak));
+}
+
+.app-header-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.app-header-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  margin-left: -8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.app-header-brand:hover {
+  background: rgb(var(--palette-neutral-hover));
+}
+
+.app-header-brand:focus-visible,
+.app-header-user:focus-visible,
+.selector-card:focus-visible,
+.selector-sort button:focus-visible,
+.selector-draft:focus-visible {
+  outline: 2px solid rgb(var(--palette-primary-focus));
+  outline-offset: 2px;
+}
+
+.app-header-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgb(var(--palette-primary-bg-strong));
+  color: rgb(var(--palette-neutral-text-inverse));
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.app-header-sep {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: rgb(var(--palette-neutral-text-weaker));
+}
+
+.app-header-current {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgb(var(--palette-neutral-text-weak));
+  font-weight: 600;
+}
+
+.app-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+}
+
+.app-header-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+  padding: 4px 10px 4px 4px;
+  border: 1px solid rgb(var(--palette-neutral-border-weak));
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.app-header-user:hover {
+  background: rgb(var(--palette-neutral-hover));
+}
+
+.app-header-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgb(var(--palette-primary-bg-weak));
+  color: rgb(var(--palette-primary-text, var(--palette-primary-bg-strong)));
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.app-header-user-name {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .app-header-user-name,
+  .app-header-brand span:last-child {
+    display: none;
+  }
+}
+
+/* ---------- Dashboard layout ---------- */
+
+.dashboard-body {
+  display: flex;
+  position: relative;
+  height: calc(100vh - var(--app-header-height));
+  overflow: hidden;
+}
+
+/* ---------- Dashboard selector ---------- */
+
+.selector {
+  height: calc(100vh - var(--app-header-height));
+  overflow-y: auto;
+}
+
+.selector-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 32px 16px 48px;
+}
+
+.selector-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.selector-muted {
+  color: rgb(var(--palette-neutral-text-weak));
+  min-height: 1.5em;
+}
+
+.selector-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.selector-search {
+  flex: 1 1 280px;
+  max-width: 480px;
+}
+
+.selector-sort {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 8px;
+  background: rgb(var(--palette-neutral-bg-strong));
+}
+
+.selector-sort button {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: rgb(var(--palette-neutral-text-weak));
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.selector-sort button.is-active {
+  background: rgb(var(--palette-neutral-bg-weak));
+  color: rgb(var(--palette-neutral-text-default));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.selector-draft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border: 1px solid rgb(var(--palette-warning-border-weak, var(--palette-neutral-border-strong)));
+  border-radius: var(--app-radius);
+  background: rgb(var(--palette-warning-bg-weak, var(--palette-neutral-bg-strong)));
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.selector-draft-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: rgb(var(--palette-warning-icon, var(--palette-primary-bg-strong)));
+}
+
+.selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.selector-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  height: 100%;
+  min-height: 112px;
+  padding: 18px;
+  border: 1px solid rgb(var(--palette-neutral-border-weak));
+  border-radius: var(--app-radius);
+  background: rgb(var(--palette-neutral-bg-weak));
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.selector-card:hover {
+  border-color: rgb(var(--palette-primary-border-strong));
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.selector-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.selector-card-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgb(var(--palette-neutral-text-weak));
+  font-size: 13px;
+}
+
+.selector-empty {
+  display: grid;
+  place-items: center;
+  min-height: 200px;
+  border: 1px dashed rgb(var(--palette-neutral-border-strong));
+  border-radius: var(--app-radius);
+  color: rgb(var(--palette-neutral-text-weak));
+  text-align: center;
+  padding: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .selector-card {
+    transition: none;
+  }
+  .selector-card:hover {
+    transform: none;
+  }
+}
+
+/* ---------- Save control (editors) ---------- */
+
+.app-header-save {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: 8px;
+  padding-right: 12px;
+  border-right: 1px solid rgb(var(--palette-neutral-border-weak));
+}
+
+.app-header-unsaved,
+.app-header-saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.app-header-unsaved {
+  color: rgb(var(--palette-warning-text, var(--palette-neutral-text-default)));
+}
+
+.app-header-saved {
+  color: rgb(var(--palette-neutral-text-weaker));
+}
+
+@media (max-width: 900px) {
+  .app-header-unsaved,
+  .app-header-saved {
+    display: none;
+  }
+}
+
+/* ---------- Add report placeholder ---------- */
+
+.add-report-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  /* The grid cell is 4 rows (~400px) high; fill it like a report would. */
+  height: 100%;
+  min-height: 384px;
+  border: 2px dashed rgb(var(--palette-neutral-border-strong));
+  border-radius: var(--app-radius);
+  background: transparent;
+  color: rgb(var(--palette-neutral-text-weak));
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+}
+
+.add-report-card:hover,
+.add-report-card:focus-visible {
+  border-color: rgb(var(--palette-primary-border-strong));
+  color: rgb(var(--palette-primary-text));
+  background: rgb(var(--palette-primary-bg-weak) / 0.4);
+  outline: none;
+}

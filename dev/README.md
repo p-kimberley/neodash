@@ -126,20 +126,17 @@ elsewhere.
 
 ## Legacy quirks found while building the fixtures
 
-Things the rebuilt UI should handle better. All of them reproduce in `neodash-legacy` with the
-dashboards above.
+All of these reproduce in `neodash-legacy` with the dashboards above. Status in the new UI:
 
-- A style rule whose `value` is a number, rather than a string, blanks the whole dashboard
-  (`value.startsWith is not a function`).
-- Reports wait for every parameter in their query to be set unless the report enables
-  `ignoreNonDefinedParams`, so optional filters need a hidden setting.
-- Date pickers show today's date while the parameter is actually unset, so the filter looks
-  active when it isn't.
-- Page tabs grow a "⋯" menu on hover, which shifts the tabs to their right; clicks often open the
-  menu instead of switching page.
-- `?page=N` is ignored when a dashboard is opened from a share link.
-- Grouped bar charts show the legend in a single colour; horizontal stacked bars colour by
-  category instead of by series.
-- Large single values (dates, words) overflow their card instead of scaling down.
-- The empty "add report" placeholder card is laid out like a report and can push real reports
-  down the page.
+| Quirk | New UI |
+| --- | --- |
+| A style rule whose `value` is a number (not a string) blanks the whole dashboard (`value.startsWith is not a function`) | Fixed |
+| Date pickers show today's date while the parameter is unset, so the filter looks active | Fixed: empty until a date is picked |
+| Page tabs grow a "⋯" menu on hover, shifting the tabs to their right | Fixed |
+| `?page=N` is ignored when a dashboard is opened from a share link | Fixed (URL state) |
+| Large single values (dates, words) overflow their card | Fixed: long values shrink to fit; a value of `0` no longer shows as blank |
+| The empty "add report" placeholder is a large grey block | Restyled as a dashed placeholder |
+| Saving is hidden in a sidebar item menu and confirms with a blocking pop-up | Save button and unsaved-changes indicator in the header |
+| Dark mode is stored in each dashboard, so viewers see whatever the last editor saved | Per-user appearance (light / dark / match system); the dashboard field is kept but ignored |
+| Reports wait for every parameter unless they enable `ignoreNonDefinedParams` | Unchanged on purpose: changing it would alter how existing dashboards behave |
+| Grouped bar legends use one colour; horizontal stacked bars colour by category | Not yet fixed |

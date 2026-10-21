@@ -133,3 +133,11 @@ export const applicationGetDebugState = (state: any) => {
 export const applicationGetCustomHeader = (state: any) => {
   return state.application.customHeader;
 };
+
+export const applicationIsHomeOpen = (state: any) => {
+  return Boolean(state.application.homeOpen);
+};
+
+export const applicationGetThemePreference = (state: any): 'light' | 'dark' | 'system' => {
+  return state.application.themePreference ?? 'system';
+};
