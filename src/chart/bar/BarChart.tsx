@@ -1,14 +1,19 @@
-import { ResponsiveBar, ResponsiveBarCanvas } from '@nivo/bar';
 import React, { useEffect } from 'react';
+import * as echarts from 'echarts/core';
+import { BarChart } from 'echarts/charts';
+import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components';
+import { EChart } from '../echarts/EChart';
+import { gridFromMargins, labelOnColor, tooltipRow } from '../echarts/helpers';
 import { NoDrawableDataErrorMessage } from '../../component/editor/CodeViewerComponent';
 import { getD3ColorsByScheme } from '../../config/ColorConfig';
 import { evaluateRulesOnDict, useStyleRules } from '../../extensions/styling/StyleRuleEvaluator';
 import { ChartProps } from '../Chart';
 import { convertRecordObjectToString, recordToNative } from '../ChartUtils';
-import { LABEL_ON_COLOR, themeNivo, themeNivoCanvas } from '../Utils';
 import { extensionEnabled } from '../../utils/ReportUtils';
 import { getPageNumbersAndNamesList, getRule, performActionOnElement } from '../../extensions/advancedcharts/Utils';
 import { getOriginalRecordForNivoClickEvent } from './util';
+
+echarts.use([BarChart, GridComponent, LegendComponent, TooltipComponent]);
 
 const NeoBarChart = (props: ChartProps) => {
   const { records, selection } = props;
@@ -192,97 +197,6 @@ const NeoBarChart = (props: ChartProps) => {
     return chartColorsByScheme[colorIndex];
   };
 
-  function calculateLabelPosition(bar, positionLabel, layout) {
-    let x = bar.width ? bar.width / 2 : 0;
-    let y = bar.height ? bar.height / 2 : 0;
-
-    if (positionLabel === 'top') {
-      if (layout === 'vertical') {
-        y = -10;
-      } else {
-        x = bar.width + 10;
-      }
-    } else if (positionLabel === 'bottom') {
-      if (layout === 'vertical') {
-        y = bar.height + 10;
-      } else {
-        x = -10;
-      }
-    }
-
-    return { x, y };
-  }
-
-  // Used instead of BarChartComponent when Position Label !== 'off'
-  const BarComponent = ({ bar, borderColor, onClick }) => {
-    let shade = false;
-    let darkTop = false;
-    let includeIndex = false;
-    let textAnchor = 'middle';
-    const { x, y } = calculateLabelPosition(bar, positionLabel, layout);
-
-    return (
-      <g
-        transform={`translate(${bar.x},${bar.y})`}
-        // onClick event to trigger event to pass value with report action
-        onClick={(event) => onClick(bar.data, event)}
-        style={{ cursor: 'pointer' }}
-      >
-        {shade ? <rect x={-3} y={7} width={bar.width} height={bar.height} fill='rgba(0, 0, 0, .07)' /> : <></>}
-        <rect width={bar.width} height={bar.height} fill={bar.color} />
-        {darkTop ? (
-          <rect x={bar.width - 5} width={5} height={bar.height} fill={borderColor} fillOpacity={0.2} />
-        ) : (
-          <></>
-        )}
-        {includeIndex ? (
-          <text
-            x={bar.width - 16}
-            y={bar.height / 2}
-            textAnchor='end'
-            dominantBaseline='central'
-            fill='black'
-            style={{
-              fontWeight: 900,
-              fontSize: 30,
-            }}
-          >
-            {bar.data.indexValue}
-          </text>
-        ) : (
-          <></>
-        )}
-        {enableLabel ? (
-          <text
-            x={x}
-            y={y}
-            textAnchor={textAnchor}
-            dominantBaseline='central'
-            fill={borderColor}
-            style={{
-              fontWeight: 100,
-              fontSize: 10,
-            }}
-          >
-            {bar.data.value}
-          </text>
-        ) : (
-          <></>
-        )}
-      </g>
-    );
-  };
-
-  // Fixing canvas bug, from https://github.com/plouc/nivo/issues/2162
-  // SVGGraphicsElement.getBBox
-  HTMLCanvasElement.prototype.getBBox = function tooltipMapper() {
-    return { width: this.offsetWidth, height: this.offsetHeight };
-  };
-
-  const extraProperties = positionLabel !== 'off' ? { barComponent: BarComponent } : {};
-  const canvas = data.length > 30;
-  const BarChartComponent = canvas ? ResponsiveBarCanvas : ResponsiveBar;
-
   // Creates enough width to ensure chart doesn't get cut off
   const adaptableWidth =
     marginLeft +
@@ -290,65 +204,6 @@ const NeoBarChart = (props: ChartProps) => {
     data.length * barWidth * 4 +
     (data.length - 1) * 4 +
     (data.length - 1) * innerPadding * 4;
-
-  // Legend F
-  const calculateLegendConfig = () => {
-    if (!legend) {
-      return []; // No legend required
-    }
-
-    if (legendPosition === 'Horizontal') {
-      return [
-        {
-          dataFrom: 'keys',
-          anchor: 'bottom',
-          direction: 'row',
-          justify: false,
-          translateX: 0,
-          translateY: legendWidth,
-          itemsSpacing: 2,
-          itemWidth: legendWidth,
-          itemHeight: 20,
-          itemDirection: 'left-to-right',
-          itemOpacity: 0.85,
-          symbolSize: 20,
-          effects: [
-            {
-              on: 'hover',
-              style: {
-                itemOpacity: 1,
-              },
-            },
-          ],
-        },
-      ];
-    }
-    // Vertical legend
-    return [
-      {
-        dataFrom: 'keys',
-        anchor: 'bottom-right',
-        direction: 'column',
-        justify: false,
-        translateX: legendWidth + 10,
-        translateY: 0,
-        itemsSpacing: 1,
-        itemWidth: legendWidth,
-        itemHeight: 20,
-        itemDirection: 'left-to-right',
-        itemOpacity: 0.85,
-        symbolSize: 15,
-        effects: [
-          {
-            on: 'hover',
-            style: {
-              itemOpacity: 1,
-            },
-          },
-        ],
-      },
-    ];
-  };
 
   // Height of each legend item
   const itemHeight = 24.5;
@@ -388,55 +243,85 @@ const NeoBarChart = (props: ChartProps) => {
         overflowY: 'auto',
       };
 
-  const chart = (
+  // ECharts option. Vertical bars put categories on the x axis; horizontal ones on the y axis.
+  const horizontal = layout === 'horizontal';
+  const categories = data.map((row) => row.index);
+  const option = (() => {
+    const labelPosition =
+      { off: 'inside', top: horizontal ? 'right' : 'top', bottom: horizontal ? 'insideLeft' : 'insideBottom' }[
+        positionLabel
+      ] ?? 'inside';
+    const series = keys.map((key, keyIndex) => ({
+      type: 'bar',
+      name: key,
+      // The series colour (for the legend); bars may still be coloured individually below.
+      itemStyle: { color: chartColorsByScheme[keyIndex % chartColorsByScheme.length] },
+      stack: groupMode == 'stacked' ? 'total' : undefined,
+      barCategoryGap: `${Math.round(padding * 100)}%`,
+      // nivo's innerPadding was pixels between the bars of a group; ECharts' gap is a percentage.
+      barGap: innerPadding ? `${Math.min(100, innerPadding * 10)}%` : '0%',
+      data: data.map((row, i) => {
+        const color = getBarColor({ id: key, index: i, indexValue: row.index, value: row[key] });
+        return {
+          value: row[key],
+          itemStyle: { color },
+          label: {
+            show: enableLabel,
+            position: labelPosition,
+            color: positionLabel === 'off' ? labelOnColor(color) : color,
+            fontSize: positionLabel === 'off' ? 12 : 10,
+          },
+        };
+      }),
+      labelLayout: { hideOverlap: Boolean(labelSkipWidth || labelSkipHeight) },
+    }));
+    const categoryAxis = {
+      type: 'category',
+      data: categories,
+      axisTick: { alignWithLabel: true },
+      // nivo's tick rotation is clockwise; ECharts' is anticlockwise.
+      axisLabel: horizontal ? { show: displayYAxis } : { rotate: -labelRotation, hideOverlap: true },
+      axisLine: { show: horizontal ? displayYAxis : true },
+    };
+    const valueAxis = {
+      type: valueScale === 'symlog' ? 'log' : 'value',
+      min: minValue === 'auto' ? undefined : minValue,
+      max: maxValue === 'auto' ? undefined : maxValue,
+      splitLine: { show: displayYGridLines },
+      axisLabel: horizontal ? { rotate: -labelRotation } : { show: displayYAxis },
+    };
+    const m = margin();
+    return {
+      animation: false,
+      grid: gridFromMargins(m),
+      xAxis: horizontal ? valueAxis : categoryAxis,
+      yAxis: horizontal ? categoryAxis : valueAxis,
+      tooltip: {
+        trigger: 'item',
+        formatter: (p) => `${p.name}<br/>${tooltipRow(p.color, p.seriesName, p.value)}`,
+      },
+      legend: legend
+        ? legendPosition === 'Horizontal'
+          ? { show: true, orient: 'horizontal', bottom: 4, itemWidth: 20, itemHeight: 12, itemGap: 8 }
+          : { show: true, orient: 'vertical', right: 10, bottom: m.bottom, itemWidth: 15, itemHeight: 12, itemGap: 6 }
+        : { show: false },
+      series,
+    };
+  })();
+
+  // Clicks run the report's actions, using the record behind the clicked bar.
+  const onClick = (p) => {
+    const row = data[p.dataIndex];
+    handleBarClick({ indexValue: p.name, id: p.seriesName, value: p.value, data: row });
+  };
+
+  return (
     <div style={barChartStyle}>
       <div style={scrollableWrapperStyle}>
-        <BarChartComponent
-          theme={canvas ? themeNivoCanvas(props.theme) : themeNivo}
-          data={data}
-          key={`${selection.index}___${selection.value}`}
-          layout={layout}
-          groupMode={groupMode == 'stacked' ? 'stacked' : 'grouped'}
-          enableLabel={enableLabel}
-          onClick={handleBarClick}
-          keys={keys}
-          indexBy='index'
-          margin={margin()}
-          valueScale={{ type: valueScale }}
-          padding={padding}
-          innerPadding={innerPadding}
-          minValue={minValue}
-          maxValue={maxValue}
-          colors={getBarColor}
-          axisTop={null}
-          axisRight={null}
-          axisBottom={{
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: labelRotation,
-          }}
-          axisLeft={
-            displayYAxis
-              ? {
-                  tickSize: 5,
-                  tickPadding: 5,
-                  tickRotation: 0,
-                }
-              : null
-          }
-          enableGridY={displayYGridLines}
-          labelSkipWidth={labelSkipWidth}
-          labelSkipHeight={labelSkipHeight}
-          labelTextColor={LABEL_ON_COLOR}
-          {...extraProperties}
-          legends={calculateLegendConfig()}
-          animate={false}
-        />
+        <EChart option={option} onClick={onClick} />
       </div>
     </div>
   );
-
-  return chart;
 };
 
 export default NeoBarChart;
