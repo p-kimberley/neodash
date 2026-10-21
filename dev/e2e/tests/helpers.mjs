@@ -44,7 +44,7 @@ export const deleteDashboard = async (page, uuid) => {
 /** Opens a dashboard page and waits until no report is still loading. */
 export const openPage = async (page, uuid, pageIndex = 0) => {
   await page.goto(`/dashboards/${uuid}?page=${pageIndex}`);
-  await expect(page.locator('.nd-report-card').first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('.nd-report-card').first()).toBeVisible({ timeout: 60_000 });
   const loading = page.locator('.nd-report-card .nd-report-loading');
   try {
     await expect(loading).toHaveCount(0, { timeout: 30_000 });

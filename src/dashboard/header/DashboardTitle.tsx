@@ -42,7 +42,7 @@ export const NeoDashboardTitle = ({
       <>
         {Object.keys(EXTENSIONS_DRAWER_BUTTONS).map((name) => {
           const Component = extensions[name] ? EXTENSIONS_DRAWER_BUTTONS[name] : '';
-          return Component ? <Component key={`ext-${name}`} database={connection.database} /> : <></>;
+          return Component ? <Component key={`ext-${name}`} database={connection.database} /> : null;
         })}
       </>
     );

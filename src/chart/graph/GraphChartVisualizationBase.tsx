@@ -10,7 +10,7 @@ const faded = (color?: string) => {
 };
 
 export const NeoGraphChartVisualizationBase = (props: GraphChartVisualizationProps) => {
-  const fgRef: React.MutableRefObject<any> = useRef();
+  const fgRef: React.MutableRefObject<any> = useRef(undefined);
   const GraphComponent = props.config?.graphComponent;
   if (!props.style.width || !props.style.height) {
     return <></>;

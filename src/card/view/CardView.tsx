@@ -46,7 +46,7 @@ const NeoCardView = ({
 }) => {
   const reportHeight = heightPx - CARD_FOOTER_HEIGHT - CARD_HEADER_HEIGHT + 20;
   const cardHeight = heightPx - CARD_FOOTER_HEIGHT + 23;
-  const ref = React.useRef();
+  const ref = React.useRef(undefined);
 
   const settingsSelector = Object.keys(
     Object.fromEntries(Object.entries(REPORT_TYPES[type]?.settings || {}).filter(([_, value]) => value.refresh))

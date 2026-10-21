@@ -17,11 +17,11 @@ interface Extension {
   link: string;
   reducerPrefix?: string;
   reducerObject?: any;
-  settingsMenuButton?: JSX.Element;
-  cardSettingsComponent?: JSX.Element;
-  settingsModal?: JSX.Element;
+  settingsMenuButton?: React.JSX.Element;
+  cardSettingsComponent?: React.JSX.Element;
+  settingsModal?: React.JSX.Element;
   prepopulateReportFunction?: any; // function
-  customLoadingIcon?: JSX.Element;
+  customLoadingIcon?: React.JSX.Element;
 }
 
 // TODO: define extension config interface

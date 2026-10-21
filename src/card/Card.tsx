@@ -56,7 +56,7 @@ const NeoCard = ({
   const [databaseList, setDatabaseList] = React.useState([database]);
   const [databaseListLoaded, setDatabaseListLoaded] = React.useState(false);
 
-  const ref = React.useRef();
+  const ref = React.useRef(undefined);
 
   // fetching the list of databases from neo4j, filtering out the 'system' db
   useEffect(() => {

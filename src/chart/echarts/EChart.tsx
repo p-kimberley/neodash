@@ -24,7 +24,7 @@ export const EChart = ({
   style?: React.CSSProperties;
 }) => {
   const container = useRef<HTMLDivElement>(null);
-  const chart = useRef<echarts.ECharts>();
+  const chart = useRef<echarts.ECharts | undefined>(undefined);
   const clickHandler = useRef(onClick);
   clickHandler.current = onClick;
   const mode = useSelector(getDashboardTheme) === 'dark' ? 'dark' : 'light';

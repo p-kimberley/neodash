@@ -54,7 +54,7 @@ const Application = ({
   // Start-up runs once per page load. A ref (not state) guards it: React 18's StrictMode runs effects
   // twice in development, and a second start-up installed a second URL sync, which pushed every
   // history entry twice (so Back seemed to do nothing).
-  const startup = useRef<Promise<unknown>>();
+  const startup = useRef<Promise<unknown> | undefined>(undefined);
 
   useEffect(() => {
     startup.current ??= Promise.resolve(initializeApplication());

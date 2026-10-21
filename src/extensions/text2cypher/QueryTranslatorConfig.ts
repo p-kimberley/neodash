@@ -23,7 +23,7 @@ interface ClientSettings {
 interface ClientConfig {
   clientName: string;
   clientClass: ModelClient;
-  clientSettingsModal: JSX.Element;
+  clientSettingsModal: React.JSX.Element;
   settings: ClientSettings;
 }
 
