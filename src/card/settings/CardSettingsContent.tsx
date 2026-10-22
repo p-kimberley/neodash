@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import CardContent from '@mui/material/CardContent';
 import debounce from 'lodash/debounce';
 import { useCallback } from 'react';
 import NeoCodeEditorComponent, {
@@ -103,7 +102,7 @@ const NeoCardSettingsContent = ({
   );
 
   return (
-    <CardContent className='n-py-2'>
+    <div className='nd-card-settings-content'>
       <Select
         label='Type'
         type='select'
@@ -168,7 +167,7 @@ const NeoCardSettingsContent = ({
       ) : (
         <div>{hasExtensionComponents() ? renderExtensionsComponents() : defaultQueryBoxComponent}</div>
       )}
-    </CardContent>
+    </div>
   );
 };
 

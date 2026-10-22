@@ -156,34 +156,80 @@ body {
 /* ---------- Report cards ---------- */
 
 .nd-report-card {
-  background: var(--nd-surface) !important;
-  border: 1px solid var(--nd-border) !important;
-  border-radius: var(--nd-radius-lg) !important;
-  box-shadow: var(--nd-shadow) !important;
+  background: var(--nd-surface);
+  border: 1px solid var(--nd-border);
+  border-radius: var(--nd-radius-lg);
+  box-shadow: var(--nd-shadow);
   color: var(--nd-text);
 }
 
-/* Report title: 16px semibold, full-contrast text (it was the faint "weak" shade at 20px). */
-.nd-card-title.large input,
-.nd-card-title input {
+/* The card's two faces: the report ("view") and its settings. The hidden face stays mounted (so
+   results survive opening the settings) but takes no space; the shown one fades in. */
+.nd-card-face.is-hidden {
+  height: 0;
+  min-height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+.nd-card-face.is-shown {
+  animation: nd-card-face-in 160ms ease-out;
+}
+
+@keyframes nd-card-face-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nd-card-face.is-shown {
+    animation: none;
+  }
+}
+
+/* Report title, editable in place: 16px semibold, full-contrast text, a subtle underline on hover
+   and the accent colour while editing. */
+.nd-card-title {
+  display: block;
+  width: 100%;
+  margin: 0;
+  /* The same text position as the previous (Material UI, small) input. */
+  padding: 1px 0 4px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  outline: none;
+  font: inherit;
   font-size: var(--nd-text-lg);
   font-weight: 650;
   line-height: 1.4;
-  margin-top: 0;
   color: var(--nd-text);
   -webkit-text-fill-color: var(--nd-text);
   letter-spacing: 0.005em;
+  text-overflow: ellipsis;
 }
 
-.nd-card-title input::placeholder {
-  color: var(--nd-text-muted);
-  -webkit-text-fill-color: var(--nd-text-muted);
+.nd-card-title:hover:not(:disabled) {
+  border-bottom-color: var(--nd-border-strong);
+}
+
+.nd-card-title:focus {
+  border-bottom-color: var(--nd-primary);
+}
+
+.nd-card-title:disabled {
   opacity: 1;
 }
 
-.nd-card-header .ndl-icon-btn,
-.nd-report-card .ndl-icon-btn {
-  color: var(--nd-icon);
+.nd-card-title::placeholder {
+  color: var(--nd-text-muted);
+  -webkit-text-fill-color: var(--nd-text-muted);
+  opacity: 1;
 }
 
 .nd-card-header .drag-handle {
@@ -225,34 +271,21 @@ body {
   flex-wrap: wrap;
   align-items: flex-end;
   gap: 10px 16px;
-  padding: 6px 16px 100px !important;
+  padding: 6px 16px 100px;
   overflow-x: auto;
 }
 
-.nd-field-select {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.nd-field-select-label,
-.nd-card-footer .ndl-dropdown label,
-.nd-card-footer .ndl-dropdown > div:first-child > span {
-  font-size: var(--nd-text-xs);
-  font-weight: 600;
-  color: var(--nd-text-secondary);
-  letter-spacing: 0.01em;
-}
-
-.nd-field-select-input {
+/* Sized to the chosen value (NDL's combobox is a fixed 320px), as the previous selects were. */
+.ndl-combobox.ndl-combobox-field.nd-field-select {
+  width: auto;
   min-width: 140px;
-  height: 32px;
-  font-size: var(--nd-text-sm) !important;
 }
 
-.nd-field-select-input .MuiSelect-select {
-  padding-top: 5px !important;
-  padding-bottom: 5px !important;
+/* A node label's colour beside the chosen property, so the selector doubles as a legend. */
+.nd-field-select-value {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
 }
 
 .nd-field-select-dot {
@@ -262,10 +295,6 @@ body {
   margin-right: 8px;
   border-radius: 50%;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
-}
-
-.nd-card-footer .ndl-dropdown {
-  font-size: var(--nd-text-sm);
 }
 
 /* ---------- Code editor (Cypher / Markdown) ---------- */
@@ -701,7 +730,7 @@ body {
 /* ---------- Misc ---------- */
 
 /* Single value reports use full-contrast text. */
-.nd-report-card .MuiCardContent-root {
+.nd-report-card .nd-card-content {
   color: var(--nd-text);
 }
 
@@ -710,26 +739,11 @@ body {
   outline-color: var(--nd-focus) !important;
 }
 
-/* Editable report titles: a subtle underline on hover, the accent colour while editing. */
-.nd-card-title .MuiInput-underline:before,
-.nd-card-title .MuiInput-underline:hover:not(.Mui-disabled):before {
-  border-bottom: 1px solid transparent !important;
-}
-.nd-card-title:hover .MuiInput-underline:not(.Mui-disabled):before {
-  border-bottom-color: var(--nd-border-strong) !important;
-}
-.nd-card-title .MuiInput-underline:after {
-  border-bottom: 2px solid var(--nd-primary) !important;
-}
-
-/* Report cards: their container provides the surface, so the inner MUI card is transparent. */
-.nd-report-card .MuiCard-root {
-  background: transparent;
-  border: none;
-  /* The card's radius less its 1px border, so the content (which this layer clips) can't poke out
-     past the rounded corners. */
+/* Each face's content is clipped to the card's radius less its 1px border, so it can't poke out
+   past the rounded corners. */
+.nd-card-surface {
+  overflow: hidden;
   border-radius: calc(var(--nd-radius-lg) - 1px);
-  box-shadow: none !important;
 }
 
 /* Floating menus drawn by charts (e.g. the graph right-click menu). */
@@ -790,9 +804,7 @@ body {
   height: auto;
 }
 
-.nd-maximised-content .MuiCollapse-entered,
-.nd-maximised-content .MuiCollapse-entered > .MuiCollapse-wrapper,
-.nd-maximised-content .MuiCollapse-entered > .MuiCollapse-wrapper > .MuiCollapse-wrapperInner,
+.nd-maximised-content .nd-card-face.is-shown,
 .nd-maximised-content .card-view.expanded {
   height: 100%;
 }
@@ -1076,4 +1088,51 @@ body {
 .nd-value-label {
   display: inline-flex;
   vertical-align: middle;
+}
+
+/* A report card's header: drag handle (or settings buttons), title, and the action buttons. */
+.nd-card-bar {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+}
+.nd-card-bar-lead {
+  display: flex;
+  flex: 0 0 auto;
+  margin-right: 16px;
+}
+.nd-card-bar-title {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.nd-card-bar-actions {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin: -4px -8px -4px 0;
+}
+
+/* The settings face's query editor and fields. */
+.nd-card-settings-content {
+  padding: 16px;
+}
+
+/* Suggestions under a text field (SuggestInput). */
+.nd-suggest-list {
+  min-width: 200px;
+  max-height: min(320px, 50vh);
+  overflow-y: auto;
+  padding: 4px;
+}
+.nd-suggest-option {
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: var(--nd-text-sm);
+  color: var(--nd-text);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nd-suggest-option.is-active {
+  background: var(--nd-selected);
 }

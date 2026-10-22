@@ -1,10 +1,9 @@
 import React from 'react';
-import { CardActions, FormControl, MenuItem, Select } from '@mui/material';
 import { categoricalColorSchemes } from '../../config/ColorConfig';
 import { getReportTypes } from '../../extensions/ExtensionUtils';
 import { SELECTION_TYPES } from '../../config/CardConfig';
 // The design system's select, distinct from Material UI's Select used for the colour schemes.
-import { Select as NdlSelect } from '@neo4j-ndl/react';
+import { Combobox } from '@neo4j-ndl/react';
 
 const NeoCardViewFooter = ({
   fields,
@@ -28,7 +27,7 @@ const NeoCardViewFooter = ({
     return <div></div>;
   }
   return (
-    <CardActions className='nd-card-footer' disableSpacing>
+    <div className='nd-card-footer'>
       {selectables.map((selectable, index) => {
         const selectionIsMandatory = !selectableFields[selectable].optional;
 
@@ -57,34 +56,26 @@ const NeoCardViewFooter = ({
                   : 'var(--nd-border-strong)';
               // Same look as the other field selectors: caption above, outlined compact select. The
               // node label's colour is shown as a dot, so the legend role is kept.
+              const value = selection && selection[nodeLabel] ? selection[nodeLabel] : '';
               return (
-                <div key={nodeLabel} className='nd-field-select'>
-                  <label className='nd-field-select-label' id={`${nodeLabel}-label`}>
-                    {nodeLabel}
-                  </label>
-                  <Select
-                    labelId={`${nodeLabel}-label`}
-                    id={nodeLabel}
-                    size='small'
-                    className='nd-field-select-input'
-                    startAdornment={
-                      <span className='nd-field-select-dot' style={{ backgroundColor: color }} aria-hidden />
-                    }
-                    onChange={(e) => onSelectionUpdate(nodeLabel, e.target.value)}
-                    value={selection && selection[nodeLabel] ? selection[nodeLabel] : ''}
-                  >
-                    {/* Render choices */}
-                    {properties.length &&
-                      properties.map &&
-                      properties.map((field) => {
-                        return (
-                          <MenuItem key={field} value={field}>
-                            {field}
-                          </MenuItem>
-                        );
-                      })}
-                  </Select>
-                </div>
+                <Combobox
+                  key={nodeLabel}
+                  label={nodeLabel}
+                  size='small'
+                  className='nd-field-select'
+                  isSearchable={properties.length > 10}
+                  options={properties.map((property) => ({ label: property, value: property }))}
+                  value={value ? { label: value, value: value } : null}
+                  onChange={(option) => option && onSelectionUpdate(nodeLabel, option.value)}
+                  components={{
+                    SingleValue: ({ option }) => (
+                      <span className='nd-field-select-value'>
+                        <span className='nd-field-select-dot' style={{ backgroundColor: color }} aria-hidden />
+                        {option.label}
+                      </span>
+                    ),
+                  }}
+                />
               );
             });
             return fieldSelections;
@@ -102,43 +93,39 @@ const NeoCardViewFooter = ({
 
             const fieldsToRender = selectionIsMandatory ? sortedFields : sortedFields.concat(['(none)']);
             return (
-              <FormControl key={index} size={'small'} className='nd-field-select'>
-                <NdlSelect
-                  label={selectableFields[selectable].label}
-                  type='select'
-                  selectProps={{
-                    placeholder: selectableFields[selectable].multiple ? 'Select (multiple)' : 'Select',
-                    onChange: (newValue) => {
-                      if (newValue && selectableFields[selectable].multiple) {
+              <Combobox
+                key={index}
+                label={selectableFields[selectable].label}
+                size='small'
+                className='nd-field-select'
+                isSearchable={fieldsToRender.length > 10}
+                placeholder={selectableFields[selectable].multiple ? 'Select (multiple)' : 'Select'}
+                options={fieldsToRender.map((option) => ({ label: option, value: option }))}
+                {...(selectableFields[selectable].multiple
+                  ? {
+                      isMulti: true as const,
+                      value: (selection[selectable] || []).map((sel) => ({ label: sel, value: sel })),
+                      onChange: (values) =>
                         onSelectionUpdate(
                           selectable,
-                          newValue.map((v) => v.value)
-                        );
-                      } else {
-                        onSelectionUpdate(selectable, newValue.value);
-                      }
-                    },
-                    options: fieldsToRender.map((option) => ({ label: option, value: option })),
-                    value: selectableFields[selectable].multiple
-                      ? selection[selectable].map((sel) => ({ label: sel, value: sel }))
-                      : { label: selection[selectable], value: selection[selectable] },
-                    isMulti: selectableFields[selectable].multiple,
-                    isClearable: false,
-                    menuPortalTarget: document.querySelector('#overlay'),
-                  }}
-                  isFluid
-                  style={{
-                    minWidth: selectableFields[selectable].multiple ? 180 : 140,
-                    display: 'inline-block',
-                  }}
-                  htmlAttributes={{ id: selectable }}
-                ></NdlSelect>
-              </FormControl>
+                          values.map((v) => v.value)
+                        ),
+                    }
+                  : {
+                      value:
+                        selection[selectable] !== undefined
+                          ? { label: selection[selectable], value: selection[selectable] }
+                          : null,
+                      onChange: (option) => option && onSelectionUpdate(selectable, option.value),
+                    })}
+                htmlAttributes={{ id: selectable }}
+                style={{ minWidth: selectableFields[selectable].multiple ? 180 : 140 }}
+              />
             );
           }
         }
       })}
-    </CardActions>
+    </div>
   );
 };
 

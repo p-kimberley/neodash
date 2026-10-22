@@ -3,7 +3,6 @@ import { ReportItemContainer } from '../CardStyle';
 import NeoCardSettingsHeader from './CardSettingsHeader';
 import NeoCardSettingsContent from './CardSettingsContent';
 import NeoCardSettingsFooter from './CardSettingsFooter';
-import { CardContent } from '@mui/material';
 import { CARD_HEADER_HEIGHT } from '../../config/CardConfig';
 
 const NeoCardSettings = ({
@@ -71,7 +70,7 @@ const NeoCardSettings = ({
       forceRunQuery={onToggleCardSettings}
     ></NeoCardSettingsContent>
   ) : (
-    <CardContent className='n-py-2' />
+    <div className='nd-card-settings-content' />
   );
 
   const cardSettingsFooter = settingsOpen ? (

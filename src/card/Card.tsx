@@ -1,4 +1,3 @@
-import { Card, Collapse } from '@mui/material';
 import debounce from 'lodash/debounce';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import NeoCardSettings from './settings/CardSettings';
@@ -57,7 +56,7 @@ const NeoCard = ({
   const [databaseList, setDatabaseList] = React.useState([database]);
   const [databaseListLoaded, setDatabaseListLoaded] = React.useState(false);
 
-  const ref = React.useRef(undefined);
+  const ref = React.useRef<HTMLDivElement>(null);
 
   // fetching the list of databases from neo4j, filtering out the 'system' db
   useEffect(() => {
@@ -76,7 +75,6 @@ const NeoCard = ({
 
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const debouncedOnToggleCardSettings = useCallback(debounce(onToggleCardSettings, 500), []);
-  const [collapseTimeout, setCollapseTimeout] = React.useState(report.collapseTimeout);
 
   const { observe, width, height } = useDimensions({
     onResize: ({ observe, unobserve }) => {
@@ -109,19 +107,13 @@ const NeoCard = ({
     setSettingsOpen(report.settingsOpen);
   }, [report.settingsOpen]);
 
-  useEffect(() => {
-    setCollapseTimeout(report.collapseTimeout);
-  }, [report.collapseTimeout]);
-
   // TODO - get rid of some of the props-drilling here...
   const component = (
-    <div
-      ref={observe}
-      className='nd-report-card n-bg-neutral-bg-weak overflow-hidden n-shadow-raised border-2 border-neutral-border-strong min-w-max rounded-lg px-4 py-5 sm:p-6 n-h-full'
-    >
-      {/* The front of the card, referred to as the 'view' */}
-      <Collapse disablestrictmodecompat='true' in={!settingsOpen} timeout={collapseTimeout} className='n-h-full'>
-        <Card ref={ref} className='n-h-full'>
+    <div ref={observe} className='nd-report-card n-h-full'>
+      {/* The front of the card, referred to as the 'view'. Both faces stay mounted, so a report's
+          results are still there when its settings close. */}
+      <div className={`nd-card-face n-h-full ${settingsOpen ? 'is-hidden' : 'is-shown'}`} aria-hidden={settingsOpen}>
+        <div ref={ref} className='nd-card-surface n-h-full'>
           <NeoCardView
             id={id}
             settingsOpen={settingsOpen}
@@ -151,15 +143,14 @@ const NeoCard = ({
             onFieldsUpdate={(fields) => onFieldsUpdate(id, fields)}
             onToggleCardSettings={() => {
               setSettingsOpen(true);
-              setCollapseTimeout('auto');
               debouncedOnToggleCardSettings(id, true);
             }}
           />
-        </Card>
-      </Collapse>
+        </div>
+      </div>
       {/* The back of the card, referred to as the 'settings' */}
-      <Collapse disablestrictmodecompat='true' in={settingsOpen} timeout={collapseTimeout}>
-        <Card className='n-h-full'>
+      <div className={`nd-card-face ${settingsOpen ? 'is-shown' : 'is-hidden'}`} aria-hidden={!settingsOpen}>
+        <div className='nd-card-surface n-h-full'>
           <NeoCardSettings
             pagenumber={dashboardSettings.pagenumber}
             reportId={id}
@@ -188,13 +179,12 @@ const NeoCard = ({
             onClonePressed={() => onClonePressed(id)}
             onToggleCardSettings={() => {
               setSettingsOpen(false);
-              setCollapseTimeout('auto');
               debouncedOnToggleCardSettings(id, false);
             }}
             onToggleReportSettings={() => onToggleReportSettings(id)}
           />
-        </Card>
-      </Collapse>
+        </div>
+      </div>
     </div>
   );
 

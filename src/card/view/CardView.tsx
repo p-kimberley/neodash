@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { ReportItemContainer } from '../CardStyle';
 import NeoCardViewHeader from './CardViewHeader';
 import NeoCardViewFooter from './CardViewFooter';
-import { CardContent } from '@mui/material';
 import NeoCodeEditorComponent from '../../component/editor/CodeEditorComponent';
 import { CARD_FOOTER_HEIGHT, CARD_HEADER_HEIGHT } from '../../config/CardConfig';
 import { getReportTypes } from '../../extensions/ExtensionUtils';
@@ -162,7 +161,6 @@ const NeoCardView = ({
     setSelectorChange(true);
   }, [query, type, database, JSON.stringify(settingsSelector)]);
 
-  // TODO - understand why CardContent is throwing a warning based on this style config.
   const cardContentStyle = {
     paddingBottom: '0px',
     paddingLeft: '0px',
@@ -180,7 +178,7 @@ const NeoCardView = ({
     overflow: 'auto',
   };
   const reportContent = (
-    <CardContent ref={ref} style={cardContentStyle}>
+    <div ref={ref} className='nd-card-content' style={cardContentStyle}>
       {active ? (
         <NeoReportWrapper
           id={id}
@@ -226,7 +224,7 @@ const NeoCardView = ({
           />
         </>
       )}
-    </CardContent>
+    </div>
   );
 
   return (

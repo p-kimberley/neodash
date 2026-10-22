@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { CardHeader, TextField } from '@mui/material';
 import debounce from 'lodash/debounce';
 import { useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -80,32 +79,22 @@ const NeoCardViewHeader = ({
             <></>
           )}
           <td style={{ width: '100%' }}>
-            <TextField
-              id='standard-outlined'
+            {/* The title, editable in place (dashboard parameters in it are filled in while not editing). */}
+            <input
+              className='nd-card-title'
+              aria-label='Report title'
               onFocus={() => {
                 setEditing(true);
               }}
               onBlur={() => {
                 setEditing(false);
               }}
-              className={'no-underline large nd-card-title'}
-              label=''
               disabled={!editable}
               placeholder='Report name...'
-              fullWidth
-              maxRows={4}
               value={editing ? text : parsedText !== ' ' ? parsedText : ''}
               onChange={(event) => {
                 setText(event.target.value);
                 debouncedTitleUpdate(event.target.value);
-              }}
-              size={'small'}
-              style={{ paddingTop: '0px important!' }}
-              variant={'standard'}
-              sx={{
-                '& .MuiInputBase-input.Mui-disabled': {
-                  WebkitTextFillColor: 'inherit',
-                },
               }}
             />
           </td>
@@ -170,20 +159,17 @@ const NeoCardViewHeader = ({
           </div>
         </Dialog.Content>
       </Dialog>
-      <CardHeader
-        style={{ height: '72px' }}
-        action={
-          <>
-            {downloadImageEnabled ? downloadImageButton : <></>}
-            {/* Every report can be maximised to fill the window. */}
-            {expanded ? unMaximizeButton : maximizeButton}
-            {descriptionEnabled ? descriptionButton : <></>}
-            {refreshButtonEnabled ? refreshButton : <></>}
-            {editable ? settingsButton : <></>}
-          </>
-        }
-        title={cardTitle}
-      />
+      <div className='nd-card-bar' style={{ height: '72px' }}>
+        <div className='nd-card-bar-title'>{cardTitle}</div>
+        <div className='nd-card-bar-actions'>
+          {downloadImageEnabled ? downloadImageButton : <></>}
+          {/* Every report can be maximised to fill the window. */}
+          {expanded ? unMaximizeButton : maximizeButton}
+          {descriptionEnabled ? descriptionButton : <></>}
+          {refreshButtonEnabled ? refreshButton : <></>}
+          {editable ? settingsButton : <></>}
+        </div>
+      </div>
     </>
   );
 };
