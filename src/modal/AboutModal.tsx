@@ -3,7 +3,7 @@ import { Dialog, TextLink, OutlinedButton } from '@neo4j-ndl/react';
 import { BookOpenIconOutline, BeakerIconOutline } from '@neo4j-ndl/react/icons';
 import { Section, SectionTitle, SectionContent } from './ModalUtils';
 
-export const version = '3.2.1';
+export const version = '3.3.0';
 
 export const NeoAboutModal = ({ open, handleClose, getDebugState }) => {
   const downloadDebugFile = () => {

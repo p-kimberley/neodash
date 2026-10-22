@@ -1,3 +1,31 @@
+## NeoDash 3.3.0 - React 19, design system 4, faster graphs, in-app documentation
+Existing dashboards keep working unchanged: report types, settings and their defaults are the same. Chart 2.4.0.
+
+**Platform.**
+- React 18 -> 19, with Redux 5, react-redux 9 and redux-thunk 3.
+- The Neo4j design system (NDL) 1.10 -> 4.25: buttons, menus, dialogs, tabs, tooltips and form fields are the current NDL components, with their keyboard and screen-reader behaviour. Menus, popovers and dialogs follow the light/dark appearance.
+- Colours are NDL's in both appearances. The accent is NDL's primary (teal-blue in light, light teal in dark), used throughout, including tables, links and focus outlines.
+- Branding colour overrides keep working. The chart's `branding` values accept NDL 4's `--theme-light-color-…` / `--theme-dark-color-…` names, and the earlier `--palette-…` names with "R, G, B" values still apply.
+- The browser bundle no longer contains the Neo4j driver's connection code (queries run on the backend); it keeps only the driver's value types.
+- Removed: react-gauge-chart (the gauge chart now uses ECharts), react-show-more-text, and the offline (air-gap) bundle script.
+
+**Documentation in the app.** Help > Documentation, and the documentation links throughout the app, open the user and developer guides in a new tab, served by NeoDash itself at `/docs`, so they can be read without internet access. Pages have a navigation sidebar, search, previous/next links and an "on this page" list, in light and dark.
+
+**Graphs.**
+- 3D graphs share label textures, so large graphs draw faster and no longer use more memory each time you interact with them. With over 1,000 relationships, relationship labels, arrows and particles are left out in 3D.
+- Graph search responds sooner on large graphs; matches are found from an index and typing is debounced.
+- 2D graphs skip labels too small to read and reuse colours, so panning and zooming are smoother.
+- Without WebGL (some remote desktops and virtual machines), 3D graphs fall back to 2D with a short notice, instead of an empty report.
+- Clicking a node in a 3D graph no longer shifts the view.
+- The properties popup stays on screen when the report is resized.
+
+**Fixes.**
+- The Cypher editor has its syntax colours and a visible text cursor again. Its line numbers keep the editor's background when text is scrolled sideways.
+- The resize handle sits on the card's bottom-right corner again.
+- Relationship chips in tables have readable text on every colour.
+
+**Releases.** Each GitHub release carries its changelog section as release notes.
+
 ## NeoDash 3.2.1 - Maximised report fixes
 Chart 2.3.1.
 
