@@ -377,30 +377,27 @@ export const NeoDashboardSidebar = ({
             />
 
             <div className='nd-dashboard-panel-header'>
-              <div style={{ display: 'inline-block', width: '100%' }}>
-                <span className='n-text-neutral-text-weak' style={{ lineHeight: '28px' }}>
-                  Dashboards
-                </span>
-                <CleanIconButton
-                  description='Refresh dashboards'
-                  size='small'
-                  className='nd-dashboard-panel-action'
-                  onClick={() => {
-                    getDashboardListFromNeo4j();
-                    // When reloading, if the dashboard is not in DRAFT mode, we can directly refresh it.
-                    if (!draft) {
-                      const d = dashboards[selectedDashboardIndex];
-                      loadDashboardFromNeo4j(driver, dashboardDatabase, d.uuid, (file) => {
-                        loadDashboard(d.uuid, file);
-                      });
-                    }
-                  }}
-                >
-                  <ArrowPathIconOutline className='btn-icon-base-r-m' />
-                </CleanIconButton>
+              <div className='nd-dashboard-panel-heading'>
+                <span className='n-text-neutral-text-weak'>Dashboards</span>
                 {/* Only let users create dashboards and change database when running in editor mode. */}
                 {!readonly || (readonly && standaloneSettings.standaloneLoadFromOtherDatabases) ? (
                   <>
+                    {!readonly ? (
+                      <CleanIconButton
+                        description='New dashboard'
+                        size='small'
+                        className='nd-dashboard-panel-action'
+                        onClick={(event) => {
+                          setMenuAnchor(event.currentTarget);
+                          setMenuOpen(Menu.CREATE);
+                        }}
+                      >
+                        <PlusIconOutline />
+                      </CleanIconButton>
+                    ) : (
+                      <></>
+                    )}
+
                     <CleanIconButton
                       description='Database'
                       size='small'
@@ -424,28 +421,29 @@ export const NeoDashboardSidebar = ({
                         setMenuAnchor(event.currentTarget);
                       }}
                     >
-                      <CircleStackIconOutline className='btn-icon-base-r' />
+                      <CircleStackIconOutline />
                     </CleanIconButton>
-
-                    {!readonly ? (
-                      <CleanIconButton
-                        description='New dashboard'
-                        size='small'
-                        className='nd-dashboard-panel-action'
-                        onClick={(event) => {
-                          setMenuAnchor(event.currentTarget);
-                          setMenuOpen(Menu.CREATE);
-                        }}
-                      >
-                        <PlusIconOutline className='btn-icon-base-r' />
-                      </CleanIconButton>
-                    ) : (
-                      <></>
-                    )}
                   </>
                 ) : (
                   <></>
                 )}
+                <CleanIconButton
+                  description='Refresh dashboards'
+                  size='small'
+                  className='nd-dashboard-panel-action'
+                  onClick={() => {
+                    getDashboardListFromNeo4j();
+                    // When reloading, if the dashboard is not in DRAFT mode, we can directly refresh it.
+                    if (!draft) {
+                      const d = dashboards[selectedDashboardIndex];
+                      loadDashboardFromNeo4j(driver, dashboardDatabase, d.uuid, (file) => {
+                        loadDashboard(d.uuid, file);
+                      });
+                    }
+                  }}
+                >
+                  <ArrowPathIconOutline />
+                </CleanIconButton>
               </div>
             </div>
           </div>
@@ -455,7 +453,7 @@ export const NeoDashboardSidebar = ({
                 isFluid
                 size='small'
                 leadingElement={<MagnifyingGlassIconOutline style={{ height: 16, marginTop: '2px' }} />}
-                className='n-w-full n-mr-2'
+                className='n-w-full'
                 placeholder='Search...'
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}

@@ -85,9 +85,23 @@ body {
   padding: 0 8px;
 }
 
-.nd-dashboard-panel-action {
-  float: right;
-  margin-left: 2px;
+/* The heading's buttons and each dashboard's actions button share one column at the right, at the
+   design system's sizes (no offsets, so the icons are centred). */
+.nd-dashboard-panel-heading,
+.nd-dashboard-panel-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.nd-dashboard-panel-heading > span:first-child {
+  flex: 1 1 auto;
+}
+
+.nd-dashboard-panel-row-title {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* The backdrop stays mounted and fades, rather than appearing and vanishing abruptly. */

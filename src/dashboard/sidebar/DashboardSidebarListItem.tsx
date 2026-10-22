@@ -9,19 +9,18 @@ export const DashboardSidebarListItem = ({ title, selected, readonly, saved, ver
   const ItemButton = selected ? OutlinedButton : TextButton;
   return (
     <div className='nd-dashboard-panel-header'>
-      <div style={{ display: 'contents', width: '100%' }}>
+      <div className='nd-dashboard-panel-row'>
         <Tip title={version !== NEODASH_VERSION ? `Old version: v${version}` : ''} placement='right'>
           {/* A span takes the tooltip's props (the design system's buttons don't pass them through). */}
-          <span>
+          <span className='nd-dashboard-panel-row-title'>
             <ItemButton
               size='medium'
               variant={selected ? 'primary' : 'neutral'}
               style={{
-                width: '240px',
+                width: '100%',
                 whiteSpace: 'nowrap',
                 overflowX: 'clip',
                 justifyContent: 'left',
-                marginRight: '10px',
                 paddingLeft: '5px',
                 paddingRight: '5px',
               }}
@@ -39,21 +38,9 @@ export const DashboardSidebarListItem = ({ title, selected, readonly, saved, ver
           <CleanIconButton
             description={saved ? 'Dashboard actions' : 'Dashboard actions (unsaved changes)'}
             size='small'
-            style={{
-              justifyContent: 'left',
-              paddingLeft: '0px',
-              marginRight: '10px',
-            }}
             onClick={(event) => onSettingsOpen(event)}
           >
-            <EllipsisVerticalIconOutline
-              style={{
-                float: 'right',
-                marginRight: '-6px',
-                color: saved ? undefined : 'var(--theme-color-warning-text)',
-              }}
-              className='btn-icon-base-r'
-            />
+            <EllipsisVerticalIconOutline style={{ color: saved ? undefined : 'var(--theme-color-warning-text)' }} />
           </CleanIconButton>
         ) : (
           <></>
