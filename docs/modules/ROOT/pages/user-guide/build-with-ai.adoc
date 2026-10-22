@@ -13,7 +13,7 @@ Build with AI is part of NeoDash: it is available in every dashboard when the se
 A new report (or any report without a query) shows two buttons: *Configure*, which opens its settings, and *Build with AI*.
 
 . Click *Build with AI*. Up to three options appear, based on your data and the dashboard (its title, pages, parameters and other reports, which they avoid repeating).
-. Or describe the report you want, for example "revenue per month as a line" or "top 10 products as horizontal bars with a legend". When you stop typing (or press Enter), up to three options for it appear; the first is the one recommended.
+. Or describe the report you want, for example "revenue per month as a line" or "top 10 products as horizontal bars with a legend". Press Enter (or click the sparkles button in the box) and up to three options for it appear; the first is the one recommended. Typing alone doesn't ask, so nothing loads until you're ready.
 . Each option shows a small preview drawn from its data, a plain description of what it creates (the kind of chart, what is on each axis, how it is coloured), and a note on any settings it sets (for example "Bars run sideways. A legend is shown."). Click one to build it.
 . The report is built and runs. It is not saved until you save the dashboard, and the message that confirms it has *Undo*.
 

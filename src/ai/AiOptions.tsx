@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
-import { Skeleton, TextArea, toast } from '@neo4j-ndl/react';
+import { CleanIconButton, Skeleton, TextArea, toast } from '@neo4j-ndl/react';
+import { SparklesIconOutline } from '@neo4j-ndl/react/icons';
 import { api, ApiError, type AiReport } from '../api/client';
 import { getDashboardExtensions } from '../dashboard/DashboardSelectors';
 import { getDatabase, getPageNumber } from '../settings/SettingsSelectors';
@@ -9,18 +10,16 @@ import { buildContext } from './context';
 import { applyAiReportThunk, restoreReportThunk } from './AiThunks';
 import { MiniPreview } from './MiniPreview';
 
-/** How long after typing stops the options are asked for. */
-const TYPING_PAUSE_MS = 800;
-
 /**
- * Build with AI's prompt and options. As the user types (and pauses), up to three options appear
- * below: complete reports, checked on the server, each with a small preview of its data, a plain
- * description of what it creates and of any settings it sets; the first is the recommended one. Picking
- * one applies it (unsaved until Save; the toast offers Undo).
+ * Build with AI's prompt and options. When the user asks (the sparkles button in the box, or Enter),
+ * up to three options appear below: complete reports, checked on the server, each with a small preview
+ * of its data, a plain description of what it creates and of any settings it sets; the first is the
+ * recommended one. Typing alone asks for nothing. Picking one applies it (unsaved until Save; the toast
+ * offers Undo).
  *
  * - "build": in an empty report. Options appear straight away (suggestions for the dashboard), then
- *   follow what is typed.
- * - "change": in a report's settings. Options change the report as described, once something is typed.
+ *   for what is described.
+ * - "change": in a report's settings. Options change the report as described.
  */
 export const AiOptions = ({
   reportId,
@@ -43,24 +42,20 @@ export const AiOptions = ({
   const run = useRef<AbortController | undefined>(undefined);
   useEffect(() => () => run.current?.abort(), []);
 
-  // Ask once typing pauses (straight away for Enter); in build mode also when the panel opens.
+  // In build mode, suggestions for the dashboard when the panel opens.
   useEffect(() => {
+    if (mode === 'build') {
+      setAsked({ prompt: '', at: Date.now() });
+    }
+  }, []);
+
+  /** Asks for options for what is typed (the sparkles button, or Enter). */
+  const ask = () => {
     const text = prompt.trim();
-    if (mode === 'change' && !text) {
-      run.current?.abort();
-      setOptions(undefined);
-      setError(undefined);
-      return undefined;
+    if (text || mode === 'build') {
+      setAsked({ prompt: text, at: Date.now() });
     }
-    // Options for an earlier text no longer fit: hold their place until the new ones arrive.
-    if (text !== asked.prompt) {
-      run.current?.abort();
-      setOptions(null);
-      setError(undefined);
-    }
-    const timer = setTimeout(() => setAsked({ prompt: text, at: Date.now() }), text ? TYPING_PAUSE_MS : 0);
-    return () => clearTimeout(timer);
-  }, [prompt]);
+  };
 
   useEffect(() => {
     if (!asked.at || (mode === 'change' && !asked.prompt)) {
@@ -122,30 +117,41 @@ export const AiOptions = ({
 
   return (
     <div className={`nd-ai-options nd-ai-options-${mode}`}>
-      <TextArea
-        label={mode === 'build' ? 'Describe the report' : 'Ask AI to change this report'}
-        value={prompt}
-        isFluid
-        size='small'
-        placeholder={
-          mode === 'build'
-            ? 'e.g. Revenue per month as a line, or top 10 products as horizontal bars'
-            : 'e.g. horizontal bars with a legend, or show it as a table'
-        }
-        htmlAttributes={{
-          // Opened on purpose (Build with AI, Change with AI): ready to type.
-          autoFocus: true,
-          rows: 2,
-          onChange: (event) => setPrompt(event.target.value),
-          onKeyDown: (event) => {
-            // Enter asks straight away (Shift+Enter for a new line).
-            if (event.key === 'Enter' && !event.shiftKey && prompt.trim()) {
-              event.preventDefault();
-              setAsked({ prompt: prompt.trim(), at: Date.now() });
-            }
-          },
-        }}
-      />
+      <div className='nd-ai-prompt'>
+        <TextArea
+          label={mode === 'build' ? 'Describe the report' : 'Ask AI to change this report'}
+          value={prompt}
+          isFluid
+          size='small'
+          placeholder={
+            mode === 'build'
+              ? 'e.g. Revenue per month as a line, or top 10 products as horizontal bars'
+              : 'e.g. horizontal bars with a legend, or show it as a table'
+          }
+          htmlAttributes={{
+            // Opened on purpose (Build with AI, Change with AI): ready to type.
+            autoFocus: true,
+            rows: 2,
+            onChange: (event) => setPrompt(event.target.value),
+            onKeyDown: (event) => {
+              // Enter asks (Shift+Enter for a new line).
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                ask();
+              }
+            },
+          }}
+        />
+        <CleanIconButton
+          description='Suggest options'
+          size='small'
+          className='nd-ai-prompt-ask'
+          isDisabled={!prompt.trim() && mode === 'change'}
+          onClick={ask}
+        >
+          <SparklesIconOutline />
+        </CleanIconButton>
+      </div>
       {options === undefined ? (
         <></>
       ) : (

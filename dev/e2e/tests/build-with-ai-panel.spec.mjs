@@ -89,7 +89,12 @@ test('typing asks for options when it pauses (corrected on the server when the f
     await expect(options(panel)).toHaveCount(3, { timeout: 30_000 });
     // "broken" makes the stand-in model's first answer use a misspelt label, which the server corrects.
     await panel.getByLabel('Describe the report').fill('broken: top products, horizontal with a legend');
-    // While the options are worked out, a placeholder holds their place.
+    // Typing alone asks for nothing: the earlier options stay, and nothing loads.
+    await page.waitForTimeout(1500);
+    await expect(panel.locator('.nd-ai-option-loading')).toHaveCount(0);
+    await expect(options(panel).first()).toContainText('Orders by channel');
+    // The sparkles button asks; while the options are worked out, a placeholder holds their place.
+    await panel.getByRole('button', { name: 'Suggest options' }).click();
     await expect(panel.locator('.nd-ai-option-loading').first()).toBeVisible();
     const recommended = options(panel).first();
     await expect(recommended).toContainText('Top products by units', { timeout: 30_000 });
@@ -141,6 +146,8 @@ test('Ask AI in report settings offers changes; picking one changes the whole re
     await expect(report.getByLabel('Ask AI to change this report')).toHaveCount(0);
     await report.getByRole('button', { name: 'Change with AI' }).click();
     await report.getByLabel('Ask AI to change this report').fill('top products as horizontal bars with a legend');
+    // Enter asks too.
+    await report.getByLabel('Ask AI to change this report').press('Enter');
     const recommended = options(report).first();
     await expect(recommended).toContainText('Top products by units', { timeout: 30_000 });
     await recommended.click();

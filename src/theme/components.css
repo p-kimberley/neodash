@@ -430,6 +430,22 @@ body {
   gap: 8px;
 }
 
+/* The description box, with the button that asks for options in its bottom-right corner. */
+.nd-ai-prompt {
+  position: relative;
+}
+
+.nd-ai-prompt textarea {
+  padding-right: 36px;
+}
+
+.ndl-icon-btn.nd-ai-prompt-ask {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  color: var(--theme-color-primary-icon);
+}
+
 .nd-ai-option-list {
   display: flex;
   flex-direction: column;
