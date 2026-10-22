@@ -1,4 +1,5 @@
-import { Card, Collapse, debounce } from '@mui/material';
+import { Card, Collapse } from '@mui/material';
+import debounce from 'lodash/debounce';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import NeoCardSettings from './settings/CardSettings';
 import NeoCardView from './view/CardView';

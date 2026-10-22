@@ -4,7 +4,6 @@ import NeoAddCard from '../card/CardAddButton';
 import NeoCard from '../card/Card';
 import { getReports } from './PageSelectors';
 import { addReportThunk, removeReportThunk, updatePageLayoutThunk, cloneReportThunk } from './PageThunks';
-import Grid from '@mui/material/Grid';
 import { getDashboardIsEditable, getPageNumber } from '../settings/SettingsSelectors';
 import { getDashboardSettings } from '../dashboard/DashboardSelectors';
 import { Responsive, WidthProvider } from 'react-grid-layout';
@@ -128,14 +127,14 @@ export const NeoPage = ({
       ],
     });
     setLastElement(
-      <Grid style={{ paddingBottom: '6px' }} key={getReportKey(pagenumber, '999999')}>
+      <div style={{ paddingBottom: '6px' }} key={getReportKey(pagenumber, '999999')}>
         <NeoAddCard
           onCreatePressed={() => {
             const { x, y } = getAddCardButtonPosition();
             onCreatePressed(x, y, 6, 4);
           }}
         />
-      </Grid>
+      </div>
     );
   };
 
@@ -179,20 +178,9 @@ export const NeoPage = ({
         }}
       >
         {reports.map((report) => {
-          const w = 24;
           const { id } = report;
-          // @ts-ignore
           return (
-            <Grid
-              key={getReportKey(pagenumber, id)}
-              style={{ paddingBottom: '6px' }}
-              item
-              xs={Math.min(w * 4, 24)}
-              sm={Math.min(w * 2, 24)}
-              md={Math.min(w * 2, 24)}
-              lg={Math.min(w, 24)}
-              xl={Math.min(w, 24)}
-            >
+            <div key={getReportKey(pagenumber, id)} style={{ paddingBottom: '6px' }}>
               <NeoCard
                 id={id}
                 key={getReportKey(pagenumber, id)}
@@ -203,7 +191,7 @@ export const NeoPage = ({
                   onClonePressed(id, x, y);
                 }}
               />
-            </Grid>
+            </div>
           );
         })}
         {editable && !isDragging ? lastElement : <div key={getReportKey(pagenumber, '999999')}></div>}

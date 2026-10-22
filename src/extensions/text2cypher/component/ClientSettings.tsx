@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
-import { debounce, List, ListItem } from '@mui/material';
+import { List, ListItem } from '@mui/material';
+import debounce from 'lodash/debounce';
 import { getModelClientObject, getQueryTranslatorDefaultConfig } from '../QueryTranslatorConfig';
 import { QUERY_TRANSLATOR_HISTORY_PREFIX, getQueryTranslatorSettings } from '../state/QueryTranslatorSelector';
 import NeoSetting from '../../../component/field/Setting';

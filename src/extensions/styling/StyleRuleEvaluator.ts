@@ -1,4 +1,4 @@
-import { getContrastRatio } from '@mui/material/styles';
+import chroma from 'chroma-js';
 import { EntityType } from '../../chart/Utils';
 
 /**
@@ -201,7 +201,8 @@ export const textColorForBackground = (background: string): string | undefined =
     }
   }
   try {
-    return getContrastRatio(normalised, '#ffffff') >= getContrastRatio(normalised, '#151e29') ? '#ffffff' : '#151e29';
+    // WCAG contrast ratios.
+    return chroma.contrast(normalised, '#ffffff') >= chroma.contrast(normalised, '#151e29') ? '#ffffff' : '#151e29';
   } catch (e) {
     return undefined;
   }

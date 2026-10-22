@@ -1,4 +1,5 @@
-import { debounce, CircularProgress } from '@mui/material';
+import { CircularProgress } from '@mui/material';
+import debounce from 'lodash/debounce';
 import React, { useCallback } from 'react';
 import { ParameterSelectProps } from './ParameterSelect';
 import NeoField from '../../../component/field/Field';

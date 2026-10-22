@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
-import { debounce, TextField } from '@mui/material';
+import { TextField } from '@mui/material';
+import debounce from 'lodash/debounce';
 import Autocomplete from '@mui/material/Autocomplete';
 import { ParameterSelectProps } from './ParameterSelect';
 import { RenderSubValue } from '../../../report/ReportRecordProcessing';
