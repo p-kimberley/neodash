@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { XMarkIconOutline, PlusIconOutline, SparklesIconOutline } from '@neo4j-ndl/react/icons';
+import { XMarkIconOutline, PlusIconOutline, CursorArrowRaysIconOutline } from '@neo4j-ndl/react/icons';
 import { getPageNumbersAndNamesList } from '../advancedcharts/Utils';
 import { IconButton, TextInput, FilledButton } from '@neo4j-ndl/react';
 import { Dialog } from '../../component/dialog/Dialog';
@@ -350,7 +350,7 @@ export const NeoCustomReportActionsModal = ({
           style={{ overflow: 'inherit', overflowY: 'inherit' }}
         >
           <Dialog.Header>
-            <SparklesIconOutline className='icon-base icon-inline text-r' aria-label={'Adjust'} />
+            <CursorArrowRaysIconOutline className='icon-base icon-inline text-r' aria-label={'Adjust'} />
             Report Actions
           </Dialog.Header>
           <Dialog.Content style={{ overflow: 'inherit' }}>
@@ -502,7 +502,6 @@ export const NeoCustomReportActionsModal = ({
               isFloating
             >
               Save
-              <SparklesIconOutline className='btn-icon-lg-r' />
             </FilledButton>
           </Dialog.Actions>
         </Dialog>

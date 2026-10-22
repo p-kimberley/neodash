@@ -9,7 +9,7 @@ import {
 import { getReportTypes } from '../../extensions/ExtensionUtils';
 import { RULE_BASED_REPORT_ACTIONS_CUSTOMIZATIONS } from '../../extensions/actions/ActionsRuleCreationModal';
 import NeoCustomReportActionsModal from '../../extensions/actions/ActionsRuleCreationModal';
-import { AdjustmentsHorizontalIconOutline, SparklesIconOutline } from '@neo4j-ndl/react/icons';
+import { AdjustmentsHorizontalIconOutline, CursorArrowRaysIconOutline } from '@neo4j-ndl/react/icons';
 import { Switch, CleanIconButton } from '@neo4j-ndl/react';
 
 const update = (state, mutations) => Object.assign({}, state, mutations);
@@ -186,7 +186,7 @@ const NeoCardSettingsFooter = ({
                     setCustomReportActionsModalOpen(true); // Open the modal.
                   }}
                 >
-                  <SparklesIconOutline />
+                  <CursorArrowRaysIconOutline />
                 </CleanIconButton>
               ) : (
                 <></>
