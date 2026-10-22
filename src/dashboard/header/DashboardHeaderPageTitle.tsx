@@ -5,7 +5,7 @@ import debounce from 'lodash/debounce';
 import { setPageTitle } from '../../page/PageActions';
 import { removePageThunk } from '../DashboardThunks';
 import { Tabs, Menu, CleanIconButton } from '@neo4j-ndl/react';
-import { EllipsisHorizontalIconOutline, PencilIconOutline, TrashIconOutline } from '@neo4j-ndl/react/icons';
+import { EllipsisVerticalIconOutline, PencilIconOutline, TrashIconOutline } from '@neo4j-ndl/react/icons';
 import { NeoDeletePageModal } from '../../modal/DeletePageModal';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -18,8 +18,13 @@ export const DashboardHeaderPageTitle = ({ title, tabIndex, removePage, setPageT
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(false);
   const [inputWidth, setInputWidth] = React.useState(125);
+  // When editing started (see the input's onBlur).
+  const editStartedAt = React.useRef(0);
   const handleMenuEditClick = (event: MenuEditEvent) => {
     event.preventDefault();
+    if (!editing) {
+      editStartedAt.current = Date.now();
+    }
     setEditing(!editing);
     setAnchorEl(null);
   };
@@ -58,7 +63,7 @@ export const DashboardHeaderPageTitle = ({ title, tabIndex, removePage, setPageT
 
   const content = (
     <div
-      className='n-inline-flex n-items-center nd-page-tab'
+      className={classnames('nd-page-tab', { 'has-menu': !disabled })}
       ref={setNodeRef}
       style={style}
       id={`tab_${tabIndex}`}
@@ -84,8 +89,14 @@ export const DashboardHeaderPageTitle = ({ title, tabIndex, removePage, setPageT
               data-no-dnd='true'
               autoFocus={true}
               value={titleText}
-              className=''
               onBlur={(event) => {
+                // The closing menu moves focus (to its focus guards, then its button) just after
+                // editing starts from it: take it back.
+                const input = event.currentTarget;
+                if (Date.now() - editStartedAt.current < 500) {
+                  requestAnimationFrame(() => input.isConnected && input.focus());
+                  return;
+                }
                 if (editing) {
                   handleMenuEditClick(event);
                 }
@@ -101,13 +112,8 @@ export const DashboardHeaderPageTitle = ({ title, tabIndex, removePage, setPageT
                 setTitleText(event.target.value);
                 debouncedSetPageTitle(tabIndex, event.target.value);
               }}
-              style={{
-                height: '1.9rem',
-                marginBottom: -5,
-                width: inputWidth,
-                paddingLeft: 5,
-                paddingRight: 5,
-              }}
+              className='nd-page-tab-input'
+              style={{ width: inputWidth }}
               placeholder='Page name...'
             />
           </form>
@@ -118,17 +124,16 @@ export const DashboardHeaderPageTitle = ({ title, tabIndex, removePage, setPageT
         <>
           <CleanIconButton
             description='Page actions'
-            className={classnames('n-relative visible-on-tab-hover', {
+            className={classnames('nd-page-tab-menu visible-on-tab-hover', {
               'open-menu': menuOpen,
             })}
-            style={{ height: '1.1rem' }}
             onClick={(e) => {
               e.stopPropagation();
               setAnchorEl(e.currentTarget);
             }}
             size='small'
           >
-            <EllipsisHorizontalIconOutline />
+            <EllipsisVerticalIconOutline />
           </CleanIconButton>
           <Menu anchorRef={{ current: anchorEl }} isOpen={menuOpen} onClose={() => setAnchorEl(null)}>
             <Menu.Items>

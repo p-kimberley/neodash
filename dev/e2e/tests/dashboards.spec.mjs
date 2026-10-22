@@ -89,6 +89,30 @@ test('choosing a dashboard in the panel opens it and closes the panel', async ({
   await expectNoErrors(page, errors);
 });
 
+test('a page is renamed from its tab menu', async ({ page }) => {
+  const errors = trackErrors(page);
+  await page.goto('/');
+  const dash = await getDashboard(page, SALES);
+  const uuid = `dddd0000-0000-4000-8000-00000000a6${test.info().project.name === 'dark' ? 'dd' : 'ee'}`;
+  await putDashboard(page, uuid, { ...dash, title: 'e2e page rename' });
+  try {
+    await openPage(page, uuid);
+    const tab = page.locator('.nd-page-tab').nth(1);
+    await tab.hover();
+    await tab.getByRole('button', { name: 'Page actions' }).click();
+    await page.getByRole('menuitem', { name: 'Edit name' }).click();
+    // The field keeps focus after the menu closes, so typing renames the page.
+    const input = tab.locator('input');
+    await expect(input).toBeFocused();
+    await input.fill('Renamed page');
+    await input.press('Enter');
+    await expect(tab.getByRole('tab')).toHaveText('Renamed page');
+  } finally {
+    await deleteDashboard(page, uuid);
+  }
+  await expectNoErrors(page, errors);
+});
+
 // Cards clip their content to their rounded corners, and a chart's field selectors stay on the one
 // row the chart leaves for them (scrolling sideways in a narrow card) instead of spilling out of it.
 test('report cards keep their content inside', async ({ page }) => {

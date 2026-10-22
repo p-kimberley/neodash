@@ -33,7 +33,7 @@ export const NeoDashboardHeaderPageList = ({
   const debouncedSetCanSwitchPages = useCallback(debounce(setCanSwitchPages, 50), []);
 
   const pageAddButton = (
-    <CleanIconButton description='Add page' className='n-relative -n-top-1' size='large' onClick={addPage}>
+    <CleanIconButton description='Add page' className='nd-page-add' size='small' onClick={addPage}>
       <PlusIconOutline />
     </CleanIconButton>
   );
@@ -70,10 +70,12 @@ export const NeoDashboardHeaderPageList = ({
   const sensors = useSensors(mouseSensor, keySensor);
 
   const content = (
-    <div className='n-flex n-flex-row n-w-full'>
+    <div className='nd-page-tabs-row'>
       {/* Tab ids are strings in the design system; pages are numbered. */}
       <Tabs
+        className='nd-page-tabs'
         fill='underline'
+        size='small'
         onChange={(tabId) => (canSwitchPages ? selectPage(Number(tabId)) : null)}
         value={`${pagenumber}`}
       >

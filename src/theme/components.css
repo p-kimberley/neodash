@@ -153,6 +153,53 @@ body {
   color: var(--nd-icon);
 }
 
+/* ---------- Page tabs ---------- */
+
+/* Below the dashboard title, with a gap; the add-page button sits on the tabs' text line. */
+.nd-page-tabs-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  width: 100%;
+  margin-top: 12px;
+}
+
+/* NDL's small tabs, with more room between labels than its 4px. */
+.nd-page-tabs.ndl-tabs.ndl-underline-tab.ndl-small {
+  --tab-left-spacing: 12px;
+  --tab-right-spacing: 12px;
+}
+
+.nd-page-tab {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Editors get a page menu button inside the tab's right padding, centred on the label's line (the
+   tab's height less the space under the label for the underline). */
+.nd-page-tab.has-menu .ndl-tab {
+  padding-right: 32px;
+}
+
+.nd-page-tab .nd-page-tab-menu {
+  position: absolute;
+  top: calc((var(--tab-height) - var(--tab-bottom-spacing) - 24px) / 2);
+  right: 6px;
+  width: 24px;
+  height: 24px;
+}
+
+.nd-page-tab-input {
+  height: 24px;
+  margin: -2px 0;
+  padding: 0 4px;
+  font: inherit;
+}
+
+.nd-page-add {
+  margin: -4px 0 0 4px;
+}
+
 /* ---------- Report cards ---------- */
 
 .nd-report-card {
