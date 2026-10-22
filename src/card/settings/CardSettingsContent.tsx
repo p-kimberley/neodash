@@ -5,7 +5,7 @@ import NeoCodeEditorComponent, {
   DEFAULT_CARD_SETTINGS_HELPER_TEXT_STYLE,
 } from '../../component/editor/CodeEditorComponent';
 import { getReportTypes } from '../../extensions/ExtensionUtils';
-import { Select } from '@neo4j-ndl/react';
+import { SelectField } from '../../component/field/SelectField';
 import { EXTENSIONS_CARD_SETTINGS_COMPONENT } from '../../extensions/ExtensionConfig';
 import { objMerge } from '../../utils/ObjectManipulation';
 
@@ -103,46 +103,34 @@ const NeoCardSettingsContent = ({
 
   return (
     <div className='nd-card-settings-content'>
-      <Select
+      <SelectField
         label='Type'
-        type='select'
-        selectProps={{
-          onChange: (newValue) =>
-            newValue && onTypeUpdate(Object.keys(reportTypes).find((key) => reportTypes[key].label === newValue.value)),
-          options: Object.keys(reportTypes).map((option) => ({
-            label: report && reportTypes[option].label,
-            value: report && reportTypes[option].label,
-          })),
-          value: {
-            label: report?.label || '',
-            value: report?.label || '',
-          },
-          menuPortalTarget: document.querySelector('#overlay'),
-        }}
-        isFluid
-        style={{ marginLeft: '0px', marginRight: '10px', width: '47%', maxWidth: '200px', display: 'inline-block' }}
+        options={Object.keys(reportTypes).map((option) => ({
+          label: reportTypes[option].label,
+          value: reportTypes[option].label,
+        }))}
+        value={report?.label || ''}
+        onChange={(label) =>
+          label && onTypeUpdate(Object.keys(reportTypes).find((key) => reportTypes[key].label === label))
+        }
+        isSearchable
+        className='nd-card-settings-select'
         htmlAttributes={{ 'data-test': 'type-dropdown', id: 'type' }}
       />
 
       {report?.disableDatabaseSelector == undefined ? (
-        <Select
+        <SelectField
           label='Database'
-          type='select'
-          selectProps={{
-            onChange: (newValue) => {
-              newValue && setDatabaseText(newValue.value);
-              newValue && debouncedDatabaseUpdate(newValue.value);
-            },
-            options: databaseList.map((database) => ({
-              label: database,
-              value: database,
-            })),
-            value: { label: databaseText, value: databaseText },
-            placeholder: 'neo4j',
-            menuPortalTarget: document.querySelector('#overlay'),
+          placeholder='neo4j'
+          options={databaseList.map((database) => ({ label: database, value: database }))}
+          value={databaseText}
+          onChange={(database) => {
+            if (database) {
+              setDatabaseText(database);
+              debouncedDatabaseUpdate(database);
+            }
           }}
-          isFluid
-          style={{ marginLeft: '0px', marginRight: '10px', width: '47%', maxWidth: '200px', display: 'inline-block' }}
+          className='nd-card-settings-select'
           htmlAttributes={{ id: 'databaseSelector' }}
         />
       ) : (

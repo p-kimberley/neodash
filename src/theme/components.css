@@ -1136,3 +1136,11 @@ body {
 .nd-suggest-option.is-active {
   background: var(--nd-selected);
 }
+
+/* The report type and database pickers sit side by side at the top of a report's settings. */
+.ndl-combobox.ndl-combobox-field.nd-card-settings-select {
+  width: 47%;
+  max-width: 200px;
+  margin-right: 10px;
+  vertical-align: top;
+}

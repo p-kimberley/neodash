@@ -1,5 +1,6 @@
 import React from 'react';
-import { TextInput, TextArea, Select } from '@neo4j-ndl/react';
+import { TextInput, TextArea } from '@neo4j-ndl/react';
+import { SelectField } from './SelectField';
 
 const textFieldStyle = { width: '155px', marginBottom: '10px', marginRight: '10px', marginLeft: '10px' };
 
@@ -26,22 +27,18 @@ const NeoField = ({
 }) => {
   return select === true ? (
     <div style={style}>
-      <Select
+      <SelectField
         label={label}
-        type='select'
-        selectProps={{
-          placeholder: placeholder,
-          options: choices,
-          onChange: (newValue) => onChange(newValue.value),
-          value:
-            value != null ? { label: valueLabel, value: value } : { label: defaultValueLabel, value: defaultValue },
-          menuPlacement: 'auto',
-          isDisabled: disabled,
-          menuPortalTarget: document.querySelector('#overlay'),
-        }}
+        placeholder={placeholder}
+        options={choices}
+        value={value != null ? value : defaultValue}
+        valueLabel={value != null ? valueLabel : defaultValueLabel}
+        onChange={onChange}
+        isDisabled={disabled}
+        isFluid
         helpText={helperText}
         size={size}
-      ></Select>
+      />
     </div>
   ) : multiline === true ? (
     <div style={style}>

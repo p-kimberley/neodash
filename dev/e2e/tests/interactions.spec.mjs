@@ -144,14 +144,43 @@ test('parameters: node property select sets its parameter', async ({ page }) => 
   const errors = trackErrors(page);
   await openPage(page, SINK, 5);
   const select = card(page, 'Node property');
-  const input = select.getByPlaceholder('Start typing...');
-  await input.click();
-  await input.pressSequentially('Lap', { delay: 50 });
+  // The selector opens a list with a search box; what is typed is sent to the suggestions query.
+  await select.getByRole('combobox').first().click();
+  const search = page.getByPlaceholder('Start typing...');
+  await search.pressSequentially('Lap', { delay: 50 });
   const option = page.getByRole('option').first();
   await expect(option).toBeVisible();
   const value = (await option.innerText()).trim();
   await option.click();
-  await expect.poll(() => decodeURIComponent(page.url().replace(/\+/g, ' '))).toContain(value);
+  const url = () => decodeURIComponent(page.url().replace(/\+/g, ' '));
+  await expect.poll(url).toContain(value);
+  await expect(select.getByRole('combobox').first()).toContainText(value);
+  // Clearing the field takes the parameter out of the URL.
+  await select.getByRole('button', { name: /clear/i }).click();
+  await expect.poll(url).not.toContain(value);
+  await expectNoErrors(page, errors);
+});
+
+test('parameters: multi-select sets a list; removing a tag removes it', async ({ page }) => {
+  const errors = trackErrors(page);
+  await openPage(page, SINK, 5);
+  const select = card(page, 'Multi-select');
+  await select.getByRole('combobox').first().click();
+  const options = page.getByRole('option');
+  await expect(options.first()).toBeVisible();
+  const picked = [];
+  for (let i = 0; i < 3; i++) {
+    const option = options.nth(i);
+    picked.push((await option.innerText()).trim());
+    await option.click();
+  }
+  const url = () => decodeURIComponent(page.url().replace(/\+/g, ' '));
+  for (const name of picked) await expect.poll(url).toContain(name);
+  await page.keyboard.press('Escape');
+  // The first tag's remove button.
+  await select.getByRole('button', { name: 'Remove', exact: true }).first().click();
+  await expect.poll(url).not.toContain(picked[0]);
+  await expect.poll(url).toContain(picked[1]);
   await expectNoErrors(page, errors);
 });
 

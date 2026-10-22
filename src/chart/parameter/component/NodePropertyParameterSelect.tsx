@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
-import { TextField } from '@mui/material';
 import debounce from 'lodash/debounce';
-import Autocomplete from '@mui/material/Autocomplete';
+import { Combobox, DismissibleTag, ReadOnlyTag } from '@neo4j-ndl/react';
 import { ParameterSelectProps } from './ParameterSelect';
 import { RenderSubValue } from '../../../report/ReportRecordProcessing';
 import { SelectionConfirmationButton } from './SelectionConfirmationButton';
@@ -29,9 +28,9 @@ const NodePropertyParameterSelectComponent = (props: ParameterSelectProps) => {
   const allParameters = props.allParameters ? props.allParameters : {};
   const [extraRecords, setExtraRecords] = React.useState([]);
 
-  const [inputDisplayText, setInputDisplayText] = React.useState(
-    props.parameterDisplayValue && multiSelector ? '' : props.parameterDisplayValue
-  );
+  // The text typed into the selector's search, which the suggestions query receives as $input.
+  const [searchText, setSearchText] = React.useState('');
+  const [isOpen, setIsOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(getInitialValue(props.parameterDisplayValue, multiSelector));
 
   const [paramValueLocal, setParamValueLocal] = React.useState(props.parameterValue);
@@ -133,7 +132,6 @@ const NodePropertyParameterSelectComponent = (props: ParameterSelectProps) => {
     }
 
     newDisplay = newDisplay.low ? toNumber(newDisplay) : RenderSubValue(newDisplay);
-    setInputDisplayText(isMulti ? '' : newDisplay);
     setInputValue(newDisplay);
     handleParametersUpdate(newValue, newDisplay, manualParameterSave);
   };
@@ -145,17 +143,13 @@ const NodePropertyParameterSelectComponent = (props: ParameterSelectProps) => {
     const isArray = Array.isArray(props.parameterDisplayValue);
     if (multiSelector) {
       if (isArray) {
-        setInputDisplayText(props.parameterDisplayValue);
         setInputValue(props.parameterDisplayValue);
       } else if (props.parameterDisplayValue !== '') {
-        setInputDisplayText([props.parameterDisplayValue]);
         setInputValue([props.parameterDisplayValue]);
       } else {
-        setInputDisplayText('');
         setInputValue([]);
       }
     } else {
-      setInputDisplayText(props.parameterDisplayValue);
       setInputValue(props.parameterDisplayValue);
     }
   }, [props.parameterDisplayValue]);
@@ -175,59 +169,94 @@ const NodePropertyParameterSelectComponent = (props: ParameterSelectProps) => {
     .map((f) => (f === undefined || f === null ? '(no data)' : f));
   options = props.autoSort ? options.sort() : options;
 
+  // The combobox works with text; selections are mapped back to the query's values (numbers,
+  // booleans...), so parameters keep their types.
+  const text = (v) => (v === undefined || v === null ? '' : v.toString());
+  const toOption = (v) => ({ label: text(v), value: text(v) });
+  const fromOption = (option) => {
+    const match = options.find((o) => text(o) === option.value);
+    return match === undefined ? option.value : match;
+  };
+  const selected = multiSelector
+    ? (Array.isArray(inputValue) ? inputValue : []).map(toOption)
+    : inputValue !== undefined && inputValue !== null && text(inputValue) !== ''
+      ? toOption(inputValue)
+      : null;
+  const selectedCount = Array.isArray(selected) ? selected.length : 0;
+
+  const onOpenChange = (open) => {
+    setIsOpen(open);
+    if (open) {
+      // Suggestions for what is typed (every value while nothing is).
+      if (extraRecords && extraRecords.length == 0) {
+        debouncedQueryCallback(props.query, { input: `${searchText}`, ...allParameters }, setExtraRecords);
+      }
+      return;
+    }
+    // Closed without choosing anything: we may want to auto-select the first value produced by the
+    // selector query (`autoSelectFirstValue == true`).
+    if (autoSelectFirstValue && paramValueDisplayLocal == '') {
+      debouncedQueryCallback(props.query, { input: '', ...allParameters }, (records) => {
+        if (records && records.length > 0 && records[0] && records[0]._fields) {
+          let values = records?.map((r) => r?._fields?.[displayValueRowIndex] || '(no data)');
+          values = props.autoSort ? values.sort() : values;
+          setExtraRecords(records);
+          propagateSelection(undefined, values[0]);
+        }
+      });
+    }
+  };
+
   return (
     <div className={'n-flex n-flex-row n-flex-wrap n-items-center'}>
-      <Autocomplete
-        id='autocomplete'
-        multiple={multiSelector}
-        options={options}
-        disabled={disabled}
-        limitTags={multiSelectLimit}
+      <Combobox
+        label={helperText ? helperText : `${label} ${propertyType}`}
+        placeholder='Start typing...'
+        searchPlaceholder='Start typing...'
+        className='nd-parameter-select'
         style={{
           maxWidth: 'calc(100% - 40px)',
           minWidth: `calc(100% - ${manualParameterSave ? '60' : '30'}px)`,
           marginLeft: '15px',
           marginTop: '5px',
         }}
-        inputValue={inputDisplayText.toString() || ''}
-        onInputChange={(event, value) => {
-          setInputDisplayText(value);
+        isDisabled={disabled}
+        isClearable
+        options={options.map(toOption)}
+        searchValue={searchText}
+        onSearchChange={(value) => {
+          setSearchText(value);
           debouncedQueryCallback(props.query, { input: `${value}`, ...allParameters }, setExtraRecords);
         }}
-        isOptionEqualToValue={(option, value) => {
-          return (option && option.toString()) === (value && value.toString());
-        }}
-        onOpen={() => {
-          if (extraRecords && extraRecords.length == 0) {
-            debouncedQueryCallback(props.query, { input: `${inputDisplayText}`, ...allParameters }, setExtraRecords);
-          }
-        }}
-        onBlur={() => {
-          // If the user loses focus of the selector, and nothing is selected
-          // We may want to auto-select the first value produced by the selector query (`autoSelectFirstValue == true`)
-          if (autoSelectFirstValue && paramValueDisplayLocal == '') {
-            debouncedQueryCallback(props.query, { input: '', ...allParameters }, (records) => {
-              if (records && records.length > 0 && records[0] && records[0]._fields) {
-                let values = records?.map((r) => r?._fields?.[displayValueRowIndex] || '(no data)');
-                values = props.autoSort ? values.sort() : values;
-                setExtraRecords(records);
-                propagateSelection(undefined, values[0]);
-              }
-            });
-          }
-        }}
-        value={inputValue || ''}
-        onChange={propagateSelection}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            InputLabelProps={{ shrink: true }}
-            placeholder='Start typing...'
-            label={helperText ? helperText : `${label} ${propertyType}`}
-            variant='outlined'
-          />
-        )}
-        getOptionLabel={(option) => option?.toString() || ''}
+        onOpenChange={onOpenChange}
+        {...(multiSelector
+          ? {
+              isMulti: true as const,
+              value: selected as { label: string; value: string }[],
+              onChange: (values) => propagateSelection(undefined, values.map(fromOption)),
+              // Tags wrap freely; while the list is closed, only the first `multiSelectLimit` show.
+              maxRows: null,
+              components: {
+                MultiValue: ({ option, index, isDisabled, remove }) => {
+                  if (!isOpen && index >= multiSelectLimit) {
+                    return index === multiSelectLimit ? (
+                      <ReadOnlyTag size='small'>+{selectedCount - multiSelectLimit}</ReadOnlyTag>
+                    ) : null;
+                  }
+                  return isDisabled ? (
+                    <ReadOnlyTag size='small'>{option.label}</ReadOnlyTag>
+                  ) : (
+                    <DismissibleTag size='small' onRemove={() => remove()}>
+                      {option.label}
+                    </DismissibleTag>
+                  );
+                },
+              },
+            }
+          : {
+              value: selected as { label: string; value: string } | null,
+              onChange: (option) => propagateSelection(undefined, option ? fromOption(option) : null),
+            })}
       />
       {manualParameterSave ? <SelectionConfirmationButton onClick={() => manualHandleParametersUpdate()} /> : <></>}
     </div>

@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import { XMarkIconOutline, PlusIconOutline, SparklesIconOutline } from '@neo4j-ndl/react/icons';
 import { getPageNumbersAndNamesList } from '../advancedcharts/Utils';
-import { IconButton, Dialog, TextInput, FilledButton, Select } from '@neo4j-ndl/react';
+import { IconButton, Dialog, TextInput, FilledButton } from '@neo4j-ndl/react';
 import { SuggestInput } from '../../component/field/SuggestInput';
+import { SelectField } from '../../component/field/SelectField';
 
 // The set of conditional checks that are included in the rule specification.
 const RULE_CONDITIONS = {
@@ -321,7 +322,6 @@ export const NeoCustomReportActionsModal = ({
   // Naming convention: td2 = table data 2. Conditional styling was implemented for each table data depending on whether the chart type == bar or not.
   // Styling was then extracted into functions outside of the html components, hence the naming.
   const td2Styling = (type) => ({ width: type === 'bar' ? '15%' : '30%' });
-  const td2DropdownClassname = (type) => `n-align-middle n-pr-1 ${type === 'bar' ? 'n-w-full' : 'n-w-2/5'}`;
   const td2Autocomplete = (type, index, rule) =>
     type !== 'bar' && rule.condition !== 'rowCheck' ? (
       <SuggestInput
@@ -337,7 +337,6 @@ export const NeoCustomReportActionsModal = ({
       <></>
     );
   const td4Styling = (type) => ({ width: type === 'bar' ? '45%' : '40%' });
-  const td4DropdownClassname = 'n-align-middle, n-w-1/3';
   const td6Styling = (type) => ({ width: type === 'bar' ? '30%' : '20%' });
 
   return (
@@ -382,26 +381,22 @@ export const NeoCustomReportActionsModal = ({
 
                         <td style={td2Styling(type)}>
                           <div style={{ border: '2px dashed grey' }} className='n-p-1'>
-                            <Select
-                              type='select'
+                            <SelectField
                               ariaLabel='Field'
-                              className={td2DropdownClassname(type)}
+                              className='n-align-middle n-pr-1'
                               style={{
                                 minWidth: '140px',
                                 width: ruleTrigger?.disableFieldSelection === true ? '100%' : '140px',
-                                display: 'inline-block',
+                                display: 'inline-flex',
                               }}
-                              selectProps={{
-                                onChange: (newValue) => updateRuleField(index, 'condition', newValue.value),
-                                options:
-                                  RULE_CONDITIONS[type] &&
-                                  RULE_CONDITIONS[type].map((option) => ({
-                                    label: option.label,
-                                    value: option.value,
-                                  })),
-                                value: { label: ruleTrigger ? ruleTrigger.label : '', value: rule.condition },
-                              }}
-                            ></Select>
+                              options={(RULE_CONDITIONS[type] || []).map((option) => ({
+                                label: option.label,
+                                value: option.value,
+                              }))}
+                              value={rule.condition}
+                              valueLabel={ruleTrigger ? ruleTrigger.label : ''}
+                              onChange={(value) => updateRuleField(index, 'condition', value)}
+                            />
                             {td2Autocomplete(type, index, rule)}
                           </div>
                         </td>
@@ -409,7 +404,7 @@ export const NeoCustomReportActionsModal = ({
                         {/* <--      td3 (table data 3)      -->*/}
 
                         <td style={{ width: '6%' }} className='n-text-center'>
-                          <span style={{ fontWeight: 'bold', color: 'black', marginLeft: 5, marginRight: 5 }}>
+                          <span style={{ fontWeight: 'bold', marginLeft: 5, marginRight: 5 }}>
                             {!ruleTrigger?.multiple ? 'SET' : 'APPEND'}
                           </span>
                         </td>
@@ -418,23 +413,18 @@ export const NeoCustomReportActionsModal = ({
 
                         <td style={td4Styling(type)}>
                           <div style={{ border: '2px dashed grey' }} className='n-p-1'>
-                            <Select
-                              type='select'
+                            <SelectField
                               ariaLabel='Action'
-                              className={td4DropdownClassname}
-                              style={{ minWidth: 130, display: 'inline-block' }}
-                              isFluid
-                              selectProps={{
-                                onChange: (newValue) => updateRuleField(index, 'customization', newValue.value),
-                                options:
-                                  RULE_BASED_REPORT_ACTIONS_CUSTOMIZATIONS[type] &&
-                                  RULE_BASED_REPORT_ACTIONS_CUSTOMIZATIONS[type].map((option) => ({
-                                    label: option.label,
-                                    value: option.value,
-                                  })),
-                                value: { label: ruleType ? ruleType.label : '', value: rule.customization },
-                              }}
-                            ></Select>
+                              className='n-align-middle'
+                              style={{ minWidth: 130, width: '33%', display: 'inline-flex' }}
+                              options={(RULE_BASED_REPORT_ACTIONS_CUSTOMIZATIONS[type] || []).map((option) => ({
+                                label: option.label,
+                                value: option.value,
+                              }))}
+                              value={rule.customization}
+                              valueLabel={ruleType ? ruleType.label : ''}
+                              onChange={(value) => updateRuleField(index, 'customization', value)}
+                            />
                             {getActionHelper(rule, index, rules[index].customization)}
                           </div>
                         </td>
@@ -442,7 +432,7 @@ export const NeoCustomReportActionsModal = ({
                         {/* <--      td5 (table data 5)       -->*/}
 
                         <td width='5%' className='n-text-center'>
-                          <span style={{ fontWeight: 'bold', color: 'black', marginLeft: 5, marginRight: 5 }}>
+                          <span style={{ fontWeight: 'bold', marginLeft: 5, marginRight: 5 }}>
                             {!ruleTrigger?.multiple ? 'TO' : 'WITH'}
                           </span>
                         </td>

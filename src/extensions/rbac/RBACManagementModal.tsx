@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Dialog, FilledButton, OutlinedButton, Select } from '@neo4j-ndl/react';
+import { Dialog, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
 import { Neo4jContext, Neo4jContextState } from '../../api/Neo4jContext';
 import { docsUrl } from '../../utils/docs';
+import { SelectField } from '../../component/field/SelectField';
 import {
   Operation,
   retrieveAllowAndDenyLists,
@@ -163,15 +164,13 @@ export const RBACManagementModal = ({ open, handleClose, currentRole, createNoti
           <br />
           <h5>Manage Users</h5>
           <p>Select a list of users to assign to the current role.</p>
-          <Select
-            type='select'
+          <SelectField
             ariaLabel='Users'
-            selectProps={{
-              value: selectedUsers.map((user) => ({ value: user, label: user })),
-              options: neo4jUsers.map((user) => ({ value: user, label: user })),
-              isMulti: true,
-              onChange: (val) => setSelectedUsers(val.map((v) => v.value)),
-            }}
+            isMulti
+            isFluid
+            options={neo4jUsers.map((user) => ({ value: user, label: user }))}
+            value={selectedUsers}
+            onChange={(users) => setSelectedUsers(users)}
           />
         </div>
         <div>
@@ -179,17 +178,15 @@ export const RBACManagementModal = ({ open, handleClose, currentRole, createNoti
           <h5>Label Access</h5>
           <p>For a given database, control what labels the role is or is not allowed to see.</p>
           {/* errorText={!selectedDatabase && 'Please choose a database in order to proceed'} */}
-          <Select
-            type='select'
+          <SelectField
             label='Database'
-            selectProps={{
-              value: { value: selectedDatabase, label: selectedDatabase },
-              placeholder: 'Select a database',
-              options: databases
-                .filter((database) => database !== 'system')
-                .map((database) => ({ value: database, label: database })),
-              onChange: handleDatabaseSelect,
-            }}
+            placeholder='Select a database'
+            isFluid
+            options={databases
+              .filter((database) => database !== 'system')
+              .map((database) => ({ value: database, label: database }))}
+            value={selectedDatabase}
+            onChange={(database) => database && handleDatabaseSelect({ value: database })}
           />
           {selectedDatabase && isDatabaseEmpty && (
             <p style={{ color: 'red' }}>
@@ -202,60 +199,52 @@ export const RBACManagementModal = ({ open, handleClose, currentRole, createNoti
             <br />
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <div style={{ width: '45%' }}>
-                <Select
-                  type='select'
+                <SelectField
                   label='Allow List'
+                  isMulti
+                  isFluid
+                  placeholder='Select labels'
                   helpText={
                     allowList.find((i) => i == '*') &&
                     'Selecting (*) grants access to all labels, overriding other selections.'
                   }
-                  selectProps={{
-                    placeholder: 'Select labels',
-                    isClearable: false,
-                    value: allowList.map((nodelabel) => ({ value: nodelabel, label: nodelabel })),
-                    options: labels.map((nodelabel) => ({ value: nodelabel, label: nodelabel })),
-                    isMulti: true,
-                    onChange: (val) => {
-                      // Make sure that only database-specific label access rules can be changed from this UI.
-                      if (fixedAllowList.every((v) => val.map((selected) => selected.value).includes(v))) {
-                        setAllowList(val.map((v) => v.value));
-                      } else {
-                        createNotification(
-                          'Label cannot be removed',
-                          'The selected label is allowed access across all databases. You cannot remove this privilege using this interface.'
-                        );
-                      }
-                    },
+                  options={labels.map((nodelabel) => ({ value: nodelabel, label: nodelabel }))}
+                  value={allowList}
+                  onChange={(selected) => {
+                    // Make sure that only database-specific label access rules can be changed from this UI.
+                    if (fixedAllowList.every((v) => selected.includes(v))) {
+                      setAllowList(selected);
+                    } else {
+                      createNotification(
+                        'Label cannot be removed',
+                        'The selected label is allowed access across all databases. You cannot remove this privilege using this interface.'
+                      );
+                    }
                   }}
                 />
               </div>
               <div style={{ width: '45%' }}>
-                <Select
-                  type='select'
+                <SelectField
                   label='Deny List'
+                  isMulti
+                  isFluid
+                  placeholder='Select labels'
                   helpText={
                     denyList.find((i) => i == '*') &&
                     'Selecting (*) denies access to all labels, overriding other selections.'
                   }
-                  selectProps={{
-                    placeholder: 'Select labels',
-                    isClearable: false,
-                    value: denyList.map((nodelabel) => ({ value: nodelabel, label: nodelabel })),
-                    options: labels
-                      .filter((l) => l !== '*')
-                      .map((nodelabel) => ({ value: nodelabel, label: nodelabel })),
-                    isMulti: true,
-                    onChange: (val) => {
-                      // Make sure that only database-specific label access rules can be changed from this UI.
-                      if (fixedDenyList.every((v) => val.map((selected) => selected.value).includes(v))) {
-                        setDenyList(val.map((v) => v.value));
-                      } else {
-                        createNotification(
-                          'Label cannot be removed',
-                          'The selected label is denied access across all databases. You cannot remove this privilege using this interface.'
-                        );
-                      }
-                    },
+                  options={labels.filter((l) => l !== '*').map((nodelabel) => ({ value: nodelabel, label: nodelabel }))}
+                  value={denyList}
+                  onChange={(selected) => {
+                    // Make sure that only database-specific label access rules can be changed from this UI.
+                    if (fixedDenyList.every((v) => selected.includes(v))) {
+                      setDenyList(selected);
+                    } else {
+                      createNotification(
+                        'Label cannot be removed',
+                        'The selected label is denied access across all databases. You cannot remove this privilege using this interface.'
+                      );
+                    }
                   }}
                 />
               </div>

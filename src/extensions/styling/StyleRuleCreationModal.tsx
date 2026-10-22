@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import { SuggestInput } from '../../component/field/SuggestInput';
 import NeoColorPicker from '../../component/field/ColorPicker';
-import { IconButton, Dialog, TextInput, FilledButton, Select } from '@neo4j-ndl/react';
+import { IconButton, Dialog, TextInput, FilledButton } from '@neo4j-ndl/react';
 import { AdjustmentsHorizontalIconOutline, XMarkIconOutline, PlusIconOutline } from '@neo4j-ndl/react/icons';
+import { SelectField } from '../../component/field/SelectField';
 
 // The set of conditional checks that are included in the rule specification.
 const RULE_CONDITIONS = [
@@ -262,20 +263,16 @@ export const NeoCustomReportStyleModal = ({
                                 value={rule.field ? rule.field : ''}
                                 onChange={(value) => updateRuleField(index, 'field', value)}
                               />
-                              <Select
-                                type='select'
+                              <SelectField
                                 ariaLabel='Condition'
-                                className='n-align-middle n-w-2/12 n-pr-1'
-                                selectProps={{
-                                  onChange: (newValue) => updateRuleField(index, 'condition', newValue.value),
-                                  options: RULE_CONDITIONS.map((option) => ({
-                                    label: option.label,
-                                    value: option.value,
-                                  })),
-                                  value: { label: rule.condition, value: rule.condition },
-                                }}
-                                style={{ minWidth: 70, display: 'inline-block' }}
-                                isFluid
+                                className='n-align-middle n-pr-1'
+                                style={{ minWidth: 70, width: '17%', display: 'inline-flex' }}
+                                options={RULE_CONDITIONS.map((option) => ({
+                                  label: option.label,
+                                  value: option.value,
+                                }))}
+                                value={rule.condition}
+                                onChange={(value) => updateRuleField(index, 'condition', value)}
                               />
                               <TextInput
                                 className='n-align-middle n-inline-block n-w-5/12'
@@ -288,27 +285,21 @@ export const NeoCustomReportStyleModal = ({
                             </div>
                           </td>
                           <td width='5%' className='n-text-center'>
-                            <span style={{ fontWeight: 'bold', color: 'black' }}>THEN</span>
+                            <span style={{ fontWeight: 'bold' }}>THEN</span>
                           </td>
                           <td width='45%'>
                             <div style={{ border: '2px dashed grey' }} className='n-p-1'>
-                              <Select
-                                type='select'
+                              <SelectField
                                 ariaLabel='Style'
-                                className='n-align-middle n-w-5/12 n-pr-1'
-                                style={{ minWidth: 100, display: 'inline-block' }}
-                                selectProps={{
-                                  onChange: (newValue) => updateRuleField(index, 'customization', newValue.value),
-                                  options: RULE_BASED_REPORT_CUSTOMIZATIONS[type].map((option) => ({
-                                    label: option.label,
-                                    value: option.value,
-                                  })),
-                                  value: {
-                                    label: ruleType ? ruleType.label : '',
-                                    value: rule.customization,
-                                  },
-                                }}
-                                isFluid
+                                className='n-align-middle n-pr-1'
+                                style={{ minWidth: 100, width: '41%', display: 'inline-flex' }}
+                                options={RULE_BASED_REPORT_CUSTOMIZATIONS[type].map((option) => ({
+                                  label: option.label,
+                                  value: option.value,
+                                }))}
+                                value={rule.customization}
+                                valueLabel={ruleType ? ruleType.label : ''}
+                                onChange={(value) => updateRuleField(index, 'customization', value)}
                               />
                               <SuggestInput
                                 className='n-align-middle n-inline-block n-w-5/12 n-pr-1'

@@ -7,8 +7,9 @@ import { Neo4jContext, Neo4jContextState } from '../../api/Neo4jContext';
 import { SuggestInput } from '../../component/field/SuggestInput';
 import debounce from 'lodash/debounce';
 import NeoField from '../../component/field/Field';
-import { Select, TextInput } from '@neo4j-ndl/react';
+import { TextInput } from '@neo4j-ndl/react';
 import NeoCodeEditorComponent from '../../component/editor/CodeEditorComponent';
+import { SelectField } from '../../component/field/SelectField';
 
 type ParameterId = string | undefined | null;
 
@@ -206,19 +207,14 @@ const ParameterSelectCardSettings = ({ query, database, settings, onReportSettin
       <p style={{ color: 'grey', fontSize: 12, paddingLeft: '5px', border: '1px solid lightgrey', marginTop: '0px' }}>
         {helperText}
       </p>
-      <Select
-        selectProps={{
-          onChange: (newValue) => newValue && handleParameterTypeUpdate(newValue.value),
-          options: parameterSelectTypes.map((option) => ({ label: option, value: option })),
-          value: { label: selectedType, value: selectedType },
-          menuPlacement: 'bottom',
-          menuPortalTarget: document.querySelector('#overlay'),
-        }}
+      <SelectField
         label='Selection Type'
-        type='select'
+        options={parameterSelectTypes.map((option) => ({ label: option, value: option }))}
+        value={selectedType}
+        onChange={(value) => value && handleParameterTypeUpdate(value)}
         isFluid
         style={{ marginTop: '5px' }}
-        htmlAttributes={{ id: 'type', autoFocus: true }}
+        htmlAttributes={{ id: 'type' }}
       />
 
       {settings.type == 'Free Text' || settings.type == 'Date Picker' ? (
