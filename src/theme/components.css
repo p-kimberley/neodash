@@ -191,10 +191,11 @@ body {
 }
 
 /* Resize handle: an arc that follows the card's rounded corner (it was a square "L" sticking out of
-   the corner, in dark grey on dark cards). */
+   the corner, in dark grey on dark cards). Each grid cell has 6px of padding below the card (the
+   gap between rows, Page.tsx), so the handle sits that far up, on the card's own corner. */
 .react-grid-item > .react-resizable-handle.react-resizable-handle-se {
   right: 0 !important;
-  bottom: 0 !important;
+  bottom: 6px !important;
   width: 22px;
   height: 22px;
   padding: 0;
@@ -203,10 +204,11 @@ body {
   background-image: none !important;
 }
 .react-grid-item > .react-resizable-handle.react-resizable-handle-se::after {
+  /* Concentric with the card's corner: inset 4px, so a 4px-smaller radius. */
   right: 4px;
   bottom: 4px;
-  width: 9px;
-  height: 9px;
+  width: calc(var(--nd-radius-lg) - 4px);
+  height: calc(var(--nd-radius-lg) - 4px);
   border-right: 2px solid var(--nd-border-strong) !important;
   border-bottom: 2px solid var(--nd-border-strong) !important;
   border-bottom-right-radius: calc(var(--nd-radius-lg) - 4px);
