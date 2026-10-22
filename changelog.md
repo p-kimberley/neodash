@@ -1,3 +1,41 @@
+## NeoDash 3.4.0 - One design system, Text2Cypher on the server, documentation for the fork
+Existing dashboards keep working: report types, settings and saved layouts are unchanged, except where noted under **Upgrading**. Chart 2.5.0.
+
+**Upgrading.**
+- Text2Cypher now uses a language model configured on the server (any OpenAI-compatible API, such as vLLM): set the chart's `text2cypher.baseUrl` and `text2cypher.model`, and optionally `text2cypher.apiKey.existingSecret`. Model providers and API keys entered in the browser are no longer used, and API keys saved in dashboards by earlier versions are removed when a dashboard is loaded or saved.
+- The access-control extension and the dashboard Access dialog are removed: Neo4j Community has no role management, and the server runs every query as its own service account.
+- Tables no longer hide or rearrange columns from the column menu, and columns with relative widths can no longer be resized by dragging (fixed widths still can).
+- Report settings that had no effect are removed from the forms: radar "Blend Mode" and "Curve interpolation", graph "Right Click to Expand Nodes" and the dashboard's "Luma Threshold". Values saved in dashboards are ignored.
+
+**Design system.** Material UI is gone: every control is the Neo4j design system's (NDL 4), with its keyboard and screen-reader behaviour, in light and dark.
+- Tables use NDL's data grid: sorting from the header, a per-column Filter in the column menu, a rows-per-page menu that is remembered per report, compact 32px rows, and single-line cells with an ellipsis unless "Wrap content" is on.
+- Parameter selects, and every other select, use NDL's searchable combobox; a multiselect's value limit shows the first values and "+N".
+- The date parameter uses NDL's date picker, accepts 2025-03-14 and 20250314, and clearing it now works.
+- The colour picker, the graph's right-click menu (relationship counts load as it opens) and properties pop-up, tooltips and text areas are NDL's.
+- The browser bundle is smaller (Material UI and the in-browser language-model clients are gone).
+
+**Text2Cypher on the server.** Questions are turned into Cypher by the server, which reads the database schema (with APOC, or Neo4j's built-in procedures), checks each answer with `EXPLAIN` and retries with the error. Only editors can ask; questions are audited and query results are never sent to the model. The extension can only be turned on when the server has a model, and its dialog shows which model is used.
+
+**Layout.**
+- Reports are 10px apart across and down, and 10px from the window's sides.
+- A report's title row is shorter (40px) and centred on one line on both faces; reports are taller to match and reach the card's bottom edge (charts' field selectors end 12px above it). Card corners clip their content again.
+- Chart field selectors stay on one row and scroll sideways in a narrow card, instead of wrapping out of the card.
+- Page tabs are compact, with the page menu (a vertical ellipsis) inside the tab; renaming a page from its menu works again.
+- Clicking outside a dialog closes it, as Escape does; clicking the margin around a maximised report restores it.
+- The dashboards panel closes when you open a dashboard from it; its buttons have full-size, centred icons.
+- The graph properties pop-up has even padding.
+
+**Fixes.**
+- A report whose answer is lost on the way (a dropped connection or proxy) shows an error after its time limit plus 30 seconds, instead of loading forever.
+- Dashboards that never set a query time limit get 45 seconds, as their settings show (it was 20).
+- Graph "Speed of the particle animation" works again.
+- "Enable interactivity" works again on pie, sunburst, treemap and circle packing; the line chart's "Legend Label Width" and the radar's "Motion Configuration" work again.
+- The gauge chart is no longer cut off at the bottom.
+
+**Documentation.** The in-app user and developer guides describe this fork: signing in and roles, the dashboard list and panel, every report's settings as they are, Helm deployment and configuration, branding, and testing. New page: Roles, Security & Audit. Removed: Bloom Integration, Workflows and Standalone Mode. The Extensions window links to each extension's documentation instead of upstream's consulting page.
+
+**Development.** The Cypress tests are removed (they connected to Neo4j from the browser); `yarn test` runs the Playwright suite and `yarn test:server` the backend's tests. `yarn lint` passes on the whole repository. The browser tests no longer stall on Docker Desktop's slow connections.
+
 ## NeoDash 3.3.0 - React 19, design system 4, faster graphs, in-app documentation
 Existing dashboards keep working unchanged: report types, settings and their defaults are the same. Chart 2.4.0.
 

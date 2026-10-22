@@ -4,7 +4,7 @@ import { Dialog } from '../component/dialog/Dialog';
 import { BookOpenIconOutline, BeakerIconOutline } from '@neo4j-ndl/react/icons';
 import { Section, SectionTitle, SectionContent } from './ModalUtils';
 
-export const version = '3.3.0';
+export const version = '3.4.0';
 
 export const NeoAboutModal = ({ open, handleClose, getDebugState }) => {
   const downloadDebugFile = () => {
