@@ -89,9 +89,11 @@ image::map3.png[Artificial Map Data]
 |Cluster Markers |on/off |off |Whether to automatically cluster nearby markers (showing how many there are) and expand them as you zoom in. Clicking a cluster zooms in on it.
 
 |Seperate Overlapping Markers |on/off |off |Whether to group markers at (almost) the same place; clicking the group fans them out.
-|Node Color Scheme |List |neodash |The color scheme to use for the node
+|Node Color Scheme |List |default |The color scheme to use for the node
 labels. Colors are assigned automatically (consecutively) to the
-different labels returned by the Cypher query.
+different labels returned by the Cypher query. The default scheme has
+separate, contrast-checked colors for light and dark mode (reports saved
+with the old default, neodash, use it too).
 
 |Node Marker Size |List |large |The size of the markers for the nodes on
 the map. One of [small, medium, large].

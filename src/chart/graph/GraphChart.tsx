@@ -13,7 +13,7 @@ import { buildGraphVisualizationObjectFromRecords } from './util/RecordUtils';
 import { parseNodeIconConfig } from './util/NodeUtils';
 import { GraphChartVisualizationProps, Link, layouts } from './GraphChartVisualization';
 import { handleExpand } from './util/ExplorationUtils';
-import { categoricalColorSchemes } from '../../config/ColorConfig';
+import { nodeSchemeColors } from '../echarts/theme';
 import { IconButtonArray, CleanIconButton } from '@neo4j-ndl/react';
 
 import { downloadCSV } from '../ChartUtils';
@@ -161,9 +161,10 @@ const NeoGraphChart = (props: GraphChartProps) => {
   };
 
   let icons = parseNodeIconConfig(settings.iconStyle);
-  const colorScheme = categoricalColorSchemes[settings.nodeColorScheme];
   const { theme } = props;
-  const themeColors = palettes[theme === 'dark' ? 'dark' : 'light'];
+  const appearance = theme === 'dark' ? 'dark' : 'light';
+  const themeColors = palettes[appearance];
+  const colorScheme = nodeSchemeColors(settings.nodeColorScheme, appearance);
 
   const generateVisualizationDataGraph = (records, _) => {
     let nodes: Record<string, any>[] = [];
@@ -233,6 +234,8 @@ const NeoGraphChart = (props: GraphChartProps) => {
       linkDirectionalParticleSpeed: settings.relationshipParticleSpeed ?? 0.005,
       nodeLabelFontSize: settings.nodeLabelFontSize,
       nodeLabelColor: isDefault(settings.nodeLabelColor, 'black') ? themeColors.text : settings.nodeLabelColor,
+      // Captions get a halo in the background colour, so they read over nodes and relationships.
+      nodeLabelHaloColor: isDefault(settings.backgroundColor, '#fafafa') ? themeColors.surface : settings.backgroundColor,
       relLabelFontSize: settings.relLabelFontSize,
       relLabelColor: isDefault(settings.relLabelColor, '#a0a0a0') ? themeColors.textMuted : settings.relLabelColor,
       defaultNodeSize: settings.defaultNodeSize,
@@ -333,6 +336,24 @@ const NeoGraphChart = (props: GraphChartProps) => {
   useEffect(() => {
     generateVisualizationDataGraph(props.records, chartProps);
   }, [props.records]);
+
+  // The default node colours have light and dark versions: on a change of appearance, nodes coloured
+  // from the scheme swap to the other version in place, so the layout stays where it is.
+  const previousScheme = React.useRef(colorScheme);
+  useEffect(() => {
+    const before = previousScheme.current;
+    previousScheme.current = colorScheme;
+    if (before === colorScheme || !data.nodes.length) {
+      return;
+    }
+    data.nodes.forEach((node: any) => {
+      const index = before.indexOf(node.color);
+      if (index !== -1) {
+        node.color = colorScheme[index % colorScheme.length];
+      }
+    });
+    setData({ nodes: data.nodes, links: data.links });
+  }, [appearance]);
 
   return (
     <div ref={observe} style={{ width: '100%', height: '100%' }}>

@@ -80,7 +80,8 @@ export const generateNodeCanvasObject = (
   nodeLabelColor: any,
   styleRules: any,
   selection: any,
-  globalScale = 1
+  globalScale = 1,
+  haloColor?: string
 ) => {
   if (icons && icons[node.mainLabel]) {
     drawDataURIOnCanvas(node, icons[node.mainLabel], ctx, defaultNodeSize);
@@ -88,10 +89,22 @@ export const generateNodeCanvasObject = (
     const label = selection && selection[node.mainLabel] ? getNodeLabel(selection, node) : '';
     const fontSize = nodeLabelFontSize;
     if (label !== '' && fontSize * globalScale >= MIN_READABLE_LABEL_PX) {
+      // The caption sits just under its node (the node's radius is 4 * sqrt(size)), with a halo in the
+      // background colour so it reads over the node, relationships and other captions.
+      const x = node.x ? node.x : 0;
+      const y = (node.y ? node.y : 0) + Math.sqrt(node.size || 1) * 4 + 1;
       ctx.font = `${fontSize}px Sans-Serif`;
-      ctx.fillStyle = labelColorOf(node, nodeLabelColor, styleRules);
       ctx.textAlign = 'center';
-      ctx.fillText(label, node.x ? node.x : 0, node.y ? node.y + 1 : 0);
+      ctx.textBaseline = 'top';
+      if (haloColor) {
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = Math.max(fontSize * 0.35, 1.5 / globalScale);
+        ctx.strokeStyle = haloColor;
+        ctx.strokeText(label, x, y);
+      }
+      ctx.fillStyle = labelColorOf(node, nodeLabelColor, styleRules);
+      ctx.fillText(label, x, y);
+      ctx.textBaseline = 'alphabetic';
     }
     if (frozen && !node.fx && !node.fy && nodePositions) {
       node.fx = node.x;

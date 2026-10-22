@@ -28,8 +28,11 @@ export const isDefaultScheme = (scheme?: string) => resolveScheme(scheme) === DE
  * flat list. The default scheme has its own colours per appearance. Sequential schemes (YlOrRd,
  * greens, ...) are lists per number of classes; their largest is used.
  */
-export const schemeColors = (scheme: string | undefined, mode: Mode): string[] => {
-  const name = resolveScheme(scheme);
+export const schemeColors = (scheme: string | undefined, mode: Mode): string[] =>
+  colorsOf(resolveScheme(scheme), mode);
+
+/** The colours of a resolved scheme name. */
+const colorsOf = (name: string, mode: Mode): string[] => {
   if (name === DEFAULT_SCHEME) {
     return CHART_CATEGORICAL[mode];
   }
@@ -37,6 +40,17 @@ export const schemeColors = (scheme: string | undefined, mode: Mode): string[] =
   const flat = Array.isArray(colors[colors.length - 1]) ? colors[colors.length - 1] : colors;
   return [...flat].filter(Boolean);
 };
+
+/**
+ * The node colour scheme of a graph or map ("Node Color Scheme"). As with charts, reports that never
+ * chose one, or kept the old default ("neodash"), get the default scheme; other schemes keep theirs.
+ */
+export const resolveNodeScheme = (scheme?: string): string =>
+  !scheme || scheme === 'neodash' || !categoricalColorSchemes[scheme] ? DEFAULT_SCHEME : scheme;
+
+/** Colours of a node colour scheme for an appearance (one per node label, in order). */
+export const nodeSchemeColors = (scheme: string | undefined, mode: Mode): string[] =>
+  colorsOf(resolveNodeScheme(scheme), mode);
 
 /** Colours for magnitudes (one hue, low to high) for an appearance. */
 export const sequentialColors = (mode: Mode) => CHART_SEQUENTIAL[mode];

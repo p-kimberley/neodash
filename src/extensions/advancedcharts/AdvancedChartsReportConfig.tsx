@@ -36,7 +36,7 @@ export const _ADVANCED_REPORT_TYPES = {
         label: 'Node Color Scheme',
         type: SELECTION_TYPES.LIST,
         values: [
-          'neodash',
+          'default',
           'nivo',
           'category10',
           'accent',
@@ -48,7 +48,7 @@ export const _ADVANCED_REPORT_TYPES = {
           'set2',
           'set3',
         ],
-        default: 'neodash',
+        default: 'default',
       },
       nodeLabelColor: {
         label: 'Node Label Color',

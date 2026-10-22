@@ -1,5 +1,5 @@
 import React from 'react';
-import { categoricalColorSchemes } from '../../config/ColorConfig';
+import { nodeSchemeColors, useChartMode } from '../../chart/echarts/theme';
 import { getReportTypes } from '../../extensions/ExtensionUtils';
 import { SELECTION_TYPES } from '../../config/CardConfig';
 // The design system's select, distinct from Material UI's Select used for the colour schemes.
@@ -20,7 +20,8 @@ const NeoCardViewFooter = ({
   const reportTypes = getReportTypes(extensions);
   const selectableFields = reportTypes[type].selection;
   const selectables = selectableFields ? Object.keys(selectableFields) : [];
-  const nodeColorScheme = settings && settings.nodeColorScheme ? settings.nodeColorScheme : 'neodash';
+  // The same colours as the graph or map draws its nodes with, so the dots work as a legend.
+  const nodeColors = nodeSchemeColors(settings && settings.nodeColorScheme, useChartMode());
   const hideSelections = settings && settings.hideSelections ? settings.hideSelections : false;
   const { ignoreLabelColors } = reportTypes[type];
   if (!fields || fields.length == 0 || hideSelections) {
@@ -35,9 +36,7 @@ const NeoCardViewFooter = ({
         if (selectableFields[selectable].type == SELECTION_TYPES.NODE_PROPERTIES) {
           // Only show optional selections if we explicitly allow it.
           if (showOptionalSelections || selectionIsMandatory) {
-            const totalColors = categoricalColorSchemes[nodeColorScheme]
-              ? categoricalColorSchemes[nodeColorScheme].length
-              : 0;
+            const totalColors = nodeColors.length;
             const fieldSelections = fields.map((field, i) => {
               // TODO logically, it should be the last element in the field (node labels) array, as that is typically
               // the most specific node label when we have multi-labels
@@ -52,7 +51,7 @@ const NeoCardViewFooter = ({
               ]);
               const color =
                 totalColors > 0 && !ignoreLabelColors
-                  ? categoricalColorSchemes[nodeColorScheme][i % totalColors]
+                  ? nodeColors[i % totalColors]
                   : 'var(--nd-border-strong)';
               // Same look as the other field selectors: caption above, outlined compact select. The
               // node label's colour is shown as a dot, so the legend role is kept.

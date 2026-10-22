@@ -76,6 +76,7 @@ export interface GraphChartVisualizationProps {
     linkDirectionalArrowLength: number;
     nodeLabelFontSize: number;
     nodeLabelColor: string;
+    nodeLabelHaloColor?: string;
     relLabelFontSize: number;
     relLabelColor: string;
     defaultNodeSize: number;

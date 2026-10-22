@@ -96,7 +96,7 @@ const _REPORT_TYPES = {
         label: 'Node Color Scheme',
         type: SELECTION_TYPES.LIST,
         values: [
-          'neodash',
+          'default',
           'nivo',
           'category10',
           'accent',
@@ -108,7 +108,7 @@ const _REPORT_TYPES = {
           'set2',
           'set3',
         ],
-        default: 'neodash',
+        default: 'default',
       },
       nodeLabelColor: {
         label: 'Node Label Color',
@@ -746,7 +746,7 @@ const _REPORT_TYPES = {
         label: 'Node Color Scheme',
         type: SELECTION_TYPES.LIST,
         values: [
-          'neodash',
+          'default',
           'nivo',
           'category10',
           'accent',
@@ -758,7 +758,7 @@ const _REPORT_TYPES = {
           'set2',
           'set3',
         ],
-        default: 'neodash',
+        default: 'default',
       },
       defaultNodeSize: {
         label: 'Node Marker Size',

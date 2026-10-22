@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { ChartProps } from '../Chart';
-import { categoricalColorSchemes } from '../../config/ColorConfig';
+import { nodeSchemeColors, useChartMode } from '../echarts/theme';
 import { valueIsArray, valueIsNode, valueIsRelationship, valueIsPath, valueIsObject } from '../../chart/ChartUtils';
 import { tileAttributionFor, tileUrlFor } from '../../config/MapConfig';
 import { MapView, fitToPoints } from './maplibre/MapView';
@@ -26,7 +26,8 @@ const NeoMapChart = (props: ChartProps) => {
   const relColorProp = props.settings && props.settings.relColorProp ? props.settings.relColorProp : 'color';
   const defaultRelWidth = props.settings && props.settings.defaultRelWidth ? props.settings.defaultRelWidth : 3.5;
   const defaultRelColor = props.settings && props.settings.defaultRelColor ? props.settings.defaultRelColor : '#666';
-  const nodeColorScheme = props.settings && props.settings.nodeColorScheme ? props.settings.nodeColorScheme : 'neodash';
+  const mode = useChartMode();
+  const nodeColors = nodeSchemeColors(props.settings && props.settings.nodeColorScheme, mode);
   const styleRules = useStyleRules(
     extensionEnabled(props.extensions, 'styling'),
     props.settings.styleRules,
@@ -41,7 +42,7 @@ const NeoMapChart = (props: ChartProps) => {
 
   useEffect(() => {
     buildVisualizationDictionaryFromRecords(props.records);
-  }, [props.records]);
+  }, [props.records, mode]);
 
   // Draw the layers once the map is ready, and fit the view to the located nodes.
   useEffect(() => {
@@ -141,7 +142,7 @@ const NeoMapChart = (props: ChartProps) => {
     });
 
     // Assign proper colors & coordinates to nodes.
-    const totalColors = categoricalColorSchemes[nodeColorScheme].length;
+    const totalColors = nodeColors.length;
     const nodeLabelsList = Object.keys(nodeLabels);
     const nodesList = Object.values(nodes).map((node) => {
       const assignPosition = (node) => {
@@ -165,7 +166,7 @@ const NeoMapChart = (props: ChartProps) => {
 
       let assignedColor = node.properties[nodeColorProp]
         ? node.properties[nodeColorProp]
-        : categoricalColorSchemes[nodeColorScheme][nodeLabelsList.indexOf(node.firstLabel) % totalColors];
+        : nodeColors[nodeLabelsList.indexOf(node.firstLabel) % totalColors];
 
       assignedColor = evaluateRulesOnNode(node, 'marker color', assignedColor, styleRules);
       const assignedPos = assignPosition(node);

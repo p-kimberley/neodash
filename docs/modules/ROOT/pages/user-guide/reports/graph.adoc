@@ -47,12 +47,15 @@ image::graph2.png[Virtual Graph]
 [width="100%",cols="12%,2%,3%,83%",options="header",]
 |===
 |Name |Type |Default Value |Description
-|Node Color Scheme |List |neodash |The color scheme to use for the node
+|Node Color Scheme |List |default |The color scheme to use for the node
 labels. Colors are assigned automatically (consecutively) to the
-different labels returned by the Cypher query.
+different labels returned by the Cypher query. The default scheme has
+separate, contrast-checked colors for light and dark mode (reports saved
+with the old default, neodash, use it too).
 
-|Node Label Color |Color |black |The color of the labels drawn on the
-nodes.
+|Node Label Color |Color |black |The color of the node captions, drawn just
+below each node with a halo in the background color. Left at black, captions
+follow the light or dark appearance.
 
 |Node Label Font Size |Number |3.5 |Size of the labels drawn on the
 nodes.

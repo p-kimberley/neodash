@@ -134,8 +134,12 @@ const NeoSetting = ({
         </div>
       );
     case SELECTION_TYPES.LIST: {
-      // Charts draw the old default colour scheme ("set2") with the default one, so show it as such.
-      const shown = label === 'Color Scheme' && value === 'set2' ? 'default' : value;
+      // Charts, graphs and maps draw the old default colour schemes ("set2", "neodash") with the default
+      // one, so show them as such.
+      const shown =
+        (label === 'Color Scheme' && value === 'set2') || (label === 'Node Color Scheme' && value === 'neodash')
+          ? 'default'
+          : value;
       return (
         <div key={label} style={{ width: '100%', paddingRight: '28px' }}>
           <NeoField

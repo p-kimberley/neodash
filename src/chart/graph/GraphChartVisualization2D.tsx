@@ -27,7 +27,8 @@ export const NeoGraphChartVisualization2D = (props: GraphChartVisualizationProps
         props.style.nodeLabelColor,
         props.extensions.styleRules,
         props.engine.selection,
-        globalScale
+        globalScale,
+        props.style.nodeLabelHaloColor
       );
       const search = props.interactivity.search;
       if (search && search.matches.has(node.id)) {
