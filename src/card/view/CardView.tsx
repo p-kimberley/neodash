@@ -43,7 +43,7 @@ const NeoCardView = ({
   expanded,
   onToggleCardExpand,
 }) => {
-  const reportHeight = heightPx - CARD_FOOTER_HEIGHT - CARD_HEADER_HEIGHT + 20;
+  const reportHeight = heightPx - CARD_FOOTER_HEIGHT - CARD_HEADER_HEIGHT + 11;
   const cardHeight = heightPx - CARD_FOOTER_HEIGHT - CARD_HEADER_HEIGHT + 95;
   const ref = React.useRef(undefined);
 
@@ -167,11 +167,11 @@ const NeoCardView = ({
     paddingRight: '0px',
     paddingTop: '0px',
     width: '100%',
-    marginTop: '-9px',
+    // Starts below the title row (it used to overlap it by 9px, covering the buttons' lower edge).
     height: expanded
       ? withoutFooter
-        ? '100%'
-        : `calc(100% - ${CARD_FOOTER_HEIGHT}px)`
+        ? 'calc(100% - 9px)'
+        : `calc(100% - ${CARD_FOOTER_HEIGHT + 9}px)`
       : withoutFooter
         ? `${reportHeight + CARD_FOOTER_HEIGHT - (reportTypeHasNoFooter ? 0 : 20)}px`
         : `${reportHeight}px`,
