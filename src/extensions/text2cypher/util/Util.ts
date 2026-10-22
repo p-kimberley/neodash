@@ -1,7 +1,14 @@
 import { createNotification } from '../../../application/ApplicationActions';
+import { session } from '../../../api/client';
 import { toggleCardSettingsThunk } from '../../../card/CardThunks';
 import { QUERY_TRANSLATOR_EXTENSION_NAME } from '../state/QueryTranslatorSelector';
 import { queryTranslationThunk } from '../state/QueryTranslatorThunks';
+
+/** Whether the server has a language model for Text2Cypher. */
+export const text2cypherAvailable = () => Boolean(session.config?.text2cypher?.enabled);
+
+/** The model the server uses for Text2Cypher, if any. */
+export const text2cypherModel = () => session.config?.text2cypher?.model;
 
 /**
  * This function translates a query using the specified driver and dispatches actions accordingly.

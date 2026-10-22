@@ -1,40 +1,33 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import { IconButton } from '@neo4j-ndl/react';
 import QueryTranslatorSettingsModal from './QueryTranslatorSettingsModal';
 import { ExclamationTriangleIconSolid, LanguageIconSolid } from '@neo4j-ndl/react/icons';
-import { getModelProvider } from '../state/QueryTranslatorSelector';
+import { text2cypherAvailable } from '../util/Util';
 
-const QueryTranslatorButton = (active) => {
+/** The dashboard's Text2Cypher button; warns when the server has no language model. */
+const QueryTranslatorButton = () => {
   const [open, setOpen] = React.useState(false);
-  const button = (
-    <IconButton description='Text2Cypher' className='n-mx-1' onClick={() => setOpen(true)}>
-      <LanguageIconSolid />
-      {active.active == '' || active.active == undefined ? (
-        <ExclamationTriangleIconSolid
-          style={{ color: 'var(--theme-color-danger-icon)' }}
-          className='-n-mt-1 n-ml-3 n-w-4/5'
-        ></ExclamationTriangleIconSolid>
-      ) : (
-        <></>
-      )}
-    </IconButton>
-  );
-
-  const component = (
+  const available = text2cypherAvailable();
+  return (
     <div style={{ display: 'inline' }}>
-      {button}
+      <IconButton
+        description={available ? 'Text2Cypher' : 'Text2Cypher (no language model configured)'}
+        className='n-mx-1'
+        onClick={() => setOpen(true)}
+      >
+        <LanguageIconSolid />
+        {available ? (
+          <></>
+        ) : (
+          <ExclamationTriangleIconSolid
+            style={{ color: 'var(--theme-color-danger-icon)' }}
+            className='-n-mt-1 n-ml-3 n-w-4/5'
+          />
+        )}
+      </IconButton>
       {open ? <QueryTranslatorSettingsModal open={open} setOpen={setOpen} /> : <></>}
     </div>
   );
-
-  return component;
 };
 
-const mapStateToProps = (state) => ({
-  active: getModelProvider(state),
-});
-
-const mapDispatchToProps = (_dispatch) => ({});
-
-export default connect(mapStateToProps, mapDispatchToProps)(QueryTranslatorButton);
+export default QueryTranslatorButton;

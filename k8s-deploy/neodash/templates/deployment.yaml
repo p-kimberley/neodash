@@ -116,6 +116,24 @@ spec:
               value: {{ .Values.maps.tileAttribution | quote }}
             - name: MAP_DATA_URL
               value: {{ .Values.maps.dataUrl | quote }}
+            {{- with .Values.text2cypher }}
+            {{- if .baseUrl }}
+            - name: TEXT2CYPHER_BASE_URL
+              value: {{ .baseUrl | quote }}
+            - name: TEXT2CYPHER_MODEL
+              value: {{ .model | quote }}
+            - name: TEXT2CYPHER_TIMEOUT_SECONDS
+              value: {{ .timeoutSeconds | quote }}
+            - name: TEXT2CYPHER_MAX_ATTEMPTS
+              value: {{ .maxAttempts | quote }}
+            - name: TEXT2CYPHER_TEMPERATURE
+              value: {{ .temperature | quote }}
+            {{- if .apiKey.existingSecret }}
+            - name: TEXT2CYPHER_API_KEY_FILE
+              value: /var/run/secrets/neodash/text2cypher-api-key
+            {{- end }}
+            {{- end }}
+            {{- end }}
             {{- if $caBundle }}
             - name: NODE_EXTRA_CA_CERTS
               value: /etc/neodash/ca/{{ .Values.oidc.caBundle.key }}
@@ -175,6 +193,13 @@ spec:
                   items:
                     - key: {{ .Values.session.secretKey }}
                       path: session-secret
+              {{- if and .Values.text2cypher.baseUrl .Values.text2cypher.apiKey.existingSecret }}
+              - secret:
+                  name: {{ .Values.text2cypher.apiKey.existingSecret }}
+                  items:
+                    - key: {{ .Values.text2cypher.apiKey.key }}
+                      path: text2cypher-api-key
+              {{- end }}
         - name: tmp
           emptyDir:
             sizeLimit: 64Mi

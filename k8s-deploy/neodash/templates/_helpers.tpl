@@ -108,6 +108,9 @@ Fail early, with a helpful message, on missing required values.
 {{- $_ := required "ingress.tls.secretName is required when ingress.tls.enabled is true" .Values.ingress.tls.secretName -}}
 {{- end -}}
 {{- end -}}
+{{- if .Values.text2cypher.baseUrl -}}
+{{- $_ := required "text2cypher.model is required when text2cypher.baseUrl is set: the model name the API serves" .Values.text2cypher.model -}}
+{{- end -}}
 {{- if and .Values.httpRoute.enabled (not .Values.httpRoute.parentRefs) -}}
 {{- fail "httpRoute.parentRefs is required when httpRoute.enabled is true: the Gateway to attach to" -}}
 {{- end -}}

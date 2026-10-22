@@ -1,108 +1,82 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { setClientSettings, setModelProvider } from '../state/QueryTranslatorActions';
-import { getQueryTranslatorSettings, getModelProvider } from '../state/QueryTranslatorSelector';
-import { SELECTION_TYPES } from '../../../config/CardConfig';
-import NeoSetting from '../../../component/field/Setting';
-import { QUERY_TRANSLATOR_CONFIG } from '../QueryTranslatorConfig';
-import ClientSettings from './ClientSettings';
-import { Dialog } from '@neo4j-ndl/react';
-import { modelClientInitializationThunk } from '../state/QueryTranslatorThunks';
+import { Dialog, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
+import { PencilSquareIconOutline } from '@neo4j-ndl/react/icons';
+import { deleteAllMessageHistory } from '../state/QueryTranslatorActions';
+import { QUERY_TRANSLATOR_HISTORY_PREFIX } from '../state/QueryTranslatorSelector';
+import { getSessionStorageValuesWithPrefix } from '../../../sessionStorage/SessionStorageSelectors';
 import QueryTranslatorSettingsModelExamples from './model-examples/QueryTranslatorSettingsModelExamples';
+import { text2cypherAvailable, text2cypherModel } from '../util/Util';
 
-const QueryTranslatorSettingsModal = ({
-  open,
-  setOpen,
-  modelProvider,
-  clientSettings,
-  updateClientSettings,
-  updateModelProvider,
-  initializeModelClient,
-}) => {
-  const [modelProviderState, setModelProviderState] = React.useState(modelProvider);
-  const [settingsState, setSettingsState] = React.useState(clientSettings);
+/**
+ * About Text2Cypher on this server: which model writes the queries, what it receives, and the
+ * dashboard's example questions for it. The model itself is configured on the server.
+ */
+const QueryTranslatorSettingsModal = ({ open, setOpen, messageHistory, clearHistory }) => {
   const [editDialogIsOpen, setEditDialogIsOpen] = React.useState(false);
+  const close = () => setOpen(false);
 
-  const handleCloseWithSave = () => {
-    updateModelProvider(modelProviderState);
-    updateClientSettings(settingsState);
-    setOpen(false);
-    initializeModelClient();
-  };
-
-  const handleCloseWithoutSave = () => {
-    setOpen(false);
-  };
-
-  const handleOpenEditSolutions = () => {
-    setEditDialogIsOpen(true);
-  };
-
-  const handleCloseEditSolutions = () => {
-    setEditDialogIsOpen(false);
-  };
-
-  if (!editDialogIsOpen) {
+  if (editDialogIsOpen) {
     return (
-      <Dialog size='large' isOpen={open} onClose={handleCloseWithoutSave}>
-        <Dialog.Header>Text2Cypher Configuration</Dialog.Header>
-        <Dialog.Content>
-          This extensions lets you create reports with natural language. Your queries (in English) are translated to
-          Cypher by a LLM provider of your choice.
-          <br />
-          <br />
-          Keep in mind that the following data will be sent to a external API:
-          <ul>
-            <li>- Your database schema, including label names, relationship types, and property keys.</li>
-            <li>- Any natural language question that a user writes.</li>
-          </ul>
-          <br />
-          <br />
-          <NeoSetting
-            style={{ marginLeft: '0', marginRight: '0' }}
-            key={'Model Provider'}
-            name={'Model Provider'}
-            label={'Model Provider'}
-            value={modelProviderState}
-            type={SELECTION_TYPES.LIST}
-            choices={Object.keys(QUERY_TRANSLATOR_CONFIG.availableClients)}
-            onChange={(e) => setModelProviderState(e)}
-          />
-          {modelProviderState ? (
-            <ClientSettings
-              handleOpenEditSolutions={handleOpenEditSolutions}
-              handleClose={handleCloseWithSave}
-              modelProvider={modelProviderState}
-              settingState={settingsState}
-              setSettingsState={setSettingsState}
-            />
-          ) : (
-            <>Select one of the available clients.</>
-          )}
-        </Dialog.Content>
-      </Dialog>
+      <QueryTranslatorSettingsModelExamples
+        handleCloseEditSolutions={() => setEditDialogIsOpen(false)}
+        open={open}
+        handleCloseWithoutSave={close}
+      />
     );
   }
+  const available = text2cypherAvailable();
   return (
-    <QueryTranslatorSettingsModelExamples
-      handleCloseEditSolutions={handleCloseEditSolutions}
-      open={open}
-      handleCloseWithoutSave={handleCloseWithoutSave}
-    ></QueryTranslatorSettingsModelExamples>
+    <Dialog size='large' isOpen={open} onClose={close}>
+      <Dialog.Header>Text2Cypher</Dialog.Header>
+      <Dialog.Content>
+        <p>
+          Write a report's query as a question in English: switch its query editor from Cypher to English. The question
+          is turned into Cypher by a language model that runs for this server.
+        </p>
+        <br />
+        {available ? (
+          <>
+            <p>
+              Model: <b>{text2cypherModel() || 'configured on the server'}</b>
+            </p>
+            <br />
+            <p>It receives:</p>
+            <ul className='n-list-disc n-ml-6'>
+              <li>the database schema: node labels, relationship types and property names;</li>
+              <li>the question, the report's earlier questions, and this dashboard's example questions.</li>
+            </ul>
+            <p>Query results are not sent to it.</p>
+          </>
+        ) : (
+          <p>
+            <b>No language model is configured on this server.</b> An administrator can set one up (any
+            OpenAI-compatible API, such as vLLM) with the Helm chart's <code>text2cypher</code> settings.
+          </p>
+        )}
+      </Dialog.Content>
+      <Dialog.Actions>
+        {Object.keys(messageHistory).length > 0 ? (
+          <OutlinedButton onClick={() => clearHistory()}>Forget earlier questions</OutlinedButton>
+        ) : (
+          <></>
+        )}
+        <OutlinedButton onClick={() => setEditDialogIsOpen(true)}>
+          Example questions
+          <PencilSquareIconOutline className='btn-icon-base-r' />
+        </OutlinedButton>
+        <FilledButton onClick={close}>Done</FilledButton>
+      </Dialog.Actions>
+    </Dialog>
   );
 };
 
 const mapStateToProps = (state) => ({
-  clientSettings: getQueryTranslatorSettings(state),
-  modelProvider: getModelProvider(state),
+  messageHistory: getSessionStorageValuesWithPrefix(state, QUERY_TRANSLATOR_HISTORY_PREFIX),
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  updateClientSettings: (settings) => dispatch(setClientSettings(settings)),
-  updateModelProvider: (modelProvider) => dispatch(setModelProvider(modelProvider)),
-  initializeModelClient: (setIsAuthenticated) => {
-    dispatch(modelClientInitializationThunk(setIsAuthenticated));
-  },
+  clearHistory: () => dispatch(deleteAllMessageHistory()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(QueryTranslatorSettingsModal);

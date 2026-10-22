@@ -13,7 +13,8 @@ export type AuditEvent =
   | 'dashboard.view'
   | 'dashboard.save'
   | 'dashboard.delete'
-  | 'query';
+  | 'query'
+  | 'text2cypher';
 
 export function createAuditor(log: FastifyBaseLogger) {
   const audit = log.child({ audit: true });

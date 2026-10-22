@@ -2,7 +2,7 @@ import { QUERY_TRANSLATOR_ACTION_PREFIX } from './text2cypher/state/QueryTransla
 import { queryTranslatorReducer } from './text2cypher/state/QueryTranslatorReducer';
 import NeoOverrideCardQueryEditor from './text2cypher/component/OverrideCardQueryEditor';
 import { translateQuery } from './text2cypher/util/Util';
-import { GPT_LOADING_ICON } from './text2cypher/component/LoadingIcon';
+import { TEXT2CYPHER_LOADING_ICON } from './text2cypher/component/LoadingIcon';
 import QueryTranslatorButton from './text2cypher/component/QueryTranslatorButton';
 import { docsUrl } from '../utils/docs';
 
@@ -17,9 +17,9 @@ interface Extension {
   link: string;
   reducerPrefix?: string;
   reducerObject?: any;
-  settingsMenuButton?: React.JSX.Element;
-  cardSettingsComponent?: React.JSX.Element;
-  settingsModal?: React.JSX.Element;
+  settingsMenuButton?: React.ComponentType<any>;
+  cardSettingsComponent?: React.ComponentType<any>;
+  settingsModal?: React.ComponentType<any>;
   prepopulateReportFunction?: any; // function
   customLoadingIcon?: React.JSX.Element;
 }
@@ -66,10 +66,10 @@ export const EXTENSIONS: Record<string, Extension> = {
     reducerObject: queryTranslatorReducer,
     cardSettingsComponent: NeoOverrideCardQueryEditor,
     prepopulateReportFunction: translateQuery,
-    customLoadingIcon: GPT_LOADING_ICON,
+    customLoadingIcon: TEXT2CYPHER_LOADING_ICON,
     settingsMenuButton: QueryTranslatorButton,
     description:
-      'Use natural language to generate Cypher queries in NeoDash. Connect to an LLM through an API, and let NeoDash use your database schema + the report types to generate queries automatically. This extension requires APOC Core installed inside Neo4j.',
+      "Write a report's query as a question in English: a language model set up for this server turns it into Cypher, using the database schema and the report's type. NeoDash checks each query against the database before using it.",
     link: 'https://neo4j.com/professional-services/',
   },
   forms: {

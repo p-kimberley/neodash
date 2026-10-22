@@ -24,13 +24,14 @@ credentials; they sign in with OpenID Connect (e.g. Keycloak) and call this API.
 | `GET /auth/login?returnTo=`  | anyone  | Start sign-in; returns to `returnTo` (relative paths only)     |
 | `GET /auth/callback`         | –       | OIDC redirect target                                          |
 | `POST /auth/logout`          | anyone  | End the session; returns `{logoutUrl}` for the identity provider |
-| `GET /api/config`            | anyone  | Databases and query limits                                    |
+| `GET /api/config`            | anyone  | Databases, query limits, map and Text2Cypher settings        |
 | `GET /api/me`                | signed in | User, role and what they may do                            |
 | `GET /api/dashboards`        | viewer  | List dashboards                                               |
 | `GET /api/dashboards/:uuid`  | viewer  | Dashboard JSON (`content`) plus metadata                      |
 | `PUT /api/dashboards/:uuid`  | editor  | Create or overwrite a dashboard                               |
 | `DELETE /api/dashboards/:uuid` | editor | Delete a dashboard                                           |
 | `POST /api/query`            | viewer / editor | Run a saved report query, or (editors) any Cypher     |
+| `POST /api/text2cypher`      | editor  | Turn a question into a query with the configured language model (checked with `EXPLAIN`) |
 | `GET /healthz`, `GET /readyz`| anyone  | Liveness; readiness (checks Neo4j)                            |
 
 ### `POST /api/query`
@@ -102,6 +103,12 @@ All settings are environment variables. Secrets can be given as files instead, b
 | `QUERY_ROW_LIMIT_MAX` | `10000` | Rows beyond this are not fetched; the response says `truncated` |
 | `AUDIT_LOG_PARAMETERS` | `true` | Include parameter values in audit lines |
 | `MAP_TILE_URL` / `MAP_TILE_ATTRIBUTION` | – | Default map tile server for map reports, e.g. an internal one; empty = no tiles (works offline) |
+| `TEXT2CYPHER_BASE_URL` | – | Text2Cypher: an OpenAI-compatible API (`<base>/chat/completions`), e.g. vLLM `http://vllm.ai.svc:8000/v1`; empty = off |
+| `TEXT2CYPHER_MODEL` | – | The model name the API serves (required with the base URL) |
+| `TEXT2CYPHER_API_KEY` (`_FILE`) | – | Optional; sent as a bearer token |
+| `TEXT2CYPHER_TIMEOUT_SECONDS` / `TEXT2CYPHER_MAX_ATTEMPTS` | `60` / `2` | Per model request; answers per question (each checked with `EXPLAIN`, retried with the error) |
+| `TEXT2CYPHER_TEMPERATURE` / `TEXT2CYPHER_MAX_TOKENS` | `0` / – | Sampling settings sent to the model |
+| `TEXT2CYPHER_SCHEMA_TTL_SECONDS` | `300` | How long a database's schema (sent to the model) is reused |
 | `MAP_DATA_URL` | `/maps` | Where choropleth / area map charts load country shapes from (bundled with the UI, see `public/maps/`) |
 | `NODE_EXTRA_CA_CERTS` | – | PEM file of extra CAs to trust (internal CA for Keycloak or `neo4j+s://`) |
 | `TRUST_PROXY` | `false` | Set behind an ingress so audit logs record the client IP |

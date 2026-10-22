@@ -1,14 +1,10 @@
 import React from 'react';
-import logo from '../clients/OpenAi/OpenAiLogo.png';
+import { LoadingSpinner } from '@neo4j-ndl/react';
 
-export const GPT_LOADING_ICON = (
-  <div className='centered' style={{ textAlign: 'center' }}>
-    <br />
-    <img
-      style={{ width: 40, animation: 'pulse 2s infinite', marginTop: 'auto', marginLeft: 'auto', marginRight: 'auto' }}
-      src={logo}
-    ></img>
-    <br />
-    <span style={{ fontSize: 12 }}>Calling OpenAI...</span>
+/** Shown in a report while the server's language model writes its query. */
+export const TEXT2CYPHER_LOADING_ICON = (
+  <div className='centered n-flex n-flex-col n-items-center n-gap-token-8' role='status'>
+    <LoadingSpinner size='medium' />
+    <span style={{ fontSize: 12 }}>Writing the query…</span>
   </div>
 );

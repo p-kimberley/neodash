@@ -10,6 +10,13 @@ import { PuzzlePieceIconSolid } from '@neo4j-ndl/react/icons';
 import { Section, SectionContent } from '../modal/ModalUtils';
 import { Tip } from '../component/text/Tip';
 import { docsUrl } from '../utils/docs';
+import { text2cypherAvailable } from './text2cypher/util/Util';
+
+/** Extensions that depend on the server: Text2Cypher needs a language model configured there. */
+const withAvailability = (e) =>
+  e.name === 'query-translator' && !text2cypherAvailable()
+    ? { ...e, enabled: false, unavailableReason: 'Needs a language model, which is not configured on this server.' }
+    : { ...e, unavailableReason: undefined };
 
 const NeoExtensionsModal = ({
   extensions,
@@ -54,82 +61,91 @@ const NeoExtensionsModal = ({
                 </SectionContent>
               </Section>
 
-              {Object.values(EXTENSIONS).map((e, key) => {
-                return (
-                  <Section key={key}>
-                    <SectionContent>
-                      <div style={{ opacity: e.enabled ? 1.0 : 0.6 }}>
-                        <table>
-                          <tbody>
-                            <tr>
-                              <td>
-                                <div className='n-flex n-flex-row n-gap-token-8 n-items-center'>
-                                  <Typography variant='subheading-large'>{e.label}</Typography>
-                                  {e.enabled && e.author == 'Neo4j Professional Services' && (
-                                    <StatusLabel variant='info' fill='outlined'>
-                                      Expert
-                                    </StatusLabel>
-                                  )}
-                                </div>
-                              </td>
-                              <td style={{ width: 50 }}></td>
-                              <td style={{ float: 'right' }}>
-                                <Tip title='Enable the extension'>
-                                  <span>
-                                    <Checkbox
-                                      label='Active'
-                                      isDisabled={!e.enabled}
-                                      style={{ fontSize: 'small' }}
-                                      isChecked={extensions[e.name]}
-                                      onClick={() => {
-                                        let active = extensions[e.name] == undefined ? true : undefined;
-                                        if (e.enabled) {
-                                          setExtensionEnabled(e.name, active);
+              {Object.values(EXTENSIONS)
+                .map(withAvailability)
+                .map((e, key) => {
+                  return (
+                    <Section key={key}>
+                      <SectionContent>
+                        <div style={{ opacity: e.enabled ? 1.0 : 0.6 }}>
+                          <table>
+                            <tbody>
+                              <tr>
+                                <td>
+                                  <div className='n-flex n-flex-row n-gap-token-8 n-items-center'>
+                                    <Typography variant='subheading-large'>{e.label}</Typography>
+                                    {e.enabled && e.author == 'Neo4j Professional Services' && (
+                                      <StatusLabel variant='info' fill='outlined'>
+                                        Expert
+                                      </StatusLabel>
+                                    )}
+                                  </div>
+                                </td>
+                                <td style={{ width: 50 }}></td>
+                                <td style={{ float: 'right' }}>
+                                  <Tip title='Enable the extension'>
+                                    <span>
+                                      <Checkbox
+                                        label='Active'
+                                        isDisabled={!e.enabled}
+                                        style={{ fontSize: 'small' }}
+                                        isChecked={extensions[e.name]}
+                                        onClick={() => {
+                                          let active = extensions[e.name] == undefined ? true : undefined;
+                                          if (e.enabled) {
+                                            setExtensionEnabled(e.name, active);
 
-                                          // Subscribing the reducer binded to the newly enabled extension
-                                          // to the extensionReducer
-                                          if (e.reducerPrefix) {
-                                            setExtensionReducerEnabled(e.reducerPrefix, active);
+                                            // Subscribing the reducer binded to the newly enabled extension
+                                            // to the extensionReducer
+                                            if (e.reducerPrefix) {
+                                              setExtensionReducerEnabled(e.reducerPrefix, active);
+                                            }
+                                          } else {
+                                            onExtensionUnavailableTriggered(e.label);
+                                            // If an extension presents a reducer, we need to unbind it from the extension reducer
+                                            if (e.reducerPrefix) {
+                                              setExtensionReducerEnabled(e.reducerPrefix, active);
+                                            }
                                           }
-                                        } else {
-                                          onExtensionUnavailableTriggered(e.label);
-                                          // If an extension presents a reducer, we need to unbind it from the extension reducer
-                                          if (e.reducerPrefix) {
-                                            setExtensionReducerEnabled(e.reducerPrefix, active);
-                                          }
-                                        }
-                                      }}
-                                      htmlAttributes={{ id: `checkbox-${e.name}`, name: 'enable' }}
-                                    />
-                                  </span>
-                                </Tip>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td valign='top'>
-                                <br />
-                                <p>{e.description}</p>
-                                <br />
-                                <p>
-                                  Author:{' '}
-                                  <TextLink href={e.link} target='_blank' type='external'>
-                                    {e.author}
-                                  </TextLink>
-                                </p>
-                              </td>
-                              <td></td>
-                              <td style={{ width: 300 }}>
-                                <br />
-                                <img src={e.image} style={{ border: '1px solid grey', width: '100%' }}></img>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </SectionContent>
-                  </Section>
-                );
-              })}
+                                        }}
+                                        htmlAttributes={{ id: `checkbox-${e.name}`, name: 'enable' }}
+                                      />
+                                    </span>
+                                  </Tip>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td valign='top'>
+                                  <br />
+                                  <p>{e.description}</p>
+                                  {e.unavailableReason ? (
+                                    <p>
+                                      <i>{e.unavailableReason}</i>
+                                    </p>
+                                  ) : (
+                                    <></>
+                                  )}
+                                  <br />
+                                  <p>
+                                    Author:{' '}
+                                    <TextLink href={e.link} target='_blank' type='external'>
+                                      {e.author}
+                                    </TextLink>
+                                  </p>
+                                </td>
+                                <td></td>
+                                <td style={{ width: 300 }}>
+                                  <br />
+                                  <img src={e.image} style={{ border: '1px solid grey', width: '100%' }}></img>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </SectionContent>
+                    </Section>
+                  );
+                })}
             </div>
           </Dialog.Content>
         </Dialog>

@@ -12,6 +12,7 @@ import type { OidcClient } from './auth/oidc.js';
 import { decodeParameters, encode } from './codec.js';
 import { DashboardStore, findReport } from './dashboards.js';
 import { runQuery } from './neo4j.js';
+import { Text2Cypher, Text2CypherError } from './text2cypher.js';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -32,9 +33,47 @@ export interface AppDeps {
   config: Config;
   driver: Driver;
   oidc: Pick<OidcClient, 'startLogin' | 'finishLogin' | 'verifyBearer' | 'logoutUrl'>;
+  /** How Text2Cypher reaches the language model (tests replace it). */
+  llmFetch?: typeof fetch;
 }
 
 const uuidParam = z.object({ uuid: z.string().min(1).max(200) });
+
+const text2cypherBody = z.object({
+  question: z.string().trim().min(1).max(4000),
+  database: z.string().min(1).max(200).optional(),
+  reportType: z.string().max(100).optional(),
+  history: z
+    .array(z.object({ question: z.string().max(4000), query: z.string().max(20_000) }))
+    .max(20)
+    .default([]),
+  examples: z
+    .array(z.object({ question: z.string().max(4000), answer: z.string().max(20_000) }))
+    .max(50)
+    .default([]),
+  // Where the question came from, for the audit log only.
+  context: z
+    .object({
+      dashboard: z.string().max(200).optional(),
+      page: z.number().int().optional(),
+      report: z.string().max(200).optional(),
+    })
+    .optional(),
+});
+
+/**
+ * Removes API keys from a dashboard. The previous Text2Cypher extension kept the user's language
+ * model key in the dashboard's own state, so it was saved with it and sent to everyone who opened it.
+ */
+export function withoutApiKeys<T>(value: T): T {
+  if (Array.isArray(value)) return value.map(withoutApiKeys) as T;
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value)) if (k !== 'apiKey') out[k] = withoutApiKeys(v);
+    return out as T;
+  }
+  return value;
+}
 
 const queryBody = z
   .object({
@@ -66,7 +105,7 @@ const queryBody = z
     message: 'Provide either "query", or "dashboard" and "report"',
   });
 
-export async function buildApp({ config, driver, oidc }: AppDeps) {
+export async function buildApp({ config, driver, oidc, llmFetch }: AppDeps) {
   const app = Fastify({
     logger: {
       level: config.logLevel,
@@ -77,6 +116,7 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
     bodyLimit: 20 * 1024 * 1024,
   });
   const audit = createAuditor(app.log);
+  const text2cypher = config.text2cypher ? new Text2Cypher(config.text2cypher, driver, llmFetch) : undefined;
   const sessions = new CookieSealer(config.session.secret, 'session');
   const logins = new CookieSealer(config.session.secret, 'login');
   const store = new DashboardStore(driver, config.neo4j.dashboardDatabase);
@@ -253,6 +293,7 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
       maxTimeoutSeconds: config.query.maxTimeoutSeconds,
     },
     maps: config.maps,
+    text2cypher: { enabled: Boolean(text2cypher), model: text2cypher?.model },
   }));
 
   app.get('/api/me', async (request) => {
@@ -276,7 +317,7 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
     const dashboard = await store.get(uuid);
     if (!dashboard) return reply.code(404).send(errorBody('not_found', 'Dashboard not found'));
     audit(request, 'dashboard.view', { dashboard: { uuid, title: dashboard.title } });
-    return dashboard;
+    return withoutApiKeys(dashboard);
   });
 
   app.put('/api/dashboards/:uuid', async (request, reply) => {
@@ -286,7 +327,7 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
     if (!content || typeof content !== 'object' || !Array.isArray(content.pages)) {
       return reply.code(400).send(errorBody('invalid_dashboard', 'Body must be a dashboard with a "pages" array'));
     }
-    await store.save(uuid, content, request.user!.username);
+    await store.save(uuid, withoutApiKeys(content), request.user!.username);
     audit(request, 'dashboard.save', { dashboard: { uuid, title: content.title } });
     return { uuid };
   });
@@ -298,6 +339,35 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
     if (!deleted) return reply.code(404).send(errorBody('not_found', 'Dashboard not found'));
     audit(request, 'dashboard.delete', { dashboard: { uuid } });
     return { uuid };
+  });
+
+  app.post('/api/text2cypher', async (request, reply) => {
+    // The generated query is run as an ad-hoc query, which only editors may do.
+    if (!requireEditor(request, reply, 'generate queries')) return reply;
+    if (!text2cypher) {
+      return reply.code(404).send(errorBody('not_configured', 'Text2Cypher is not configured on this server'));
+    }
+    const parsed = text2cypherBody.safeParse(request.body);
+    if (!parsed.success)
+      return reply.code(400).send(errorBody('invalid_request', parsed.error.issues.map((i) => i.message).join('; ')));
+    const body = parsed.data;
+    const database = body.database ?? config.neo4j.defaultDatabase;
+    if (!config.neo4j.databases.includes(database)) {
+      return deny(request, reply, `Database "${database}" is not available`);
+    }
+    const started = performance.now();
+    const auditBase = { database, question: body.question, reportType: body.reportType, context: body.context };
+    try {
+      const { query, attempts } = await text2cypher.translate({ ...body, database });
+      const durationMs = Math.round(performance.now() - started);
+      audit(request, 'text2cypher', { ...auditBase, outcome: 'ok', query, attempts, durationMs });
+      return { query, attempts, model: text2cypher.model, durationMs };
+    } catch (e) {
+      const err = e instanceof Text2CypherError ? e : new Text2CypherError((e as Error).message, 'translation_failed');
+      audit(request, 'text2cypher', { ...auditBase, outcome: 'error', errorCode: err.code, error: err.message });
+      const status = err.code === 'model_unavailable' ? 502 : err.code === 'schema_unavailable' ? 503 : 422;
+      return reply.code(status).send(errorBody(err.code, err.message, { lastAnswer: err.lastAnswer }));
+    }
   });
 
   app.post('/api/query', async (request, reply) => {

@@ -22,6 +22,18 @@ export interface BackendConfig {
   dashboardDatabase: string;
   limits: { maxRowLimit: number; defaultTimeoutSeconds: number; maxTimeoutSeconds: number };
   maps?: { tileUrl: string; tileAttribution: string; dataUrl: string };
+  /** Text2Cypher: whether the server has a language model configured, and which. */
+  text2cypher?: { enabled: boolean; model?: string };
+}
+
+export interface Text2CypherRequest {
+  question: string;
+  database?: string;
+  reportType?: string;
+  /** Earlier questions for the same report and the queries they produced. */
+  history?: { question: string; query: string }[];
+  examples?: { question: string; answer: string }[];
+  context?: { dashboard?: string; page?: number; report?: string };
 }
 
 export interface DashboardSummary {
@@ -110,6 +122,12 @@ export const api = {
     }),
   deleteDashboard: (uuid: string) =>
     request<{ uuid: string }>(`/api/dashboards/${encodeURIComponent(uuid)}`, { method: 'DELETE' }),
+  /** Asks the server's language model for a query answering the question (editors only). */
+  text2cypher: (req: Text2CypherRequest) =>
+    request<{ query: string; attempts: number; model: string; durationMs: number }>('/api/text2cypher', {
+      method: 'POST',
+      body: JSON.stringify(req),
+    }),
   logout: () => request<{ logoutUrl: string }>('/auth/logout', { method: 'POST', body: '{}' }),
 
   /** Runs a query and returns Neo4j driver Records, so existing chart code works unchanged. */

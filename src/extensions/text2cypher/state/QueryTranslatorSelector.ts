@@ -9,11 +9,6 @@ export const QUERY_TRANSLATOR_HISTORY_PREFIX = `${QUERY_TRANSLATOR_EXTENSION_NAM
 export const getSessionStorageHistoryKey = (pagenumber, cardId) => {
   return `${QUERY_TRANSLATOR_HISTORY_PREFIX}__${pagenumber}__${cardId}`;
 };
-/**
- * Returns a key for RW operations against the SessionStorage.
- */
-export const getModelClientSessionStorageKey = () => 'query_translator_model_client_tmp';
-
 const checkExtensionConfig = (state: any) => {
   return state?.dashboard?.extensions[QUERY_TRANSLATOR_EXTENSION_NAME];
 };
@@ -27,29 +22,6 @@ export const getLastMessages = (state: any) => {
   let lastMessages =
     checkExtensionConfig(state) && state.dashboard.extensions[QUERY_TRANSLATOR_EXTENSION_NAME].lastMessages;
   return lastMessages != undefined && lastMessages ? lastMessages : {};
-};
-
-export const getQueryTranslatorSettings = (state: any) => {
-  let clientSettings =
-    checkExtensionConfig(state) && state.dashboard.extensions[QUERY_TRANSLATOR_EXTENSION_NAME].settings;
-  return clientSettings != undefined && clientSettings ? clientSettings : {};
-};
-
-export const getModelProvider = (state: any) => {
-  let modelProvider =
-    checkExtensionConfig(state) && state.dashboard.extensions[QUERY_TRANSLATOR_EXTENSION_NAME].modelProvider;
-  return modelProvider != undefined && modelProvider ? modelProvider : '';
-};
-
-/**
- * The extension keeps, during one session, the client to connect to the model API.
- * The client is kept only during the session, so every refresh it is deleted.
- * @param state Current state of the session
- * @returns Current model client
- */
-export const getModelClient = (state: any) => {
-  let modelClient = getSessionStorageValue(state, getModelClientSessionStorageKey());
-  return modelClient != undefined && modelClient ? modelClient : undefined;
 };
 
 /**
@@ -77,11 +49,6 @@ export const getLastMessage = (state: any, pagenumber, id) => {
   let messages = getLastMessages(state);
   let lastMessage = messages[pagenumber] && messages[pagenumber][id];
   return lastMessage !== undefined ? lastMessage : '';
-};
-
-export const getApiKey = (state: any) => {
-  let settings = getQueryTranslatorSettings(state);
-  return settings.apiKey != undefined && settings.apiKey ? settings.apiKey : '';
 };
 
 /**

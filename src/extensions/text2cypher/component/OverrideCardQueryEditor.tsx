@@ -11,13 +11,14 @@ import debounce from 'lodash/debounce';
 import { updateLastMessage } from '../state/QueryTranslatorActions';
 import { createNotification } from '../../../application/ApplicationActions';
 import { getLastMessage, QUERY_TRANSLATOR_EXTENSION_NAME } from '../state/QueryTranslatorSelector';
-import { GPT_LOADING_ICON } from './LoadingIcon';
+import { TEXT2CYPHER_LOADING_ICON } from './LoadingIcon';
 import {
   deleteSessionStoragePrepopulationReportFunction,
   setSessionStoragePrepopulationReportFunction,
 } from '../../state/ExtensionActions';
 import { getPrepopulateReportExtension } from '../../state/ExtensionSelectors';
 import { docsUrl } from '../../../utils/docs';
+import { text2cypherAvailable } from '../util/Util';
 
 // TODO: right now if we change the database in the cardSelector, it should forgot the card history
 export const NeoOverrideCardQueryEditor = ({
@@ -67,6 +68,16 @@ export const NeoOverrideCardQueryEditor = ({
     />
   );
 
+  // Without a language model on the server, the query is written in Cypher only.
+  if (!text2cypherAvailable()) {
+    return (
+      <div>
+        {cypherEditor}
+        <div style={DEFAULT_CARD_SETTINGS_HELPER_TEXT_STYLE}>{reportTypes[reportType]?.helperText}</div>
+      </div>
+    );
+  }
+
   function updateEnglishQuestion(value) {
     debouncedEnglishQuestionUpdate(pagenumber, reportId, value);
     setEnglishQuestion(value);
@@ -115,7 +126,7 @@ export const NeoOverrideCardQueryEditor = ({
   return (
     <div>
       {runningTranslation ? (
-        <div style={{ height: 150, border: '1px dashed grey', position: 'relative' }}>{GPT_LOADING_ICON}</div>
+        <div style={{ height: 150, border: '1px dashed grey', position: 'relative' }}>{TEXT2CYPHER_LOADING_ICON}</div>
       ) : (
         <>
           <table style={{ marginBottom: 5, width: '100%' }}>
@@ -211,8 +222,8 @@ const mapStateToProps = (state, ownProps) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  translateQuery: (pagenumber, reportId, text, reportType, driver, onComplete, onError, onRetry) => {
-    dispatch(queryTranslationThunk(pagenumber, reportId, text, reportType, driver, onComplete, onError, onRetry));
+  translateQuery: (pagenumber, reportId, text, reportType, driver, onComplete, onError) => {
+    dispatch(queryTranslationThunk(pagenumber, reportId, text, reportType, driver, onComplete, onError));
   },
   updateEnglishQuery: (pagenumber, reportId, message) => {
     dispatch(updateLastMessage(message, pagenumber, reportId));

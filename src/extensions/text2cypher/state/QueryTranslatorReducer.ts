@@ -2,20 +2,11 @@
  * Reducers define changes to the application state when a given action
  */
 
-import {
-  SET_MODEL_PROVIDER,
-  SET_CLIENT_SETTINGS,
-  UPDATE_LAST_MESSAGE,
-  UPDATE_EXAMPLE,
-  DELETE_EXAMPLE,
-  ADD_EXAMPLE,
-} from './QueryTranslatorActions';
+import { UPDATE_LAST_MESSAGE, UPDATE_EXAMPLE, DELETE_EXAMPLE, ADD_EXAMPLE } from './QueryTranslatorActions';
 
+// The language model is configured on the server; dashboards keep only the questions and examples.
+// (Dashboards saved before may still hold a model provider and settings, which are ignored.)
 export const INITIAL_EXTENSION_STATE = {
-  modelProvider: '', // Name of the provider (defined in the config)
-  history: {}, // Objects that keeps, for every card, their history (to move to session store)
-  modelClient: '', // Object to connect with the model API (to move to session store)
-  settings: {}, // Settings needed by the client to operate
   lastMessages: {},
   examples: [], // User can pass down to the model different examples of QAs
 };
@@ -26,16 +17,6 @@ export const queryTranslatorReducer = (state = INITIAL_EXTENSION_STATE, action: 
   const { type, payload } = action;
 
   switch (type) {
-    case SET_MODEL_PROVIDER: {
-      const { modelProvider } = payload;
-      state = update(state, { modelProvider: modelProvider });
-      return state;
-    }
-    case SET_CLIENT_SETTINGS: {
-      const { settings } = payload;
-      state = update(state, { settings: settings });
-      return state;
-    }
     case UPDATE_LAST_MESSAGE: {
       const { message, pagenumber, cardId } = payload;
       let newLastMessages = { ...state.lastMessages };

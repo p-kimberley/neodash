@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { getModelExamples } from '../../state/QueryTranslatorSelector';
-import { Dialog, FilledButton } from '@neo4j-ndl/react';
+import { Dialog, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
 import ExampleEditorModal from './ExampleEditorModal';
 import ExampleDisplayTable from './ExampleDisplayTable';
 
@@ -25,27 +25,20 @@ const QueryTranslatorSettingsModelExamples = ({ handleCloseEditSolutions, exampl
   // Returns viewer or editor depending on exampleEditorIsOpen state
   if (!exampleEditorIsOpen) {
     return (
-      <Dialog
-        className='dialog-xl n-bg-neutral-bg-default ndl-theme-light'
-        isOpen={open}
-        onClose={handleCloseWithoutSave}
-      >
-        <Dialog.Header className='n-ml-2'>LLM Examples</Dialog.Header>
-        <Dialog.Content className='n-ml-2'>
-          You can define custom English to Cypher translation examples here. <br /> Adding your own examples will
-          improve the accuracy of translating English to Cypher in your dashboard.
-          <br />
+      <Dialog size='large' isOpen={open} onClose={handleCloseWithoutSave}>
+        <Dialog.Header>Example questions</Dialog.Header>
+        <Dialog.Content>
+          <p>
+            Questions with the queries that answer them, sent to the language model with every question asked in this
+            dashboard. Examples that use your data's labels and properties make its queries more accurate.
+          </p>
           <br />
           <ExampleDisplayTable handleEdit={handleEdit} />
-          <div>
-            <FilledButton className='n-float-left' onClick={handleAdd}>
-              Create New
-            </FilledButton>
-            <FilledButton className='n-float-right' onClick={handleCloseEditSolutions}>
-              Save
-            </FilledButton>
-          </div>
         </Dialog.Content>
+        <Dialog.Actions>
+          <OutlinedButton onClick={handleAdd}>Add example</OutlinedButton>
+          <FilledButton onClick={handleCloseEditSolutions}>Done</FilledButton>
+        </Dialog.Actions>
       </Dialog>
     );
   }

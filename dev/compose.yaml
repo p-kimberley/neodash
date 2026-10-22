@@ -95,10 +95,20 @@ services:
       OIDC_CLIENT_SECRET_FILE: /run/secrets/oidc_client_secret
       OIDC_ALLOW_INSECURE_HTTP: 'true'
       SESSION_SECRET_FILE: /run/secrets/session_secret
+      # Text2Cypher with the stand-in model below; point these at a real one (e.g. vLLM) to try it.
+      TEXT2CYPHER_BASE_URL: http://fake-llm:8000/v1
+      TEXT2CYPHER_MODEL: fake-cypher
     secrets:
       - neo4j_auth
       - session_secret
       - oidc_client_secret
+
+  # A stand-in for a language model (OpenAI-compatible API): fixed queries for the seeded data.
+  fake-llm:
+    image: node:22-alpine
+    command: ['node', '/app/server.mjs']
+    volumes:
+      - ./fake-llm/server.mjs:/app/server.mjs:ro
 
   # Unmodified NeoDash 2.4.11, for side-by-side comparison and as a
   # compatibility check: dashboards saved by either version must open in both.
