@@ -18,6 +18,7 @@ export default tseslint.config(
       'dev/e2e/report/**',
       'dev/e2e/test-results/**',
       'dev/e2e/node_modules/**',
+      'dev/e2e/.scratch/**',
     ],
   },
   js.configs.recommended,

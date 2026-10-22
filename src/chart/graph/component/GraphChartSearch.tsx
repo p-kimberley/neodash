@@ -14,13 +14,19 @@ const searchableText = (node: Node) =>
     .join('\u0000')
     .toLowerCase();
 
+export type SearchIndex = { id: string; text: string }[];
+
+/** Each node's searchable text, built once per graph rather than on every keystroke. */
+export const buildSearchIndex = (nodes: Node[]): SearchIndex =>
+  nodes.map((node) => ({ id: node.id, text: searchableText(node) }));
+
 /** IDs of the nodes matching a search, in display order; empty for an empty search. */
-export const findMatches = (nodes: Node[], text: string): string[] => {
+export const findMatches = (index: SearchIndex, text: string): string[] => {
   const query = text.trim().toLowerCase();
   if (!query) {
     return [];
   }
-  return nodes.filter((node) => searchableText(node).includes(query)).map((node) => node.id);
+  return index.filter((entry) => entry.text.includes(query)).map((entry) => entry.id);
 };
 
 /**

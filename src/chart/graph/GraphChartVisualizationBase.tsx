@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import chroma from 'chroma-js';
 import { executeActionRule, getRuleWithFieldPropertyName } from '../../extensions/advancedcharts/Utils';
 import { getTooltip } from './component/GraphChartTooltip';
@@ -9,10 +9,56 @@ const faded = (color?: string) => {
   return color && chroma.valid(color) ? chroma(color).alpha(0.12).css() : 'rgba(128, 128, 128, 0.12)';
 };
 
+// Accessors that read from the data only, defined once so their identity never changes.
+const linkWidthOf = (link: any) => link.width;
+const nodeSizeOf = (node: any) => node.size;
+const linkDashOf = (link: any) => (link.new ? [2, 1] : null);
+
 export const NeoGraphChartVisualizationBase = (props: GraphChartVisualizationProps) => {
   const fgRef: React.MutableRefObject<any> = useRef(undefined);
   const GraphComponent = props.config?.graphComponent;
-  if (!props.style.width || !props.style.height) {
+  const ready = Boolean(props.style.width && props.style.height);
+
+  // WebGL renderers: cap the pixel ratio (a 2x or 3x screen otherwise renders 4-9x the pixels).
+  const maxPixelRatio = props.config?.maxPixelRatio;
+  useEffect(() => {
+    const renderer = fgRef.current?.renderer?.();
+    if (renderer && maxPixelRatio) {
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxPixelRatio));
+    }
+  }, [GraphComponent, ready, maxPixelRatio]);
+
+  // Accessors keep their identity across re-renders: the graph re-applies every accessor that
+  // changes to every node and relationship.
+  // While searching, everything that isn't a match (or a relationship touching one) is dimmed.
+  const matches: Set<string> | undefined = props.interactivity.search?.matches;
+  const nodeColor = useCallback(
+    (node: any) => (matches && !matches.has(node.id) ? faded(node.color) : node.color),
+    [matches]
+  );
+  const linkColor = useCallback(
+    (link: any) =>
+      matches && !(matches.has(link.source?.id ?? link.source) || matches.has(link.target?.id ?? link.target))
+        ? faded(link.color)
+        : link.color,
+    [matches]
+  );
+  const showPropertiesOnHover = props.interactivity.showPropertiesOnHover;
+  const nodeLabel = useCallback(
+    (node: any) => (showPropertiesOnHover ? `<div>${getTooltip(node)}</div>` : ''),
+    [showPropertiesOnHover]
+  );
+  const linkLabel = useCallback(
+    (link: any) => (showPropertiesOnHover ? `<div>${getTooltip(link)}</div>` : ''),
+    [showPropertiesOnHover]
+  );
+  const linkPositionUpdate = props.config?.linkPositionUpdate;
+  const positionLinkLabel = useCallback(
+    (sprite, { start, end }, link) => linkPositionUpdate && linkPositionUpdate(sprite, { start, end }, link, fgRef),
+    [linkPositionUpdate]
+  );
+
+  if (!ready) {
     return <></>;
   }
   props.interactivity.zoomToFit = () => fgRef.current && fgRef.current.zoomToFit(400);
@@ -31,11 +77,8 @@ export const NeoGraphChartVisualizationBase = (props: GraphChartVisualizationPro
       graph.cameraPosition({ x: node.x * ratio, y: node.y * ratio, z: node.z * ratio }, node, 800);
     }
   };
-  // While searching, everything that isn't a match (or a relationship touching one) is dimmed.
-  const matches: Set<string> | undefined = props.interactivity.search?.matches;
-  const searching = matches !== undefined;
-  const linkMatches = (link: any) =>
-    matches.has(link.source?.id ?? link.source) || matches.has(link.target?.id ?? link.target);
+  // Large 3D graphs leave out relationship arrows and particles (one mesh each).
+  const hideLinkDecorations = props.config?.hideLinkDecorations;
   return (
     <GraphComponent
       ref={fgRef}
@@ -43,16 +86,16 @@ export const NeoGraphChartVisualizationBase = (props: GraphChartVisualizationPro
       height={props.style.height}
       linkCurvature='curvature'
       backgroundColor={props.style.backgroundColor}
-      linkDirectionalArrowLength={props.style.linkDirectionalArrowLength}
+      linkDirectionalArrowLength={hideLinkDecorations ? 0 : props.style.linkDirectionalArrowLength}
       linkDirectionalArrowRelPos={1}
       dagMode={props.engine.layout}
       dagLevelDistance={props.engine.graphDepthSep}
-      linkWidth={(link: any) => link.width}
-      linkLabel={(link: any) => (props.interactivity.showPropertiesOnHover ? `<div>${getTooltip(link)}</div>` : '')}
-      nodeLabel={(node: any) => (props.interactivity.showPropertiesOnHover ? `<div>${getTooltip(node)}</div>` : '')}
-      nodeVal={(node: any) => node.size}
-      nodeColor={(node: any) => (searching && !matches.has(node.id) ? faded(node.color) : node.color)}
-      linkColor={(link: any) => (searching && !linkMatches(link) ? faded(link.color) : link.color)}
+      linkWidth={linkWidthOf}
+      linkLabel={linkLabel}
+      nodeLabel={nodeLabel}
+      nodeVal={nodeSizeOf}
+      nodeColor={nodeColor}
+      linkColor={linkColor}
       onNodeClick={(item, event) => {
         props.interactivity.setClickPosition({ x: event.clientX, y: event.clientY });
         let rules = getRuleWithFieldPropertyName(item, props.extensions.actionsRules, 'onNodeClick', 'labels');
@@ -71,8 +114,8 @@ export const NeoGraphChartVisualizationBase = (props: GraphChartVisualizationPro
       onLinkRightClick={(link, event) => props.interactivity.onRelationshipRightClick(link, event)}
       onBackgroundClick={() => props.interactivity.onNodeClick(undefined)}
       onBackgroundRightClick={() => props.interactivity.onNodeClick(undefined)}
-      linkLineDash={(link) => (link.new ? [2, 1] : null)}
-      linkDirectionalParticles={props.style.linkDirectionalParticles}
+      linkLineDash={linkDashOf}
+      linkDirectionalParticles={hideLinkDecorations ? 0 : props.style.linkDirectionalParticles}
       linkDirectionalParticleSpeed={props.style.linkDirectionalParticleSpeed}
       cooldownTicks={props.engine.cooldownTicks}
       onEngineStop={() => {
@@ -118,9 +161,7 @@ export const NeoGraphChartVisualizationBase = (props: GraphChartVisualizationPro
       nodeThreeObject={props.config?.nodeThreeObject}
       linkThreeObjectExtend={props.config?.linkThreeObjectExtend}
       linkThreeObject={props.config?.linkThreeObject}
-      linkPositionUpdate={(sprite, { start, end }, link) =>
-        props.config?.linkPositionUpdate(sprite, { start, end }, link, fgRef)
-      }
+      linkPositionUpdate={linkPositionUpdate ? positionLinkLabel : undefined}
       // Data to populate graph
       graphData={props.style.width ? { nodes: props.data.nodes, links: props.data.links } : { nodes: [], links: [] }}
     />

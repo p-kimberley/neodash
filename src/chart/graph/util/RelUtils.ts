@@ -1,3 +1,4 @@
+import { MIN_READABLE_LABEL_PX } from './NodeUtils';
 export enum Direction {
   Incoming,
   Outgoing,
@@ -61,9 +62,19 @@ export function getCurvature(index, total) {
 
 export const selfLoopRotationDegrees = 45;
 
-export const generateRelCanvasObject = (link: any, ctx: any, relLabelFontSize: any, relLabelColor: any) => {
+export const generateRelCanvasObject = (
+  link: any,
+  ctx: any,
+  relLabelFontSize: any,
+  relLabelColor: any,
+  globalScale = 1
+) => {
   const label = link.properties.name || link.type || link.id;
   const fontSize = relLabelFontSize;
+  // Too small to read at this zoom.
+  if (fontSize * globalScale < MIN_READABLE_LABEL_PX) {
+    return;
+  }
   const { source } = link;
   const { target } = link;
   ctx.font = `${fontSize}px Sans-Serif`;

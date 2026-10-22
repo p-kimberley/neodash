@@ -26,7 +26,8 @@ export const NeoGraphChartVisualization2D = (props: GraphChartVisualizationProps
         props.style.defaultNodeSize,
         props.style.nodeLabelColor,
         props.extensions.styleRules,
-        props.engine.selection
+        props.engine.selection,
+        globalScale
       );
       const search = props.interactivity.search;
       if (search && search.matches.has(node.id)) {
@@ -39,8 +40,8 @@ export const NeoGraphChartVisualization2D = (props: GraphChartVisualizationProps
       }
     },
     linkCanvasObjectMode: () => 'after',
-    linkCanvasObject: (link: any, ctx: any) =>
-      generateRelCanvasObject(link, ctx, props.style.relLabelFontSize, props.style.relLabelColor),
+    linkCanvasObject: (link: any, ctx: any, globalScale: number) =>
+      generateRelCanvasObject(link, ctx, props.style.relLabelFontSize, props.style.relLabelColor, globalScale),
   };
   const props2d = { ...props, config: config2d };
   return <NeoGraphChartVisualizationBase {...props2d} />;

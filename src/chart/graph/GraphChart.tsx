@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import useDimensions from 'react-cool-dimensions';
 import { ChartProps } from '../Chart';
 import { NeoGraphChartInfoPopup } from './component/GraphChartInfoPopup';
-import { NeoGraphChartSearch, findMatches } from './component/GraphChartSearch';
+import { NeoGraphChartSearch, buildSearchIndex, findMatches } from './component/GraphChartSearch';
 import { NeoGraphChartVisualization3D } from '../../extensions/advancedcharts/chart/graph3d/GraphChartVisualization3D';
 import { NeoGraphChartVisualization2D } from './GraphChartVisualization2D';
 import { NeoGraphChartDeepLinkButton } from './component/button/GraphChartDeepLinkButton';
@@ -35,6 +35,7 @@ export interface GraphChartProps extends ChartProps {
 }
 
 const DEFAULT_VISUALIZATION_COMPONENT = NeoGraphChartVisualization2D;
+const SEARCH_DEBOUNCE_MS = 150;
 
 type GraphMode = '2d' | '3d';
 const MODE_STORAGE_PREFIX = 'neodash.graph.mode.';
@@ -47,6 +48,22 @@ const readStoredMode = (reportId?: string): GraphMode | undefined => {
   } catch (e) {
     return undefined;
   }
+};
+
+let webglSupport: boolean | undefined;
+/** Whether this browser can render WebGL (3D graphs need it); checked once. */
+const supportsWebGL = (): boolean => {
+  if (webglSupport === undefined) {
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = (canvas.getContext('webgl2') || canvas.getContext('webgl')) as WebGLRenderingContext | null;
+      webglSupport = Boolean(gl);
+      gl?.getExtension('WEBGL_lose_context')?.loseContext();
+    } catch (e) {
+      webglSupport = false;
+    }
+  }
+  return webglSupport;
 };
 
 const storeMode = (reportId: string | undefined, mode: GraphMode, reportDefault: GraphMode) => {
@@ -105,7 +122,10 @@ const NeoGraphChart = (props: GraphChartProps) => {
   // 2D/3D view: the report type's default (a "Graph (3D)" report starts in 3D), unless this browser
   // switched it.
   const reportMode: GraphMode = props.component === NeoGraphChartVisualization3D ? '3d' : '2d';
-  const [mode, setMode] = useState<GraphMode>(() => readStoredMode(props.id) ?? reportMode);
+  const [chosenMode, setMode] = useState<GraphMode>(() => readStoredMode(props.id) ?? reportMode);
+  // Without WebGL, graphs are drawn in 2D (on a canvas).
+  const webgl = useMemo(supportsWebGL, []);
+  const mode: GraphMode = webgl ? chosenMode : '2d';
   const Visualization = mode === '3d' ? NeoGraphChartVisualization3D : DEFAULT_VISUALIZATION_COMPONENT;
   const [searchText, setSearchText] = useState('');
   const [searchIndex, setSearchIndex] = useState(0);
@@ -179,7 +199,15 @@ const NeoGraphChart = (props: GraphChartProps) => {
   });
 
   const pageNames = getPageNumbersAndNamesList();
-  const searchMatches = useMemo(() => findMatches(data.nodes, searchText), [data.nodes, searchText]);
+  // Highlighting follows typing after a short pause, so a fast typist doesn't restyle the whole
+  // graph on every keystroke.
+  const [searchQuery, setSearchQuery] = useState('');
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchQuery(searchText), searchText ? SEARCH_DEBOUNCE_MS : 0);
+    return () => clearTimeout(timer);
+  }, [searchText]);
+  const nodeTextIndex = useMemo(() => buildSearchIndex(data.nodes), [data.nodes]);
+  const searchMatches = useMemo(() => findMatches(nodeTextIndex, searchQuery), [nodeTextIndex, searchQuery]);
   const searchMatchSet = useMemo(() => new Set(searchMatches), [searchMatches]);
   useEffect(() => setSearchIndex(0), [searchMatches]);
   const chartProps: GraphChartVisualizationProps = {
@@ -261,7 +289,7 @@ const NeoGraphChart = (props: GraphChartProps) => {
       setContextMenuOpen: setContextMenuOpen,
       clickPosition: clickPosition,
       setClickPosition: setClickPosition,
-      search: searchText.trim() ? { matches: searchMatchSet, current: searchMatches[searchIndex] } : undefined,
+      search: searchQuery.trim() ? { matches: searchMatchSet, current: searchMatches[searchIndex] } : undefined,
       createNotification: props.createNotification,
     },
     extensions: {
@@ -272,17 +300,22 @@ const NeoGraphChart = (props: GraphChartProps) => {
 
   // Steps through the search matches, centring the view on each.
   const stepSearch = (direction: 1 | -1) => {
-    if (searchMatches.length === 0) {
+    // Enter right after typing: use the text as typed, not the debounced query.
+    if (searchQuery !== searchText) {
+      setSearchQuery(searchText);
+    }
+    const matches = searchQuery === searchText ? searchMatches : findMatches(nodeTextIndex, searchText);
+    if (matches.length === 0) {
       return;
     }
     let step: number = direction;
     if (!searchFocused) {
       step = direction === 1 ? 0 : -1;
     }
-    const index = (searchIndex + step + searchMatches.length) % searchMatches.length;
+    const index = (searchIndex + step + matches.length) % matches.length;
     setSearchIndex(index);
     setSearchFocused(true);
-    const node = data.nodes.find((n) => n.id === searchMatches[index]);
+    const node = data.nodes.find((n) => n.id === matches[index]);
     chartProps.interactivity.focusNode && chartProps.interactivity.focusNode(node);
   };
 
@@ -312,9 +345,17 @@ const NeoGraphChart = (props: GraphChartProps) => {
         >
           <GraphChartContextMenu {...chartProps} />
           <NeoGraphChartFitViewButton {...chartProps} />
-          <CleanIconButton description={mode === '3d' ? 'Show in 2D' : 'Show in 3D'} size='small' onClick={toggleMode}>
-            {mode === '3d' ? <CubeTransparentIconOutline /> : <CubeIconOutline />}
-          </CleanIconButton>
+          {webgl ? (
+            <CleanIconButton
+              description={mode === '3d' ? 'Show in 2D' : 'Show in 3D'}
+              size='small'
+              onClick={toggleMode}
+            >
+              {mode === '3d' ? <CubeTransparentIconOutline /> : <CubeIconOutline />}
+            </CleanIconButton>
+          ) : (
+            <></>
+          )}
           {/* Frozen layouts are 2D only. */}
           {lockable && settings.lockable && mode === '2d' ? <NeoGraphChartLockButton {...chartProps} /> : <></>}
           {settings.drilldownLink ? <NeoGraphChartDeepLinkButton {...chartProps} /> : <></>}
@@ -329,6 +370,13 @@ const NeoGraphChart = (props: GraphChartProps) => {
           current={searchIndex}
           onStep={stepSearch}
         />
+        {!webgl && reportMode === '3d' ? (
+          <div className='nd-graph-notice' role='status'>
+            3D needs WebGL, which this browser doesn't provide: showing the graph in 2D.
+          </div>
+        ) : (
+          <></>
+        )}
         <Visualization {...chartProps} />
         <NeoGraphChartInfoPopup {...chartProps} />
         {settings.allowDownload && props.records && props.records.length > 0 ? (

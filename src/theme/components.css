@@ -784,6 +784,21 @@ body {
 
 /* ---------- Graph reports: search box and properties popup ---------- */
 
+/* Shown instead of a 3D graph when the browser has no WebGL. */
+.nd-graph-notice {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  max-width: 50%;
+  padding: 4px 8px;
+  border: 1px solid var(--nd-border);
+  border-radius: 6px;
+  background: var(--nd-surface-raised);
+  color: var(--nd-text-secondary);
+  font-size: var(--nd-text-xs);
+}
+
 .nd-graph-search {
   position: absolute;
   top: 8px;

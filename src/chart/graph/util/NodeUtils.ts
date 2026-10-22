@@ -46,6 +46,22 @@ export const getEntityHeader = (entity: any, selection: any) => {
   return entity.labels?.join(', ') || `${entity.type} ${getRelPatternString(entity, selection)}`;
 };
 
+/** Labels smaller than this on screen (CSS pixels) can't be read, so they aren't drawn. */
+export const MIN_READABLE_LABEL_PX = 3;
+
+// Each node's label colour from the style rules, worked out once per node and rule set rather than
+// on every frame.
+const labelColors = new WeakMap<object, { rules: any; base: any; color: string }>();
+const labelColorOf = (node: any, base: any, styleRules: any) => {
+  const cached = labelColors.get(node);
+  if (cached && cached.rules === styleRules && cached.base === base) {
+    return cached.color;
+  }
+  const color = evaluateRulesOnNode(node, 'node label color', base, styleRules);
+  labelColors.set(node, { rules: styleRules, base, color });
+  return color;
+};
+
 export const drawDataURIOnCanvas = (node, strDataURI, canvas, defaultNodeSize) => {
   let img = new Image();
   let prop = defaultNodeSize * 6;
@@ -63,17 +79,20 @@ export const generateNodeCanvasObject = (
   defaultNodeSize: any,
   nodeLabelColor: any,
   styleRules: any,
-  selection: any
+  selection: any,
+  globalScale = 1
 ) => {
   if (icons && icons[node.mainLabel]) {
     drawDataURIOnCanvas(node, icons[node.mainLabel], ctx, defaultNodeSize);
   } else {
     const label = selection && selection[node.mainLabel] ? getNodeLabel(selection, node) : '';
     const fontSize = nodeLabelFontSize;
-    ctx.font = `${fontSize}px Sans-Serif`;
-    ctx.fillStyle = evaluateRulesOnNode(node, 'node label color', nodeLabelColor, styleRules);
-    ctx.textAlign = 'center';
-    ctx.fillText(label, node.x ? node.x : 0, node.y ? node.y + 1 : 0);
+    if (label !== '' && fontSize * globalScale >= MIN_READABLE_LABEL_PX) {
+      ctx.font = `${fontSize}px Sans-Serif`;
+      ctx.fillStyle = labelColorOf(node, nodeLabelColor, styleRules);
+      ctx.textAlign = 'center';
+      ctx.fillText(label, node.x ? node.x : 0, node.y ? node.y + 1 : 0);
+    }
     if (frozen && !node.fx && !node.fy && nodePositions) {
       node.fx = node.x;
       node.fy = node.y;

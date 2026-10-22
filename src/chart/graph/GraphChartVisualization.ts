@@ -153,10 +153,14 @@ export interface GraphChartVisualizationProps {
   config?: {
     graphComponent: any;
     cooldownAfterengineStop: number;
+    /** WebGL only: the highest device pixel ratio to render at. */
+    maxPixelRatio?: number;
+    /** Leave out relationship arrows and particles (large 3D graphs). */
+    hideLinkDecorations?: boolean;
     nodeCanvasObjectMode?: () => void;
-    nodeCanvasObject?: (node: any, ctx: any) => void;
+    nodeCanvasObject?: (node: any, ctx: any, globalScale: number) => void;
     linkCanvasObjectMode?: () => void;
-    linkCanvasObject?: (link: any, ctx: any) => void;
+    linkCanvasObject?: (link: any, ctx: any, globalScale: number) => void;
     nodeThreeObjectExtend?: boolean;
     nodeThreeObject?: (node) => void;
     linkThreeObjectExtend?: boolean;
