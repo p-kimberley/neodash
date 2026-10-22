@@ -228,3 +228,24 @@ describe('describing a query in plain English', () => {
     expect(messages[1]).toEqual({ role: 'user', content: 'MATCH (m:Movie) RETURN m ORDER BY m.released DESC LIMIT 10' });
   });
 });
+
+describe('model parameters', () => {
+  it('leaves out a sampling parameter the model refuses, from then on', async () => {
+    const { fetchImpl, requests } = fakeModel([
+      { status: 400, body: { error: { message: '`temperature` is deprecated for this model.' } } },
+      'The newest movies.',
+      'All movies.',
+    ]);
+    const t = stubbed(fetchImpl, /^MATCH/);
+    expect(await t.describe('neo4j', 'MATCH (m:Movie) RETURN m')).toBe('The newest movies.');
+    expect(requests[0]!.body.temperature).toBe(0);
+    expect(requests[1]!.body).not.toHaveProperty('temperature');
+    await t.describe('neo4j', 'MATCH (m:Movie) RETURN m');
+    expect(requests[2]!.body).not.toHaveProperty('temperature');
+  });
+
+  it('still reports other errors', async () => {
+    const { fetchImpl } = fakeModel([{ status: 400, body: { error: { message: 'model not found' } } }]);
+    await expect(stubbed(fetchImpl, /^MATCH/).describe('neo4j', 'MATCH (n) RETURN n')).rejects.toThrow(/model not found/);
+  });
+});

@@ -170,6 +170,8 @@ interface SchemaParts {
 
 export class Text2Cypher {
   private schemas = new Map<string, { text: string; names: SchemaNames; at: number }>();
+  /** Request fields the model has refused (e.g. temperature), left out of later requests. */
+  private unsupported = new Set<string>();
 
   constructor(
     private readonly config: Text2CypherConfig,
@@ -290,31 +292,42 @@ export class Text2Cypher {
   async chat(messages: ChatMessage[], extra: Record<string, unknown> = {}): Promise<string> {
     const url = `${this.config.baseUrl.replace(/\/+$/, '')}/chat/completions`;
     let response: Response;
-    try {
-      response = await this.fetchImpl(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(this.config.apiKey ? { Authorization: `Bearer ${this.config.apiKey}` } : {}),
-        },
-        body: JSON.stringify({
-          model: this.config.model,
-          messages,
-          temperature: this.config.temperature,
-          ...(this.config.maxTokens ? { max_tokens: this.config.maxTokens } : {}),
-          ...extra,
-        }),
-        signal: AbortSignal.timeout(this.config.timeoutSeconds * 1000),
-      });
-    } catch (e) {
-      throw new Text2CypherError(
-        `The language model could not be reached: ${(e as Error).message}`,
-        'model_unavailable'
-      );
-    }
-    const body: any = await response.json().catch(() => ({}));
-    if (!response.ok) {
+    let body: any;
+    for (;;) {
+      try {
+        response = await this.fetchImpl(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(this.config.apiKey ? { Authorization: `Bearer ${this.config.apiKey}` } : {}),
+          },
+          body: JSON.stringify({
+            model: this.config.model,
+            messages,
+            ...(this.unsupported.has('temperature') ? {} : { temperature: this.config.temperature }),
+            ...(this.config.maxTokens && !this.unsupported.has('max_tokens') ? { max_tokens: this.config.maxTokens } : {}),
+            ...extra,
+          }),
+          signal: AbortSignal.timeout(this.config.timeoutSeconds * 1000),
+        });
+      } catch (e) {
+        throw new Text2CypherError(
+          `The language model could not be reached: ${(e as Error).message}`,
+          'model_unavailable'
+        );
+      }
+      body = await response.json().catch(() => ({}));
+      if (response.ok) break;
       const detail = body?.error?.message ?? body?.message ?? `status ${response.status}`;
+      // Some models refuse a sampling parameter (e.g. "temperature is deprecated for this model"): leave
+      // it out from now on and ask again.
+      const refused = ['temperature', 'max_tokens'].find(
+        (p) => !this.unsupported.has(p) && new RegExp(`\\b${p}\\b`, 'i').test(`${detail}`) && response.status < 500
+      );
+      if (refused) {
+        this.unsupported.add(refused);
+        continue;
+      }
       throw new Text2CypherError(`The language model returned an error: ${detail}`, 'model_unavailable');
     }
     const content = body?.choices?.[0]?.message?.content;
