@@ -168,7 +168,7 @@ test('report description renders markdown', async ({ page }) => {
   try {
     await openPage(page, uuid);
     await page.getByLabel('details').first().click();
-    const dialog = page.locator('.MuiDialog-paper');
+    const dialog = page.locator('.nd-report-description');
     await expect(dialog.locator('td')).toHaveText(['Revenue', '10']);
     await expect(dialog.locator('a').first()).toHaveAttribute('target', '_blank');
     // A <base target> would retarget every link on the page while the dialog is open.
@@ -200,7 +200,7 @@ test('graph: right-click menu, nested submenu and inspect', async ({ page }) => 
   await graph.getByLabel('fit graph to view').click();
   await page.waitForTimeout(800);
   const box = await graph.locator('canvas').first().boundingBox();
-  const menu = page.locator('#basic-menu');
+  const menu = page.locator('.nd-graph-context-menu');
   let opened = false;
   for (let y = box.y + 30; y < box.y + box.height - 30 && !opened; y += 12) {
     for (let x = box.x + 30; x < box.x + box.width - 30 && !opened; x += 12) {
@@ -210,10 +210,17 @@ test('graph: right-click menu, nested submenu and inspect', async ({ page }) => 
   }
   expect(opened, 'no context menu opened').toBe(true);
   await expect(menu.getByText('Inspect')).toBeVisible();
-  await menu.getByText('Expand...').hover();
-  // The submenu is its own popover, listing the node's relationship types.
-  await expect(page.locator('.MuiPopover-paper table:visible').first()).toBeVisible();
-  await menu.getByText('Inspect').click();
+  await menu.getByRole('menuitem', { name: 'Expand...' }).hover();
+  // The submenu lists the node's relationship types with their counts (loaded as the menu opened).
+  const submenu = page.locator('.nd-graph-context-submenu');
+  await expect(submenu.getByRole('menuitem').first()).toBeVisible();
+  await expect(submenu.getByRole('menuitem', { name: 'No relationships...' })).toHaveCount(0);
+  // Moving back to the menu closes the submenu. (With the mouse: while the submenu is open, the
+  // parent's items carry Floating UI's focus-guard marker, which Playwright's actionability checks trip on.)
+  const inspect = await menu.getByRole('menuitem', { name: 'Inspect' }).boundingBox();
+  await page.mouse.move(inspect.x + 20, inspect.y + inspect.height / 2, { steps: 8 });
+  await expect(submenu).toHaveCount(0);
+  await page.mouse.click(inspect.x + 20, inspect.y + inspect.height / 2);
   await expect(page.locator('.nd-graph-info')).toBeVisible();
   await expectNoErrors(page, errors);
 });

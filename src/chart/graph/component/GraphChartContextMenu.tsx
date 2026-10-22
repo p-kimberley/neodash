@@ -1,10 +1,7 @@
 import * as React from 'react';
-import MenuItem from '@mui/material/MenuItem';
 import { GraphChartVisualizationProps } from '../GraphChartVisualization';
-import { Card, CardHeader } from '@mui/material';
-import { CleanIconButton } from '@neo4j-ndl/react';
-import { MagnifyingGlassCircleIconOutline, PencilIconOutline, XMarkIconOutline } from '@neo4j-ndl/react/icons';
-import { NestedMenuItem, IconMenuItem } from 'mui-nested-menu';
+import { Menu } from '@neo4j-ndl/react';
+import { MagnifyingGlassCircleIconOutline, PencilIconOutline } from '@neo4j-ndl/react/icons';
 import { RenderNode, RenderNodeChip, RenderRelationshipChip } from '../../../report/ReportRecordProcessing';
 import { getNodeLabel } from '../util/NodeUtils';
 import { EditAction, EditType, GraphChartEditModal } from './GraphChartEditModal';
@@ -23,170 +20,130 @@ export const GraphChartContextMenu = (props: GraphChartVisualizationProps) => {
   const [editableEntityType, setEditableEntityType] = React.useState(EditType.Node);
   const [action, setAction] = React.useState(EditAction.Create);
   const [neighbourRelCounts, setNeighbourRelCounts] = React.useState([]);
+  // A zero-size element at the click, which the menu is placed against.
+  const [anchor, setAnchor] = React.useState<HTMLDivElement | null>(null);
+  const { contextMenuOpen, selectedEntity, clickPosition } = props.interactivity;
   const handleClose = () => {
     props.interactivity.setContextMenuOpen(false);
   };
   const dialogProps = { ...props, selectedNode: editableEntity, dialogOpen: dialogOpen, setDialogOpen: setDialogOpen };
-  const expandable = props.interactivity.selectedEntity && props.interactivity.selectedEntity.labels !== undefined;
-  const [cachedNeighbours, setCachedNeighbours] = React.useState(false);
-  // Clear neighbour cache when selection changes.
-  useEffect(() => {
-    setCachedNeighbours(false);
-  }, [props.interactivity.selectedEntity]);
+  const expandable = selectedEntity && selectedEntity.labels !== undefined;
+  const exploring = props.interactivity.enableExploration && expandable;
 
-  const menu = (
-    <div
-      className='n-absolute n-z-modal'
-      style={{
-        top: props.interactivity.clickPosition.y,
-        left: props.interactivity.clickPosition.x,
-      }}
-    >
-      <Card id='basic-menu' className='nd-floating-menu'>
-        <CardHeader
-          className='-n-mx-1'
-          style={{ color: 'var(--nd-text)' }}
-          action={
-            <CleanIconButton description='Close' className='n-p-1 n-ml-5 n-mt-1' onClick={handleClose}>
-              <XMarkIconOutline />
-            </CleanIconButton>
-          }
-          titleTypographyProps={{ variant: 'h6' }}
-          title={
-            props.interactivity.selectedEntity
-              ? expandable
-                ? props.interactivity.selectedEntity.labels.join(', ')
-                : props.interactivity.selectedEntity.type
-              : ''
-          }
-        />
-        <IconMenuItem
-          rightIcon={<MagnifyingGlassCircleIconOutline className='btn-icon-base-r' />}
-          label='Inspect'
+  // The neighbour counts for "Expand..." load as the menu opens, so they're ready in the submenu.
+  useEffect(() => {
+    setNeighbourRelCounts([]);
+    if (!contextMenuOpen || !exploring) {
+      return;
+    }
+    const id = selectedEntity?.id;
+    // Virtual relationships do not have any neighbours
+    if (id < 0) {
+      return;
+    }
+    handleGetNodeRelTypes(id, props.engine, (records) =>
+      setNeighbourRelCounts(mergeDatabaseStatCountsWithCountsInView(id, records, props.data.links))
+    );
+  }, [contextMenuOpen, selectedEntity]);
+
+  const title = selectedEntity ? (expandable ? selectedEntity.labels.join(', ') : selectedEntity.type) : '';
+
+  return (
+    <>
+      <GraphChartEditModal type={editableEntityType} action={action} {...dialogProps} />
+      {contextMenuOpen
+        ? createPortal(
+            <div
+              ref={setAnchor}
+              aria-hidden='true'
+              style={{ position: 'fixed', top: clickPosition.y, left: clickPosition.x, width: 0, height: 0 }}
+            />,
+            document.body
+          )
+        : null}
+      <Menu
+        anchorRef={{ current: anchor }}
+        isOpen={contextMenuOpen && anchor !== null}
+        onClose={handleClose}
+        placement='bottom-start-top-start'
+        minWidth={220}
+        className='nd-graph-context-menu'
+      >
+        <Menu.CategoryItem>{title}</Menu.CategoryItem>
+        <Menu.Item
+          title='Inspect'
+          leadingVisual={<MagnifyingGlassCircleIconOutline />}
           onClick={() => {
             props.interactivity.setContextMenuOpen(false);
             props.interactivity.setPropertyInspectorOpen(true);
           }}
-        ></IconMenuItem>
+        />
         {props.interactivity.enableEditing ? (
-          <IconMenuItem
-            rightIcon={<PencilIconOutline className='btn-icon-base-r' />}
-            label='Edit'
+          <Menu.Item
+            title='Edit'
+            leadingVisual={<PencilIconOutline />}
             onClick={() => {
               setEditableEntityType(expandable ? EditType.Node : EditType.Relationship);
               setAction(EditAction.Edit);
               props.interactivity.setContextMenuOpen(false);
               setDialogOpen(true);
             }}
-          ></IconMenuItem>
+          />
         ) : (
           <></>
         )}
-
-        {props.interactivity.enableExploration && expandable ? (
-          <NestedMenuItem
-            label='Expand...'
-            nonce={undefined}
-            parentMenuOpen={true}
-            onMouseOver={() => {
-              if (!cachedNeighbours) {
-                setCachedNeighbours(true);
-                const id = props.interactivity.selectedEntity?.id;
-                // Virtual relationships do not have any neighbours
-                if (id < 0) {
-                  setNeighbourRelCounts([]);
-                  return;
-                }
-                handleGetNodeRelTypes(id, props.engine, (records) =>
-                  setNeighbourRelCounts(mergeDatabaseStatCountsWithCountsInView(id, records, props.data.links))
-                );
-              }
-            }}
-          >
-            <div style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'hidden' }}>
-              <table>
-                <tbody>
-                  {neighbourRelCounts.length == 0 ? (
-                    <tr key={'ctxMenuItemTr1Default'}>
-                      <td style={{ paddingLeft: 15, minWidth: '250px' }}> No relationships...</td>
-                    </tr>
-                  ) : (
-                    <></>
-                  )}
-                  {neighbourRelCounts.length > 0 &&
-                    neighbourRelCounts.map((item, index) => {
-                      const dir = item[1] == 'any' ? undefined : item[1] == 'out';
-                      return (
-                        <tr key={`ctxMenuItemTr1-${index}`}>
-                          <MenuItem
-                            key={`ctxMenuItem1-${index}`}
-                            onClick={() => {
-                              props.interactivity.setContextMenuOpen(false);
-                              handleExpand(props.interactivity.selectedEntity.id, item[0], item[1], props);
-                              setDialogOpen(false);
-                              setCachedNeighbours(false);
-                            }}
-                          >
-                            <td style={{ minWidth: '250px', overflow: 'hidden' }}>
-                              {RenderNodeChip(props.interactivity.selectedEntity.labels, '#fff', '1px solid lightgrey')}
-                              &nbsp;
-                              {RenderRelationshipChip(item[0], dir, '#dedede')}
-                              &nbsp;
-                              {RenderNodeChip('...', '#fff', '1px solid lightgrey')}
-                            </td>
-                            <td style={{ width: 'auto', marginLeft: '15px' }}>{item[2]}</td>
-                          </MenuItem>
-                        </tr>
-                      );
-                    })}
-                </tbody>
-              </table>
-            </div>
-          </NestedMenuItem>
+        {exploring ? (
+          <Menu title='Expand...' className='nd-graph-context-submenu'>
+            {neighbourRelCounts.length == 0 ? <Menu.Item title='No relationships...' isDisabled /> : <></>}
+            {neighbourRelCounts.map((item, index) => {
+              const dir = item[1] == 'any' ? undefined : item[1] == 'out';
+              return (
+                <Menu.Item
+                  key={`expand-${index}`}
+                  title={
+                    <span className='nd-graph-context-path'>
+                      {RenderNodeChip(selectedEntity.labels)}
+                      {RenderRelationshipChip(item[0], dir)}
+                      {RenderNodeChip('...')}
+                    </span>
+                  }
+                  trailingContent={item[2]}
+                  onClick={() => {
+                    props.interactivity.setContextMenuOpen(false);
+                    handleExpand(selectedEntity.id, item[0], item[1], props);
+                    setDialogOpen(false);
+                  }}
+                />
+              );
+            })}
+          </Menu>
         ) : (
           <></>
         )}
-
         {props.interactivity.enableEditing && expandable ? (
-          <NestedMenuItem label='Create relationship...' nonce={undefined} parentMenuOpen={true}>
-            <div style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'hidden' }}>
-              <table>
-                <tbody>
-                  {props.data &&
-                    props.data.nodes.map((node, index) => (
-                      <tr key={`ctxMenuItemTr2-${index}`}>
-                        <MenuItem
-                          key={`ctxMenuItem2-${index}`}
-                          onClick={() => {
-                            setEditableEntityType(EditType.Relationship);
-                            setAction(EditAction.Create);
-                            setEditableEntity(node);
-                            props.interactivity.setContextMenuOpen(false);
-                            setDialogOpen(true);
-                          }}
-                        >
-                          <td style={{ width: '150px', overflow: 'hidden' }}>{RenderNode(node, false)}</td>
-                          <td style={{ width: 'auto', marginLeft: '15px' }}>
-                            {props.engine.selection[node.mainLabel] ? getNodeLabel(props.engine.selection, node) : ''}
-                          </td>
-                        </MenuItem>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          </NestedMenuItem>
+          <Menu title='Create relationship...' className='nd-graph-context-submenu'>
+            {props.data &&
+              props.data.nodes.map((node, index) => (
+                <Menu.Item
+                  key={`create-${index}`}
+                  title={RenderNode(node, false)}
+                  trailingContent={
+                    props.engine.selection[node.mainLabel] ? getNodeLabel(props.engine.selection, node) : ''
+                  }
+                  onClick={() => {
+                    setEditableEntityType(EditType.Relationship);
+                    setAction(EditAction.Create);
+                    setEditableEntity(node);
+                    props.interactivity.setContextMenuOpen(false);
+                    setDialogOpen(true);
+                  }}
+                />
+              ))}
+          </Menu>
         ) : (
           <></>
         )}
-      </Card>
-    </div>
-  );
-
-  return (
-    <>
-      <GraphChartEditModal type={editableEntityType} action={action} {...dialogProps} />
-      {props.interactivity.contextMenuOpen ? createPortal(menu, document.body) : <></>}
+      </Menu>
     </>
   );
 };

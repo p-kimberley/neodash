@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
-import { CardHeader, Dialog, DialogContent, DialogTitle, TextField } from '@mui/material';
+import { CardHeader, TextField } from '@mui/material';
 import debounce from 'lodash/debounce';
 import { useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import gfm from 'remark-gfm';
 import { replaceDashboardParameters } from '../../chart/ChartUtils';
 
-import { CleanIconButton } from '@neo4j-ndl/react';
+import { CleanIconButton, Dialog } from '@neo4j-ndl/react';
 import {
   DragIcon,
   Cog6ToothIconOutline,
@@ -15,7 +15,6 @@ import {
   ShrinkIcon,
   CameraIconSolid,
   InformationCircleIconOutline,
-  XMarkIconOutline,
 } from '@neo4j-ndl/react/icons';
 
 const MarkdownLink = ({ node: _node, ...props }: any) => <a {...props} target='_blank' rel='noopener noreferrer' />;
@@ -157,28 +156,19 @@ const NeoCardViewHeader = ({
   return (
     <>
       <Dialog
-        maxWidth={'lg'}
-        open={descriptionModalOpen}
+        size='large'
+        isOpen={descriptionModalOpen}
         onClose={() => setDescriptionModalOpen(false)}
-        aria-labelledby='form-dialog-title'
+        className='nd-report-description'
       >
-        <DialogTitle id='form-dialog-title'>
-          {title}
-          <CleanIconButton
-            description='Close'
-            onClick={() => setDescriptionModalOpen(false)}
-            style={{ padding: '3px', float: 'right' }}
-          >
-            <XMarkIconOutline />
-          </CleanIconButton>
-        </DialogTitle>
-        <DialogContent style={{ minWidth: '400px' }}>
-          <div>
+        <Dialog.Header>{title}</Dialog.Header>
+        <Dialog.Content>
+          <div className='markdown-widget'>
             {/* remarkPlugins (the old `plugins` prop was ignored, so tables etc. never rendered). Links open
                 in a new tab via the anchor renderer, not a <base> tag, which changed every link on the page. */}
             <ReactMarkdown remarkPlugins={[gfm]} components={{ a: MarkdownLink }} children={description} />
           </div>
-        </DialogContent>
+        </Dialog.Content>
       </Dialog>
       <CardHeader
         style={{ height: '72px' }}

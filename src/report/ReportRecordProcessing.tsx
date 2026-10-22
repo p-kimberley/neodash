@@ -1,5 +1,5 @@
 import React from 'react';
-import { Chip, Tooltip } from '@mui/material';
+import { Tip } from '../component/text/Tip';
 import { GraphLabel, TextLink } from '@neo4j-ndl/react';
 import {
   getRecordType,
@@ -121,9 +121,29 @@ export function saveNodeAndRelPropertiesToDictionary(field, fieldsDict) {
 }
 
 /* HELPER FUNCTIONS FOR RENDERING A FIELD BASED ON TYPE */
-const HTML_TOOLTIP_STYLE = { color: 'white', fontSize: 12, border: '1px solid #fcfffa' };
-const HtmlTooltip = (props: React.ComponentProps<typeof Tooltip>) => (
-  <Tooltip {...props} componentsProps={{ tooltip: { sx: HTML_TOOLTIP_STYLE } }} />
+/** A node's or relationship's properties, for a tooltip. */
+const PropertiesTip = ({ title, properties }) => (
+  <div className='nd-tip-props'>
+    <b>{title}</b>
+    <table>
+      <tbody>
+        {Object.keys(properties).length == 0 ? (
+          <tr>
+            <td>(No properties)</td>
+          </tr>
+        ) : (
+          Object.keys(properties)
+            .sort()
+            .map((k, i) => (
+              <tr key={i}>
+                <th scope='row'>{k.toString()}:</th>
+                <td>{properties[k].toString()}</td>
+              </tr>
+            ))
+        )}
+      </tbody>
+    </table>
+  </div>
 );
 
 function addDirection(relationship, start) {
@@ -131,107 +151,54 @@ function addDirection(relationship, start) {
   return relationship;
 }
 
-const rightRelationship =
-  'polygon(10px 0%, calc(100% - 10px) 0%, 100% 50%, 100% calc(100% - 50%), calc(100% - 10px) 100%, 0px 100%, 0% calc(100% - 0px), 0% 0px)';
-const leftRelationship =
-  'polygon(10px 0%, calc(100% - 0%) 0%, 100% 10px, 100% calc(100% - 10px), calc(100% - 0%) 100%, 10px 100%, 0% calc(100% - 50%), 0% 50%)';
-
 export function RenderNode(value, hoverable = true) {
   const chip = RenderNodeChip(value.labels.length > 0 ? value.labels.join(', ') : 'Node');
   if (!hoverable) {
     return chip;
   }
   return (
-    <HtmlTooltip
+    <Tip
       key={`${0}-${value.identity}`}
-      arrow
       title={
-        <div>
-          <b> {value.labels.length > 0 ? value.labels.join(', ') : 'Node'}</b>
-          <table>
-            <tbody>
-              {Object.keys(value.properties).length == 0 ? (
-                <tr>
-                  <td>(No properties)</td>
-                </tr>
-              ) : (
-                Object.keys(value.properties)
-                  .sort()
-                  .map((k, i) => (
-                    <tr key={i}>
-                      <td key={0}>{k.toString()}:</td>
-                      <td key={1}>{value.properties[k].toString()}</td>
-                    </tr>
-                  ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <PropertiesTip
+          title={value.labels.length > 0 ? value.labels.join(', ') : 'Node'}
+          properties={value.properties}
+        />
       }
     >
-      {/* A span takes the tooltip's props (the design system's labels don't pass them through). */}
       <span>{chip}</span>
-    </HtmlTooltip>
+    </Tip>
   );
 }
 
 export function RenderNodeChip(text, color = 'lightgrey', border = '0px') {
   return (
-    <GraphLabel type='node' color={color} style={{ border: border }}>
+    <GraphLabel type='node' color={color} className='nd-value-label' style={{ border: border }}>
       {text}
     </GraphLabel>
   );
 }
 
+/** A relationship type as the design system's relationship label, pointing in its direction (if known). */
 export function RenderRelationshipChip(text, direction = undefined, color = 'lightgrey') {
   return (
-    <Chip
-      style={{
-        background: color,
-        // Text readable on the chip's (light) colour, whatever the app's appearance.
-        color: textColorForBackground(color),
-        borderRadius: 0,
-        paddingRight: 5,
-        height: 21,
-        paddingLeft: 5,
-        clipPath: direction == undefined ? 'none' : direction ? rightRelationship : leftRelationship,
-      }}
-      label={text}
-    />
+    <GraphLabel
+      type={direction == undefined ? 'relationship' : direction ? 'relationshipRight' : 'relationshipLeft'}
+      color={color}
+      className='nd-value-label'
+      // Text readable on the label's (light) colour, whatever the app's appearance.
+      style={{ color: textColorForBackground(color) }}
+    >
+      {text}
+    </GraphLabel>
   );
 }
 
 function RenderRelationship(value, key = 0) {
   return (
-    <HtmlTooltip
-      key={`${key}-${value.identity}`}
-      arrow
-      title={
-        <div>
-          <b> {value.type}</b>
-          <table>
-            <tbody>
-              {Object.keys(value.properties).length == 0 ? (
-                <tr>
-                  <td>(No properties)</td>
-                </tr>
-              ) : (
-                Object.keys(value.properties)
-                  .sort()
-                  .map((k, i) => (
-                    <tr key={i}>
-                      <td key={0}>{k.toString()}:</td>
-                      <td key={1}>{value.properties[k].toString()}</td>
-                    </tr>
-                  ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      }
-    >
-      {RenderRelationshipChip(value.type, value.direction)}
-    </HtmlTooltip>
+    <Tip key={`${key}-${value.identity}`} title={<PropertiesTip title={value.type} properties={value.properties} />}>
+      <span>{RenderRelationshipChip(value.type, value.direction)}</span>
+    </Tip>
   );
 }
 
@@ -310,18 +277,11 @@ function RenderLink(value, disabled = false) {
 
 function RenderPoint(value) {
   return (
-    <HtmlTooltip
-      key={value.toString()}
-      title={
-        <div>
-          <b>
-            Point x={value.x} y={value.y}
-          </b>
-        </div>
-      }
-    >
-      <Chip label={'📍'} />
-    </HtmlTooltip>
+    <Tip key={value.toString()} title={`Point x=${value.x} y=${value.y}`}>
+      <span className='nd-point-value' tabIndex={0} aria-label={`Point x=${value.x} y=${value.y}`}>
+        📍
+      </span>
+    </Tip>
   );
 }
 

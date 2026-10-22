@@ -519,7 +519,8 @@ body {
   color: var(--nd-text-secondary);
 }
 
-.markdown-widget .markdown-table {
+.markdown-widget .markdown-table,
+.markdown-widget table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
@@ -530,18 +531,22 @@ body {
 }
 
 .markdown-widget .markdown-table th,
-.markdown-widget .markdown-table td {
+.markdown-widget .markdown-table td,
+.markdown-widget table th,
+.markdown-widget table td {
   padding: 8px 12px;
   border: none;
   border-bottom: 1px solid var(--nd-border);
   text-align: left;
 }
 
-.markdown-widget .markdown-table tr:last-child td {
+.markdown-widget .markdown-table tr:last-child td,
+.markdown-widget table tr:last-child td {
   border-bottom: none;
 }
 
-.markdown-widget .markdown-table th {
+.markdown-widget .markdown-table th,
+.markdown-widget table th {
   background: var(--nd-surface-variant);
   color: var(--nd-text-secondary);
   font-weight: 700;
@@ -1032,4 +1037,43 @@ body {
 .nd-graph-tooltip .nd-props-table th,
 .nd-graph-tooltip .nd-props-table td {
   padding: 3px 8px 3px 0;
+}
+
+/* The graph right-click menu: long lists (expand, create relationship) scroll. */
+.nd-graph-context-submenu {
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+}
+.nd-graph-context-path {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Properties of a node or relationship in a tooltip (table cells); colours come from the tooltip. */
+.nd-tip-props {
+  max-width: 360px;
+  font-size: var(--nd-text-xs);
+}
+.nd-tip-props table {
+  border-collapse: collapse;
+  margin-top: 2px;
+}
+.nd-tip-props th,
+.nd-tip-props td {
+  padding: 1px 8px 1px 0;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.nd-tip-props th {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Node and relationship labels in table cells and menus sit on the text line (the relationship
+   label is a flex box otherwise, which rises to the top of the line). */
+.nd-value-label {
+  display: inline-flex;
+  vertical-align: middle;
 }
