@@ -22,8 +22,8 @@ The extensions in NeoDash are:
 - link:report-actions[Report Actions]
 - link:forms[Forms]
 
-Text2Cypher, which earlier versions offered as an extension, is now part of NeoDash itself: see
-xref:user-guide/text2cypher.adoc[Text2Cypher - Natural Language Queries].
+Writing queries from plain-language descriptions, which earlier versions offered as an extension, is
+now part of NeoDash itself: see xref:user-guide/build-with-ai.adoc[Build with AI].
 
 All of them are part of NeoDash; none needs a separate license. To learn how to build your own
 extensions, check out the link:../../developer-guide[Developer Guide].

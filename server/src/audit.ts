@@ -14,7 +14,7 @@ export type AuditEvent =
   | 'dashboard.save'
   | 'dashboard.delete'
   | 'query'
-  | 'text2cypher';
+  | 'ai.query';
 
 export function createAuditor(log: FastifyBaseLogger) {
   const audit = log.child({ audit: true });

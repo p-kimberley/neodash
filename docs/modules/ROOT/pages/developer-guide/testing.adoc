@@ -2,7 +2,7 @@
 
 == Browser tests
 
-`dev/e2e` holds a https://playwright.dev/[Playwright] suite that drives the real app against the xref:developer-guide/build-and-run.adoc[dev stack]: it signs in through Keycloak as `editor` and `viewer`, and checks every report type on the example dashboards, the dashboard list and panel, maximised reports, tables, editors, interactions, the in-app docs and Text2Cypher, in both light and dark appearances.
+`dev/e2e` holds a https://playwright.dev/[Playwright] suite that drives the real app against the xref:developer-guide/build-and-run.adoc[dev stack]: it signs in through Keycloak as `editor` and `viewer`, and checks every report type on the example dashboards, the dashboard list and panel, maximised reports, tables, editors, interactions, the in-app docs and Build with AI, in both light and dark appearances.
 
 It runs in Playwright's Docker image, so only Docker is needed. Start the dev stack, and the dev server to test changes that aren't built into the image yet, then:
 

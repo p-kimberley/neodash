@@ -90,10 +90,12 @@ maps:
   # image and served at /maps; change this only to serve them from elsewhere.
   dataUrl: /maps
 
-text2cypher:
-  # Text2Cypher (writing queries from questions) through a language model on an OpenAI-compatible
-  # API, e.g. vLLM: http://vllm.ai.svc:8000/v1. The backend calls it; browsers never do. Empty: off.
+ai:
+  # Build with AI (reports built from descriptions) through a language model on an OpenAI-compatible
+  # API, e.g. vLLM: http://vllm.ai.svc:8000/v1. The backend calls it; browsers never do. It is on when
+  # baseUrl and model are set and `enabled` is true; empty baseUrl: off.
   # With networkPolicy.enabled, add the model's address to networkPolicy.egressTo.
+  enabled: true
   baseUrl: ''
   # REQUIRED with baseUrl: the model name the API serves, e.g. Qwen/Qwen2.5-Coder-32B-Instruct.
   model: ''
@@ -102,7 +104,7 @@ text2cypher:
     existingSecret: ''
     key: api-key
   timeoutSeconds: 60
-  # Answers the model may give per question: the first, and retries with the error when it fails.
+  # Answers the model may give per request: the first, and retries with the error when it fails.
   maxAttempts: 2
   temperature: 0
 

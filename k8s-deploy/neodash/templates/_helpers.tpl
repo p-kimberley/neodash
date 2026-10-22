@@ -108,8 +108,9 @@ Fail early, with a helpful message, on missing required values.
 {{- $_ := required "ingress.tls.secretName is required when ingress.tls.enabled is true" .Values.ingress.tls.secretName -}}
 {{- end -}}
 {{- end -}}
-{{- if .Values.text2cypher.baseUrl -}}
-{{- $_ := required "text2cypher.model is required when text2cypher.baseUrl is set: the model name the API serves" .Values.text2cypher.model -}}
+{{- $ai := include "neodash.ai" . | fromJson -}}
+{{- if $ai.baseUrl -}}
+{{- $_ := required "ai.model is required when ai.baseUrl is set: the model name the API serves" $ai.model -}}
 {{- end -}}
 {{- if and .Values.httpRoute.enabled (not .Values.httpRoute.parentRefs) -}}
 {{- fail "httpRoute.parentRefs is required when httpRoute.enabled is true: the Gateway to attach to" -}}
@@ -124,4 +125,25 @@ Whether any branding is configured (renders the branding ConfigMap and mounts it
 */}}
 {{- define "neodash.branding.enabled" -}}
 {{- if or .Values.branding.appName .Values.branding.logo.base64 .Values.branding.style -}}true{{- end -}}
+{{- end }}
+
+{{/*
+Build with AI settings: `ai`, falling back to the `text2cypher` values of earlier chart versions (so
+upgrades keep working) for the address, model and API key.
+*/}}
+{{- define "neodash.ai" -}}
+{{- $old := .Values.text2cypher | default dict -}}
+{{- $oldKey := $old.apiKey | default dict -}}
+{{- $ai := .Values.ai | default dict -}}
+{{- $key := $ai.apiKey | default dict -}}
+{{- dict
+  "enabled" (ne (toString $ai.enabled) "false")
+  "baseUrl" ($ai.baseUrl | default $old.baseUrl | default "")
+  "model" ($ai.model | default $old.model | default "")
+  "existingSecret" ($key.existingSecret | default $oldKey.existingSecret | default "")
+  "key" ($key.key | default $oldKey.key | default "api-key")
+  "timeoutSeconds" ($ai.timeoutSeconds | default $old.timeoutSeconds | default 60)
+  "maxAttempts" ($ai.maxAttempts | default $old.maxAttempts | default 2)
+  "temperature" ($ai.temperature | default $old.temperature | default 0)
+  | toJson -}}
 {{- end }}

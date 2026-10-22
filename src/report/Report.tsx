@@ -25,7 +25,7 @@ import { updateFieldsThunk } from '../card/CardThunks';
 import { getDashboardTheme } from '../dashboard/DashboardSelectors';
 
 /**
- * What can fill in a report's query before it runs: extensions, and Text2Cypher (part of the app), which
+ * What can fill in a report's query before it runs: extensions, and Build with AI (part of the app), which
  * translates a question that was typed but not yet translated.
  */
 const PREPOPULATORS: Record<string, { prepopulateReportFunction?: any; customLoadingIcon?: React.JSX.Element }> = {

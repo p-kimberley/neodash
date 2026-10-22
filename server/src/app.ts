@@ -116,7 +116,7 @@ export async function buildApp({ config, driver, oidc, llmFetch }: AppDeps) {
     bodyLimit: 20 * 1024 * 1024,
   });
   const audit = createAuditor(app.log);
-  const text2cypher = config.text2cypher ? new Text2Cypher(config.text2cypher, driver, llmFetch) : undefined;
+  const text2cypher = config.ai ? new Text2Cypher(config.ai, driver, llmFetch) : undefined;
   const sessions = new CookieSealer(config.session.secret, 'session');
   const logins = new CookieSealer(config.session.secret, 'login');
   const store = new DashboardStore(driver, config.neo4j.dashboardDatabase);
@@ -293,7 +293,7 @@ export async function buildApp({ config, driver, oidc, llmFetch }: AppDeps) {
       maxTimeoutSeconds: config.query.maxTimeoutSeconds,
     },
     maps: config.maps,
-    text2cypher: { enabled: Boolean(text2cypher), model: text2cypher?.model },
+    ai: { enabled: Boolean(text2cypher), model: text2cypher?.model },
   }));
 
   app.get('/api/me', async (request) => {
@@ -341,11 +341,12 @@ export async function buildApp({ config, driver, oidc, llmFetch }: AppDeps) {
     return { uuid };
   });
 
-  app.post('/api/text2cypher', async (request, reply) => {
+  // Build with AI: a report's query written from a description (a question in plain language).
+  app.post('/api/ai/query', async (request, reply) => {
     // The generated query is run as an ad-hoc query, which only editors may do.
     if (!requireEditor(request, reply, 'generate queries')) return reply;
     if (!text2cypher) {
-      return reply.code(404).send(errorBody('not_configured', 'Text2Cypher is not configured on this server'));
+      return reply.code(404).send(errorBody('not_configured', 'Build with AI is not configured on this server'));
     }
     const parsed = text2cypherBody.safeParse(request.body);
     if (!parsed.success)
@@ -360,11 +361,11 @@ export async function buildApp({ config, driver, oidc, llmFetch }: AppDeps) {
     try {
       const { query, attempts } = await text2cypher.translate({ ...body, database });
       const durationMs = Math.round(performance.now() - started);
-      audit(request, 'text2cypher', { ...auditBase, outcome: 'ok', query, attempts, durationMs });
+      audit(request, 'ai.query', { ...auditBase, outcome: 'ok', query, attempts, durationMs });
       return { query, attempts, model: text2cypher.model, durationMs };
     } catch (e) {
       const err = e instanceof Text2CypherError ? e : new Text2CypherError((e as Error).message, 'translation_failed');
-      audit(request, 'text2cypher', { ...auditBase, outcome: 'error', errorCode: err.code, error: err.message });
+      audit(request, 'ai.query', { ...auditBase, outcome: 'error', errorCode: err.code, error: err.message });
       const status = err.code === 'model_unavailable' ? 502 : err.code === 'schema_unavailable' ? 503 : 422;
       return reply.code(status).send(errorBody(err.code, err.message, { lastAnswer: err.lastAnswer }));
     }

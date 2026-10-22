@@ -16,7 +16,7 @@ export const extensionsReducer = (state = INITIAL_EXTENSIONS_STATE, action: { ty
     return state;
   }
 
-  // Text2Cypher is part of the app, not an extension, so its state (questions and examples) is always
+  // Build with AI is part of the app, not an extension, so its state (questions and examples) is always
   // kept. It stays under the dashboard's extensions, where dashboards saved earlier have it.
   if (type.startsWith(QUERY_TRANSLATOR_ACTION_PREFIX)) {
     return {

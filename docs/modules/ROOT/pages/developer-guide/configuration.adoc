@@ -2,7 +2,7 @@
 
 NeoDash is configured on the server: the backend reads environment variables at start-up, and the Helm chart sets them from its values. Nothing is configured in the browser.
 
-Secrets can be given as files instead of values, by setting `<NAME>_FILE` (`NEO4J_PASSWORD_FILE`, `OIDC_CLIENT_SECRET_FILE`, `SESSION_SECRET_FILE`, `TEXT2CYPHER_API_KEY_FILE`), or `NEO4J_AUTH_FILE` containing `user/password`. The chart mounts every secret as a file.
+Secrets can be given as files instead of values, by setting `<NAME>_FILE` (`NEO4J_PASSWORD_FILE`, `OIDC_CLIENT_SECRET_FILE`, `SESSION_SECRET_FILE`, `AI_API_KEY_FILE`), or `NEO4J_AUTH_FILE` containing `user/password`. The chart mounts every secret as a file.
 
 == Settings
 
@@ -47,14 +47,15 @@ Secrets can be given as files instead of values, by setting `<NAME>_FILE` (`NEO4
 |`MAP_TILE_URL` / `MAP_TILE_ATTRIBUTION` |`maps.tileUrl` / `maps.tileAttribution` |– |Background tiles for map reports, e.g. from an internal tile server. Empty: no tiles, so nothing is fetched from the internet.
 |`MAP_DATA_URL` |`maps.dataUrl` |`/maps` |Where choropleth and area maps load country and region shapes from; by default, from the image itself.
 
-4+|*Text2Cypher*
-|`TEXT2CYPHER_BASE_URL` |`text2cypher.baseUrl` |– |An OpenAI-compatible API (`<base>/chat/completions`), e.g. vLLM at `http://vllm.ai.svc:8000/v1`. Empty: Text2Cypher is off.
-|`TEXT2CYPHER_MODEL` |`text2cypher.model` |– |The model name the API serves; required with the address.
-|`TEXT2CYPHER_API_KEY` |`text2cypher.apiKey.existingSecret` |– |Optional; sent as a bearer token.
-|`TEXT2CYPHER_TIMEOUT_SECONDS` |`text2cypher.timeoutSeconds` |`60` |Per request to the model.
-|`TEXT2CYPHER_MAX_ATTEMPTS` |`text2cypher.maxAttempts` |`2` |Answers per question: each is checked with `EXPLAIN`, and a failed one is retried with the error.
-|`TEXT2CYPHER_TEMPERATURE` / `TEXT2CYPHER_MAX_TOKENS` |`text2cypher.temperature` / – |`0` / – |
-|`TEXT2CYPHER_SCHEMA_TTL_SECONDS` |– |`300` |How long a database's schema, which is sent to the model, is reused.
+4+|*Build with AI*
+|`AI_BASE_URL` |`ai.baseUrl` |– |An OpenAI-compatible API (`<base>/chat/completions`), e.g. vLLM at `http://vllm.ai.svc:8000/v1`. Empty: Build with AI is off.
+|`AI_MODEL` |`ai.model` |– |The model name the API serves; required with the address.
+|`AI_ENABLED` |`ai.enabled` |`true` |Turns Build with AI off while keeping the model settings.
+|`AI_API_KEY` |`ai.apiKey.existingSecret` |– |Optional; sent as a bearer token.
+|`AI_TIMEOUT_SECONDS` |`ai.timeoutSeconds` |`60` |Per request to the model.
+|`AI_MAX_ATTEMPTS` |`ai.maxAttempts` |`2` |Answers per request: each is checked with `EXPLAIN`, and a failed one is retried with the error.
+|`AI_TEMPERATURE` / `AI_MAX_TOKENS` |`ai.temperature` / – |`0` / – |
+|`AI_SCHEMA_TTL_SECONDS` |– |`300` |How long a database's schema, which is sent to the model, is reused.
 |===
 
 Variables without a Helm value can be set through `extraEnv`. Product name, logo and colours are set separately: see xref:developer-guide/style-configuration.adoc[Style Configuration].

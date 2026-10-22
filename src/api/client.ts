@@ -22,8 +22,8 @@ export interface BackendConfig {
   dashboardDatabase: string;
   limits: { maxRowLimit: number; defaultTimeoutSeconds: number; maxTimeoutSeconds: number };
   maps?: { tileUrl: string; tileAttribution: string; dataUrl: string };
-  /** Text2Cypher: whether the server has a language model configured, and which. */
-  text2cypher?: { enabled: boolean; model?: string };
+  /** Build with AI: whether the server has a language model configured (and switched on), and which. */
+  ai?: { enabled: boolean; model?: string };
 }
 
 export interface Text2CypherRequest {
@@ -136,7 +136,7 @@ export const api = {
     request<{ uuid: string }>(`/api/dashboards/${encodeURIComponent(uuid)}`, { method: 'DELETE' }),
   /** Asks the server's language model for a query answering the question (editors only). */
   text2cypher: (req: Text2CypherRequest) =>
-    request<{ query: string; attempts: number; model: string; durationMs: number }>('/api/text2cypher', {
+    request<{ query: string; attempts: number; model: string; durationMs: number }>('/api/ai/query', {
       method: 'POST',
       body: JSON.stringify(req),
     }),

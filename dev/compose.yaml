@@ -95,9 +95,9 @@ services:
       OIDC_CLIENT_SECRET_FILE: /run/secrets/oidc_client_secret
       OIDC_ALLOW_INSECURE_HTTP: 'true'
       SESSION_SECRET_FILE: /run/secrets/session_secret
-      # Text2Cypher with the stand-in model below; point these at a real one (e.g. vLLM) to try it.
-      TEXT2CYPHER_BASE_URL: http://fake-llm:8000/v1
-      TEXT2CYPHER_MODEL: fake-cypher
+      # Build with AI with the stand-in model below; point these at a real one (e.g. vLLM) to try it.
+      AI_BASE_URL: http://fake-llm:8000/v1
+      AI_MODEL: fake-cypher
     secrets:
       - neo4j_auth
       - session_secret

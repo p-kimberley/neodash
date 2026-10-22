@@ -19,7 +19,7 @@ api/            the backend's API client, and a driver look-alike that runs quer
 chart/          the core visualizations
 component/      shared building blocks: dialog, code editor, form fields
 config/         report types and their settings, card and dashboard settings, branding
-extensions/     optional features: advanced charts, rule-based styling, report actions, forms, Text2Cypher
+extensions/     optional features: advanced charts, rule-based styling, report actions, forms
 modal/          dialogs used across the app
 report/         running a report's query and processing its records
 stubs/          stand-ins for modules the bundle doesn't need (see webpack.config.js)

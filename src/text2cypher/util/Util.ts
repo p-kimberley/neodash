@@ -4,11 +4,11 @@ import { toggleCardSettingsThunk } from '../../card/CardThunks';
 import { QUERY_TRANSLATOR_EXTENSION_NAME } from '../state/QueryTranslatorSelector';
 import { queryTranslationThunk } from '../state/QueryTranslatorThunks';
 
-/** Whether the server has a language model for Text2Cypher. */
-export const text2cypherAvailable = () => Boolean(session.config?.text2cypher?.enabled);
+/** Whether the server offers Build with AI (a language model is configured and switched on). */
+export const text2cypherAvailable = () => Boolean(session.config?.ai?.enabled);
 
-/** The model the server uses for Text2Cypher, if any. */
-export const text2cypherModel = () => session.config?.text2cypher?.model;
+/** The model the server uses for Build with AI, if any. */
+export const text2cypherModel = () => session.config?.ai?.model;
 
 /**
  * This function translates a query using the specified driver and dispatches actions accordingly.
@@ -40,7 +40,7 @@ export function translateQuery(driver, dispatch, pagenumber, id, reportType, ext
           setResult(result);
         },
         (error) => {
-          dispatch(createNotification('Error when translating the natural language query', error));
+          dispatch(createNotification("Build with AI couldn't write the query", error));
           dispatch(toggleCardSettingsThunk(id, true));
         }
       )

@@ -14,7 +14,7 @@ type Example = {
 
 const columnHelper = createColumnHelper<Example>();
 
-/** The dashboard's example questions for Text2Cypher, five per page, each with Edit and Delete. */
+/** The dashboard's example questions for Build with AI, five per page, each with Edit and Delete. */
 function ExampleDisplayTable({ examples, deleteModelExample, handleEdit }) {
   const columns = React.useMemo(
     () => [

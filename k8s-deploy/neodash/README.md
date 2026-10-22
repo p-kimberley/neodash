@@ -109,9 +109,10 @@ which signs everyone out.
 | `audit.logParameters` | `true` | Include query parameter values in audit logs |
 | `maps.tileUrl` | – | Map tile server, e.g. `https://tiles.internal/{z}/{x}/{y}.png`; empty = no tiles |
 | `maps.dataUrl` | `/maps` | Where choropleth/area-map country shapes load from; bundled in the image |
-| `text2cypher.baseUrl` / `model` | – | Text2Cypher through an OpenAI-compatible API, e.g. vLLM `http://vllm.ai.svc:8000/v1`, and the model it serves; empty = off |
-| `text2cypher.apiKey.existingSecret` / `key` | – / `api-key` | Optional API key from a Secret, sent as a bearer token |
-| `text2cypher.timeoutSeconds` / `maxAttempts` / `temperature` | `60` / `2` / `0` | |
+| `ai.baseUrl` / `model` | – | Build with AI through an OpenAI-compatible API, e.g. vLLM `http://vllm.ai.svc:8000/v1`, and the model it serves; empty = off |
+| `ai.enabled` | `true` | Turns Build with AI off while keeping the model settings |
+| `ai.apiKey.existingSecret` / `key` | – / `api-key` | Optional API key from a Secret, sent as a bearer token |
+| `ai.timeoutSeconds` / `maxAttempts` / `temperature` | `60` / `2` / `0` | |
 | `branding.appName` | `NeoDash` | Product name in the header and browser tab |
 | `branding.logo.base64` / `fileName` | – / `logo.png` | Header logo (base64 PNG/SVG, e.g. `--set-file branding.logo.base64=logo.b64`), served from the pod |
 | `branding.style` | `{}` | Extra `style.config.json` entries, e.g. `--theme-light-color-primary-bg-strong: '#005eb8'` and the `--theme-dark-color-…` equivalent for the primary colour (the earlier `--palette-…` names still work) |
@@ -166,7 +167,7 @@ Nothing in the running system needs internet access:
 - Sign-in uses your identity provider; set `oidc.discoveryUrl` if pods reach it on an internal URL,
   and `oidc.caBundle` if its certificate is signed by an internal CA.
 - Map charts use `maps.tileUrl` (an internal tile server, or none) and `maps.dataUrl`.
-- Text2Cypher calls only the model you configure (`text2cypher.baseUrl`, e.g. a vLLM service in the
+- Build with AI calls only the model you configure (`ai.baseUrl`, e.g. a vLLM service in the
   cluster), from the backend; it is off by default.
 
 To install without internet access, copy the image (`ghcr.io/<owner>/neodash:<version>`) and this

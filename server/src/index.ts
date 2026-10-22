@@ -17,6 +17,13 @@ const shutdown = async (signal: string) => {
 process.on('SIGTERM', () => void shutdown('SIGTERM'));
 process.on('SIGINT', () => void shutdown('SIGINT'));
 
+if (config.legacySettings.length) {
+  app.log.warn(
+    { settings: config.legacySettings },
+    'These settings use names from an earlier version; they still work, but rename them to AI_* (see the configuration docs)'
+  );
+}
+
 await app.listen({ port: config.port, host: config.host });
 app.log.info(
   { publicUrl: config.publicUrl.href, neo4j: config.neo4j.uri, databases: config.neo4j.databases, issuer: config.oidc.issuer },

@@ -27,7 +27,7 @@
 *** xref:user-guide/reports/iframe.adoc[iFrame]
 *** xref:user-guide/reports/markdown.adoc[Markdown]
 ** xref:user-guide/publishing.adoc[Publishing]
-** xref:user-guide/text2cypher.adoc[Text2Cypher - Natural Language Queries]
+** xref:user-guide/build-with-ai.adoc[Build with AI]
 ** xref:user-guide/extensions/index.adoc[Extensions]
 *** xref:user-guide/extensions/advanced-visualizations.adoc[Advanced Visualizations]
 *** xref:user-guide/extensions/rule-based-styling.adoc[Rule-Based Styling]

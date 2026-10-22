@@ -145,7 +145,7 @@ describe('the API', () => {
   const viewer = { authorization: 'Bearer viewer-token', 'content-type': 'application/json' };
 
   beforeAll(async () => {
-    const config = testConfig({ TEXT2CYPHER_BASE_URL: 'http://llm.test/v1', TEXT2CYPHER_MODEL: 'test-model' });
+    const config = testConfig({ AI_BASE_URL: 'http://llm.test/v1', AI_MODEL: 'test-model' });
     ({ app, driver } = await makeApp({ config, llmFetch: fakeModel([]).fetchImpl }));
     ({ app: plain, driver: plainDriver } = await makeApp());
   });
@@ -154,33 +154,48 @@ describe('the API', () => {
     await Promise.all([driver.close(), plainDriver.close()]);
   });
 
-  it('says whether Text2Cypher is configured, and with which model', async () => {
-    expect((await app.inject({ url: '/api/config' })).json().text2cypher).toEqual({ enabled: true, model: 'test-model' });
-    expect((await plain.inject({ url: '/api/config' })).json().text2cypher).toEqual({ enabled: false });
+  it('says whether Build with AI is configured, and with which model', async () => {
+    expect((await app.inject({ url: '/api/config' })).json().ai).toEqual({ enabled: true, model: 'test-model' });
+    expect((await plain.inject({ url: '/api/config' })).json().ai).toEqual({ enabled: false });
   });
 
   it('is for editors only, and only when configured', async () => {
     const payload = { question: 'All movies' };
-    expect((await app.inject({ method: 'POST', url: '/api/text2cypher', headers: viewer, payload })).statusCode).toBe(403);
-    const off = await plain.inject({ method: 'POST', url: '/api/text2cypher', headers: editor, payload });
+    expect((await app.inject({ method: 'POST', url: '/api/ai/query', headers: viewer, payload })).statusCode).toBe(403);
+    const off = await plain.inject({ method: 'POST', url: '/api/ai/query', headers: editor, payload });
     expect(off.statusCode).toBe(404);
     expect(off.json().error.code).toBe('not_configured');
   });
 
   it('rejects empty questions and unknown databases', async () => {
-    const empty = await app.inject({ method: 'POST', url: '/api/text2cypher', headers: editor, payload: { question: ' ' } });
+    const empty = await app.inject({ method: 'POST', url: '/api/ai/query', headers: editor, payload: { question: ' ' } });
     expect(empty.statusCode).toBe(400);
     const db = await app.inject({
       method: 'POST',
-      url: '/api/text2cypher',
+      url: '/api/ai/query',
       headers: editor,
       payload: { question: 'q', database: 'secret' },
     });
     expect(db.statusCode).toBe(403);
   });
 
-  it('needs TEXT2CYPHER_MODEL with a base URL', () => {
-    expect(() => testConfig({ TEXT2CYPHER_BASE_URL: 'http://llm.test/v1' })).toThrow(/TEXT2CYPHER_MODEL/);
+  it('needs AI_MODEL with a base URL', () => {
+    expect(() => testConfig({ AI_BASE_URL: 'http://llm.test/v1' })).toThrow(/AI_MODEL/);
+  });
+
+  it('is off when AI_ENABLED is false, even with a model', () => {
+    const config = testConfig({ AI_ENABLED: 'false', AI_BASE_URL: 'http://llm.test/v1', AI_MODEL: 'm' });
+    expect(config.ai).toBeUndefined();
+  });
+
+  it('accepts the settings under the names of earlier versions; current names win', () => {
+    const config = testConfig({
+      TEXT2CYPHER_BASE_URL: 'http://old.test/v1',
+      TEXT2CYPHER_MODEL: 'old-model',
+      AI_MODEL: 'new-model',
+    });
+    expect(config.ai).toMatchObject({ baseUrl: 'http://old.test/v1', model: 'new-model' });
+    expect(config.legacySettings).toEqual(['TEXT2CYPHER_BASE_URL', 'TEXT2CYPHER_MODEL']);
   });
 
   it('reads the API key from a file', async () => {
@@ -190,10 +205,13 @@ describe('the API', () => {
     const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'neodash-key-')), 'key');
     fs.writeFileSync(file, 'sk-from-file\n');
     const config = testConfig({
-      TEXT2CYPHER_BASE_URL: 'http://llm.test/v1',
-      TEXT2CYPHER_MODEL: 'm',
-      TEXT2CYPHER_API_KEY_FILE: file,
+      AI_BASE_URL: 'http://llm.test/v1',
+      AI_MODEL: 'm',
+      AI_API_KEY_FILE: file,
     });
-    expect(config.text2cypher?.apiKey).toBe('sk-from-file');
+    expect(config.ai?.apiKey).toBe('sk-from-file');
+    // As earlier versions named it.
+    const legacy = testConfig({ AI_BASE_URL: 'http://llm.test/v1', AI_MODEL: 'm', TEXT2CYPHER_API_KEY_FILE: file });
+    expect(legacy.ai?.apiKey).toBe('sk-from-file');
   });
 });

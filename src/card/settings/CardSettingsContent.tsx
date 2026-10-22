@@ -156,7 +156,7 @@ const NeoCardSettingsContent = ({
         />
       ) : (
         <div>
-          {/* With a language model on the server, the query can also be written as a question (Text2Cypher). */}
+          {/* With a language model on the server, the query can also be written from a description (Build with AI). */}
           {text2cypherAvailable() ? (
             <NeoText2CypherQueryEditor
               pagenumber={pagenumber}

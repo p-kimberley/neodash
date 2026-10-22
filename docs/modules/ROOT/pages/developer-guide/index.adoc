@@ -16,7 +16,7 @@ This guide is for people who run, deploy or change this version of NeoDash: a fo
 NeoDash is one container: a Node.js backend that serves the web app, signs users in and runs every Neo4j query.
 
 - *Browser*: the React app. It never connects to Neo4j and never sees its credentials; it calls the backend's `/api` (`src/api/client.ts`). Reports still receive Neo4j driver values, decoded from the backend's typed JSON (`src/api/ApiDriver.ts`, `src/api/neo4jValues.ts`).
-- *Backend* (`server/`): signs users in with OpenID Connect (e.g. Keycloak), takes their role (viewer or editor) from the identity token, stores dashboards in Neo4j as `_Neodash_Dashboard` nodes (the same format as NeoDash 2.4), runs queries (read-only, saved queries only, for viewers), writes JSON audit lines, and asks a language model for Text2Cypher if one is configured.
+- *Backend* (`server/`): signs users in with OpenID Connect (e.g. Keycloak), takes their role (viewer or editor) from the identity token, stores dashboards in Neo4j as `_Neodash_Dashboard` nodes (the same format as NeoDash 2.4), runs queries (read-only, saved queries only, for viewers), writes JSON audit lines, and asks a language model to build reports (Build with AI) if one is configured.
 - *Neo4j*: Community or Enterprise 5. It holds the dashboards and the data.
 - *Documentation*: these pages are built into the app by `scripts/build-docs.mjs` and served at `/docs`, so they can be read without internet access.
 

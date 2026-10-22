@@ -23,7 +23,7 @@ describe.skipIf(!process.env.INTEGRATION)('Text2Cypher against Neo4j', () => {
   const answers: string[] = [];
 
   beforeAll(async () => {
-    const config = testConfig({ TEXT2CYPHER_BASE_URL: 'http://llm.test/v1', TEXT2CYPHER_MODEL: 'test-model' });
+    const config = testConfig({ AI_BASE_URL: 'http://llm.test/v1', AI_MODEL: 'test-model' });
     ({ app, driver } = await makeApp({ config, llmFetch: model(answers) }));
   });
   afterAll(async () => {
@@ -65,7 +65,7 @@ describe.skipIf(!process.env.INTEGRATION)('Text2Cypher against Neo4j', () => {
     answers.push('SELECT title FROM movie', '```cypher\nMATCH (m:Movie) RETURN m.title AS title LIMIT 5\n```');
     const res = await app.inject({
       method: 'POST',
-      url: '/api/text2cypher',
+      url: '/api/ai/query',
       headers: editor,
       payload: { question: 'Some movie titles', reportType: 'table' },
     });

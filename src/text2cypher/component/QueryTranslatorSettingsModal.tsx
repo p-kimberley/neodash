@@ -10,7 +10,7 @@ import QueryTranslatorSettingsModelExamples from './model-examples/QueryTranslat
 import { text2cypherAvailable, text2cypherModel } from '../util/Util';
 
 /**
- * About Text2Cypher on this server: which model writes the queries, what it receives, and the
+ * About Build with AI on this server: which model writes the queries, what it receives, and the
  * dashboard's example questions for it. The model itself is configured on the server.
  */
 const QueryTranslatorSettingsModal = ({ open, setOpen, messageHistory, clearHistory }) => {
@@ -29,11 +29,11 @@ const QueryTranslatorSettingsModal = ({ open, setOpen, messageHistory, clearHist
   const available = text2cypherAvailable();
   return (
     <Dialog size='large' isOpen={open} onClose={close}>
-      <Dialog.Header>Text2Cypher</Dialog.Header>
+      <Dialog.Header>Build with AI</Dialog.Header>
       <Dialog.Content>
         <p>
-          Write a report's query as a question in English: switch its query editor from Cypher to English. The question
-          is turned into Cypher by a language model that runs for this server.
+          Describe what a report should show, in plain language: in its settings, switch the query editor from Cypher
+          to Build with AI. A language model that runs for this server writes the query.
         </p>
         <br />
         {available ? (
@@ -52,7 +52,7 @@ const QueryTranslatorSettingsModal = ({ open, setOpen, messageHistory, clearHist
         ) : (
           <p>
             <b>No language model is configured on this server.</b> An administrator can set one up (any
-            OpenAI-compatible API, such as vLLM) with the Helm chart's <code>text2cypher</code> settings.
+            OpenAI-compatible API, such as vLLM) with the Helm chart's <code>ai</code> settings.
           </p>
         )}
       </Dialog.Content>

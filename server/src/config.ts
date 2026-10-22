@@ -76,28 +76,61 @@ const schema = z
     // Include query parameter values in audit logs. Turn off if parameters may hold sensitive data.
     AUDIT_LOG_PARAMETERS: bool.default('true'),
 
-    // Text2Cypher: a language model on an OpenAI-compatible API (e.g. vLLM) that writes queries from
-    // questions. Off unless a base URL is set, e.g. http://vllm.ai.svc:8000/v1.
-    TEXT2CYPHER_BASE_URL: z.string().url().optional(),
-    TEXT2CYPHER_MODEL: z.string().optional(),
-    // Optional; sent as a bearer token. Usually from a Secret, via TEXT2CYPHER_API_KEY_FILE.
-    TEXT2CYPHER_API_KEY: z.string().optional(),
-    TEXT2CYPHER_TIMEOUT_SECONDS: z.coerce.number().positive().default(60),
-    // Answers the model may give per question: the first, and retries with the error when it fails.
-    TEXT2CYPHER_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(5).default(2),
-    TEXT2CYPHER_TEMPERATURE: z.coerce.number().min(0).max(2).default(0),
-    TEXT2CYPHER_MAX_TOKENS: z.coerce.number().int().positive().optional(),
+    // Build with AI: a language model on an OpenAI-compatible API (e.g. vLLM) that builds reports from
+    // descriptions. On when a base URL (e.g. http://vllm.ai.svc:8000/v1) and a model are set, unless
+    // AI_ENABLED turns it off.
+    AI_ENABLED: bool.default('true'),
+    AI_BASE_URL: z.string().url().optional(),
+    AI_MODEL: z.string().optional(),
+    // Optional; sent as a bearer token. Usually from a Secret, via AI_API_KEY_FILE.
+    AI_API_KEY: z.string().optional(),
+    AI_TIMEOUT_SECONDS: z.coerce.number().positive().default(60),
+    // Answers the model may give per request: the first, and retries with the error when it fails.
+    AI_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(5).default(2),
+    AI_TEMPERATURE: z.coerce.number().min(0).max(2).default(0),
+    AI_MAX_TOKENS: z.coerce.number().int().positive().optional(),
     // How long a database's schema (sent to the model) is reused before it is read again.
-    TEXT2CYPHER_SCHEMA_TTL_SECONDS: z.coerce.number().int().min(0).default(300),
+    AI_SCHEMA_TTL_SECONDS: z.coerce.number().int().min(0).default(300),
   })
-  .refine((c) => !c.TEXT2CYPHER_BASE_URL || c.TEXT2CYPHER_MODEL, {
-    message: 'TEXT2CYPHER_MODEL is required when TEXT2CYPHER_BASE_URL is set',
-    path: ['TEXT2CYPHER_MODEL'],
+  .refine((c) => !c.AI_BASE_URL || c.AI_MODEL, {
+    message: 'AI_MODEL is required when AI_BASE_URL is set',
+    path: ['AI_MODEL'],
   });
 
 export type Config = ReturnType<typeof loadConfig>;
 
-const SECRET_KEYS = ['NEO4J_PASSWORD', 'OIDC_CLIENT_SECRET', 'SESSION_SECRET', 'TEXT2CYPHER_API_KEY'] as const;
+const SECRET_KEYS = ['NEO4J_PASSWORD', 'OIDC_CLIENT_SECRET', 'SESSION_SECRET', 'AI_API_KEY'] as const;
+
+/** Settings of earlier versions, under their current names (AI_*). */
+const LEGACY_PREFIX = 'TEXT2CYPHER_';
+const LEGACY_SUFFIXES = [
+  'BASE_URL',
+  'MODEL',
+  'API_KEY',
+  'API_KEY_FILE',
+  'TIMEOUT_SECONDS',
+  'MAX_ATTEMPTS',
+  'TEMPERATURE',
+  'MAX_TOKENS',
+  'SCHEMA_TTL_SECONDS',
+] as const;
+
+/**
+ * Accepts the AI settings under the names earlier versions used, so deployments keep working after an
+ * upgrade; a current name wins. Returns the environment and the old names that were used.
+ */
+export function withLegacyNames(env: NodeJS.ProcessEnv): { env: NodeJS.ProcessEnv; legacy: string[] } {
+  const out = { ...env };
+  const legacy: string[] = [];
+  for (const suffix of LEGACY_SUFFIXES) {
+    const old = env[`${LEGACY_PREFIX}${suffix}`];
+    if (old !== undefined) {
+      legacy.push(`${LEGACY_PREFIX}${suffix}`);
+      out[`AI_${suffix}`] ??= old;
+    }
+  }
+  return { env: out, legacy };
+}
 
 function withFileSecrets(env: NodeJS.ProcessEnv): Record<string, string | undefined> {
   const out: Record<string, string | undefined> = { ...env };
@@ -114,7 +147,8 @@ function withFileSecrets(env: NodeJS.ProcessEnv): Record<string, string | undefi
   return out;
 }
 
-export function loadConfig(env: NodeJS.ProcessEnv = process.env) {
+export function loadConfig(rawEnv: NodeJS.ProcessEnv = process.env) {
+  const { env, legacy } = withLegacyNames(rawEnv);
   const parsed = schema.safeParse(withFileSecrets(env));
   if (!parsed.success) {
     const problems = parsed.error.issues.map((i) => `  ${i.path.join('.')}: ${i.message}`).join('\n');
@@ -170,17 +204,20 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env) {
       tileAttribution: c.MAP_TILE_ATTRIBUTION,
       dataUrl: c.MAP_DATA_URL,
     },
-    text2cypher: c.TEXT2CYPHER_BASE_URL
-      ? {
-          baseUrl: c.TEXT2CYPHER_BASE_URL,
-          model: c.TEXT2CYPHER_MODEL!,
-          apiKey: c.TEXT2CYPHER_API_KEY || undefined,
-          timeoutSeconds: c.TEXT2CYPHER_TIMEOUT_SECONDS,
-          maxAttempts: c.TEXT2CYPHER_MAX_ATTEMPTS,
-          temperature: c.TEXT2CYPHER_TEMPERATURE,
-          maxTokens: c.TEXT2CYPHER_MAX_TOKENS,
-          schemaTtlSeconds: c.TEXT2CYPHER_SCHEMA_TTL_SECONDS,
-        }
-      : undefined,
+    ai:
+      c.AI_ENABLED && c.AI_BASE_URL
+        ? {
+            baseUrl: c.AI_BASE_URL,
+            model: c.AI_MODEL!,
+            apiKey: c.AI_API_KEY || undefined,
+            timeoutSeconds: c.AI_TIMEOUT_SECONDS,
+            maxAttempts: c.AI_MAX_ATTEMPTS,
+            temperature: c.AI_TEMPERATURE,
+            maxTokens: c.AI_MAX_TOKENS,
+            schemaTtlSeconds: c.AI_SCHEMA_TTL_SECONDS,
+          }
+        : undefined,
+    /** Settings given under names of earlier versions (logged at startup, so they can be renamed). */
+    legacySettings: legacy,
   };
 }
