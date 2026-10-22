@@ -1,5 +1,6 @@
 export const CARD_FOOTER_HEIGHT = 88;
-export const CARD_HEADER_HEIGHT = 72;
+// A card's top row (title and buttons); the report fills the rest of the card.
+export const CARD_HEADER_HEIGHT = 56;
 
 export const enum SELECTION_TYPES {
   NUMBER,

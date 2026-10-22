@@ -149,7 +149,7 @@ const NeoCardViewHeader = ({
           </div>
         </Dialog.Content>
       </Dialog>
-      <div className='nd-card-bar' style={{ height: '72px' }}>
+      <div className='nd-card-bar'>
         <div className='nd-card-bar-title'>{cardTitle}</div>
         <div className='nd-card-bar-actions'>
           {downloadImageEnabled ? downloadImageButton : <></>}

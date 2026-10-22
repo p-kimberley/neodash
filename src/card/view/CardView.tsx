@@ -44,7 +44,7 @@ const NeoCardView = ({
   onToggleCardExpand,
 }) => {
   const reportHeight = heightPx - CARD_FOOTER_HEIGHT - CARD_HEADER_HEIGHT + 20;
-  const cardHeight = heightPx - CARD_FOOTER_HEIGHT + 23;
+  const cardHeight = heightPx - CARD_FOOTER_HEIGHT - CARD_HEADER_HEIGHT + 95;
   const ref = React.useRef(undefined);
 
   const settingsSelector = Object.keys(
@@ -235,7 +235,11 @@ const NeoCardView = ({
       {reportHeader}
       {/* if there's no selection for this report, we don't have a footer, so the report can be taller. */}
       <ReportItemContainer
-        style={{ height: expanded ? (withoutFooter ? 'calc(100% - 69px)' : 'calc(100% - 49px)') : cardHeight }}
+        style={{
+          height: expanded
+            ? `calc(100% - ${withoutFooter ? CARD_HEADER_HEIGHT - 3 : CARD_HEADER_HEIGHT - 23}px)`
+            : cardHeight,
+        }}
       >
         {reportTypes[type] ? (
           reportContent

@@ -4,6 +4,7 @@ import { renderValueByType } from '../../report/ReportRecordProcessing';
 import { evaluateRulesOnNeo4jRecord } from '../../extensions/styling/StyleRuleEvaluator';
 import YAML from 'yaml';
 import { extensionEnabled } from '../../utils/ReportUtils';
+import { CARD_HEADER_HEIGHT } from '../../config/CardConfig';
 
 /**
  * Renders Neo4j records as their JSON representation.
@@ -67,7 +68,7 @@ const NeoSingleValueChart = (props: ChartProps) => {
           display: 'inline-block',
           verticalAlign: verticalAlign,
           whiteSpace: 'pre',
-          marginTop: verticalAlign == 'middle' ? '-72px' : '0px', // go to a "true middle", subtract header height.
+          marginTop: verticalAlign == 'middle' ? `-${CARD_HEADER_HEIGHT}px` : '0px', // go to a "true middle", subtract header height.
           fontSize: effectiveFontSize,
           fontFamily: monospace ? 'monospace' : 'inherit',
           lineHeight: `${effectiveFontSize + 8}px`,

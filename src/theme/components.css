@@ -1138,8 +1138,9 @@ body {
 .nd-card-bar {
   display: flex;
   align-items: center;
-  height: 72px;
-  padding: 16px;
+  /* CARD_HEADER_HEIGHT (CardConfig.ts), from which the reports' heights are worked out. */
+  height: 56px;
+  padding: 12px 16px;
 }
 .nd-card-bar-lead {
   display: flex;
