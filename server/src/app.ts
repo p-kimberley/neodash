@@ -137,7 +137,8 @@ export async function buildApp({ config, driver, oidc, llmFetch, cypherChecks }:
           probeTimeoutSeconds: config.ai.probeTimeoutSeconds,
         })
       : undefined;
-  // One builder request per user at a time (the browser cancels the one it no longer needs).
+  // One builder request of each kind per user at a time (the browser drops the ones it no longer needs,
+  // and asks again when told the previous one is still running).
   const aiBusy = new Set<string>();
   const sessions = new CookieSealer(config.session.secret, 'session');
   const logins = new CookieSealer(config.session.secret, 'login');
@@ -407,7 +408,7 @@ export async function buildApp({ config, driver, oidc, llmFetch, cypherChecks }:
     if (!config.neo4j.databases.includes(database)) {
       return deny(request, reply, `Database "${database}" is not available`);
     }
-    const user = request.user!.sub;
+    const user = `${request.user!.sub}:${kind}`;
     if (aiBusy.has(user)) {
       return reply.code(429).send(errorBody('busy', 'A Build with AI request is already running for you'));
     }

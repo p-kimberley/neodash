@@ -15,6 +15,8 @@ import { canViewAsTable, extensionEnabled } from '../../utils/ReportUtils';
 import { objMerge } from '../../utils/ObjectManipulation';
 import { REPORT_TYPES } from '../../config/ReportConfig';
 import { EmptyReport, isUnconfigured } from './EmptyReport';
+import { AiBuilderPanel } from '../../ai/AiBuilderPanel';
+import { text2cypherAvailable } from '../../text2cypher/util/Util';
 
 const NeoCardView = ({
   id,
@@ -66,6 +68,8 @@ const NeoCardView = ({
   }, {});
 
   const [lastRunTimestamp, setLastRunTimestamp] = useState(Date.now());
+  // Build with AI, open inside the (empty) report.
+  const [aiOpen, setAiOpen] = useState(false);
 
   // TODO : selectorChange should handle every case where query execution needs to be re-executed
   // e.g. Change of query, type, some advanced settings...
@@ -203,8 +207,14 @@ const NeoCardView = ({
   };
   const reportContent = (
     <div ref={ref} className='nd-card-content' style={cardContentStyle}>
-      {unconfigured ? (
-        <EmptyReport editable={editable} onConfigure={onToggleCardSettings} />
+      {unconfigured && aiOpen && editable ? (
+        <AiBuilderPanel reportId={id} onClose={() => setAiOpen(false)} />
+      ) : unconfigured ? (
+        <EmptyReport
+          editable={editable}
+          onConfigure={onToggleCardSettings}
+          onBuildWithAI={text2cypherAvailable() ? () => setAiOpen(true) : undefined}
+        />
       ) : active ? (
         <NeoReportWrapper
           id={id}

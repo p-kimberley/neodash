@@ -381,6 +381,141 @@ body {
   height: 24px;
 }
 
+/* Build with AI inside a report: description, Build, and suggestions. */
+.nd-ai-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  padding: 4px 14px 14px;
+  overflow: auto;
+}
+
+.nd-ai-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--theme-color-neutral-text-default);
+}
+
+.nd-ai-head-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--theme-color-primary-icon);
+}
+
+.nd-ai-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.nd-ai-error {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--theme-color-danger-bg-weak);
+  color: var(--theme-color-danger-text);
+  font-size: 13px;
+}
+
+.nd-ai-error ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  list-style: disc;
+}
+
+.nd-ai-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nd-ai-suggestions-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--theme-color-neutral-text-weak);
+}
+
+.nd-ai-suggestions-none {
+  font-size: 13px;
+  color: var(--theme-color-neutral-text-weaker);
+}
+
+.nd-ai-suggestion-skeleton {
+  border-radius: 8px;
+}
+
+.nd-ai-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--theme-color-neutral-border-weak);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--theme-color-neutral-text-default);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s;
+}
+
+.nd-ai-suggestion:hover:not(:disabled),
+.nd-ai-suggestion:focus-visible {
+  border-color: var(--theme-color-primary-border-strong);
+  background: color-mix(in srgb, var(--theme-color-primary-bg-weak) 45%, transparent);
+  outline: none;
+}
+
+.nd-ai-suggestion:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.nd-ai-suggestion-icon {
+  display: inline-flex;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: var(--theme-color-primary-icon);
+}
+
+.nd-ai-suggestion-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.nd-ai-suggestion-title {
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nd-ai-suggestion-why {
+  font-size: 12px;
+  color: var(--theme-color-neutral-text-weak);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nd-ai-suggestion-type {
+  flex: none;
+  font-size: 12px;
+  color: var(--theme-color-neutral-text-weaker);
+}
+
+.nd-empty-action-ai .nd-empty-action-icon {
+  color: var(--theme-color-primary-icon);
+}
+
 /* ---------- Chart controls (field selectors under a chart) ---------- */
 
 /* One row of field selectors, scrolled sideways when they don't fit: the report leaves room for one

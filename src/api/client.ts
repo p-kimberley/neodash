@@ -71,10 +71,31 @@ export class ApiError extends Error {
     public status: number,
     public code: string,
     message: string,
-    public neo4jCode?: string
+    public neo4jCode?: string,
+    /** The rest of the server's error (e.g. a failed build's problems). */
+    public details?: Record<string, any>
   ) {
     super(message);
   }
+}
+
+/** A report as Build with AI builds or suggests it. */
+export interface AiReport {
+  type: string;
+  title: string;
+  query: string;
+  selection: Record<string, string | string[]>;
+  settings: Record<string, unknown>;
+  why?: string;
+}
+
+export interface AiRequest {
+  prompt: string;
+  database?: string;
+  catalogue: { types: any[] };
+  context: any;
+  /** A suggestion the user picked, to build. */
+  suggestion?: AiReport;
 }
 
 /** Where the backend lives. Same origin in production; the dev server proxies /api and /auth. */
@@ -102,7 +123,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
     const error = body?.error ?? {};
-    throw new ApiError(response.status, error.code ?? 'error', error.message ?? response.statusText, error.neo4jCode);
+    throw new ApiError(response.status, error.code ?? 'error', error.message ?? response.statusText, error.neo4jCode, error);
   }
   return body as T;
 }
@@ -140,6 +161,19 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(req),
     }),
+  /** Build with AI: up to three checked report suggestions for a dashboard (editors only). */
+  aiSuggest: (req: AiRequest, signal?: AbortSignal) =>
+    request<{ suggestions: AiReport[]; model: string; durationMs: number }>('/api/ai/suggest', {
+      method: 'POST',
+      body: JSON.stringify(req),
+      signal,
+    }),
+  /** Build with AI: one checked report from a description or a picked suggestion (editors only). */
+  aiBuild: (req: AiRequest, signal?: AbortSignal) =>
+    request<{ report: AiReport; attempts: number; warnings: string[]; model: string; durationMs: number }>(
+      '/api/ai/build',
+      { method: 'POST', body: JSON.stringify(req), signal }
+    ),
   logout: () => request<{ logoutUrl: string }>('/auth/logout', { method: 'POST', body: '{}' }),
 
   /** Runs a query and returns Neo4j driver Records, so existing chart code works unchanged. */
