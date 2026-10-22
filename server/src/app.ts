@@ -13,6 +13,8 @@ import { decodeParameters, encode } from './codec.js';
 import { DashboardStore, findReport } from './dashboards.js';
 import { runQuery } from './neo4j.js';
 import { Text2Cypher, Text2CypherError } from './text2cypher.js';
+import { BuildError, DriverChecks, ReportBuilder, type CypherChecks } from './ai/builder.js';
+import { catalogueSchema, contextSchema, suggestionSchema } from './ai/catalogue.js';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -33,11 +35,22 @@ export interface AppDeps {
   config: Config;
   driver: Driver;
   oidc: Pick<OidcClient, 'startLogin' | 'finishLogin' | 'verifyBearer' | 'logoutUrl'>;
-  /** How Text2Cypher reaches the language model (tests replace it). */
+  /** How Build with AI reaches the language model (tests replace it). */
   llmFetch?: typeof fetch;
+  /** The builder's database checks (tests replace them). */
+  cypherChecks?: CypherChecks;
 }
 
 const uuidParam = z.object({ uuid: z.string().min(1).max(200) });
+
+const aiBody = z.object({
+  prompt: z.string().max(4000).default(''),
+  database: z.string().min(1).max(200).optional(),
+  catalogue: catalogueSchema,
+  context: contextSchema.default({}),
+  /** A suggestion the user picked, to build (checked again, then its settings). */
+  suggestion: suggestionSchema.optional(),
+});
 
 const text2cypherBody = z.object({
   question: z.string().trim().min(1).max(4000),
@@ -105,7 +118,7 @@ const queryBody = z
     message: 'Provide either "query", or "dashboard" and "report"',
   });
 
-export async function buildApp({ config, driver, oidc, llmFetch }: AppDeps) {
+export async function buildApp({ config, driver, oidc, llmFetch, cypherChecks }: AppDeps) {
   const app = Fastify({
     logger: {
       level: config.logLevel,
@@ -117,6 +130,15 @@ export async function buildApp({ config, driver, oidc, llmFetch }: AppDeps) {
   });
   const audit = createAuditor(app.log);
   const text2cypher = config.ai ? new Text2Cypher(config.ai, driver, llmFetch) : undefined;
+  const builder =
+    text2cypher && config.ai
+      ? new ReportBuilder(text2cypher, cypherChecks ?? new DriverChecks(driver), {
+          maxAttempts: config.ai.buildMaxAttempts,
+          probeTimeoutSeconds: config.ai.probeTimeoutSeconds,
+        })
+      : undefined;
+  // One builder request per user at a time (the browser cancels the one it no longer needs).
+  const aiBusy = new Set<string>();
   const sessions = new CookieSealer(config.session.secret, 'session');
   const logins = new CookieSealer(config.session.secret, 'login');
   const store = new DashboardStore(driver, config.neo4j.dashboardDatabase);
@@ -370,6 +392,55 @@ export async function buildApp({ config, driver, oidc, llmFetch }: AppDeps) {
       return reply.code(status).send(errorBody(err.code, err.message, { lastAnswer: err.lastAnswer }));
     }
   });
+
+  // Build with AI: suggestions for a report, and building one (type, title, query, fields, settings).
+  const aiRoute = (kind: 'suggest' | 'build') => async (request: FastifyRequest, reply: FastifyReply) => {
+    if (!requireEditor(request, reply, 'build reports with AI')) return reply;
+    if (!builder) {
+      return reply.code(404).send(errorBody('not_configured', 'Build with AI is not configured on this server'));
+    }
+    const parsed = aiBody.safeParse(request.body);
+    if (!parsed.success)
+      return reply.code(400).send(errorBody('invalid_request', parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')));
+    const body = parsed.data;
+    const database = body.database ?? config.neo4j.defaultDatabase;
+    if (!config.neo4j.databases.includes(database)) {
+      return deny(request, reply, `Database "${database}" is not available`);
+    }
+    const user = request.user!.sub;
+    if (aiBusy.has(user)) {
+      return reply.code(429).send(errorBody('busy', 'A Build with AI request is already running for you'));
+    }
+    aiBusy.add(user);
+    const started = performance.now();
+    const auditBase = { database, prompt: body.prompt, report: body.context.report.title, dashboard: body.context.dashboard.title };
+    try {
+      if (kind === 'suggest') {
+        const suggestions = await builder.suggest({ ...body, database });
+        const durationMs = Math.round(performance.now() - started);
+        audit(request, 'ai.suggest', { ...auditBase, outcome: 'ok', suggestions: suggestions.map((s) => ({ type: s.type, query: s.query })), durationMs });
+        return { suggestions, model: builder.model, durationMs };
+      }
+      const result = await builder.build({ ...body, database, start: body.suggestion });
+      const durationMs = Math.round(performance.now() - started);
+      audit(request, 'ai.build', { ...auditBase, outcome: 'ok', type: result.report.type, query: result.report.query, attempts: result.attempts, durationMs });
+      return { ...result, model: builder.model, durationMs };
+    } catch (e) {
+      const durationMs = Math.round(performance.now() - started);
+      if (e instanceof BuildError) {
+        audit(request, `ai.${kind}`, { ...auditBase, outcome: 'error', errorCode: 'build_failed', problems: e.problems, durationMs });
+        return reply.code(422).send(errorBody('build_failed', e.message, { problems: e.problems, lastAnswer: e.lastAnswer }));
+      }
+      const err = e instanceof Text2CypherError ? e : new Text2CypherError((e as Error).message, 'translation_failed');
+      audit(request, `ai.${kind}`, { ...auditBase, outcome: 'error', errorCode: err.code, error: err.message, durationMs });
+      const status = err.code === 'model_unavailable' ? 502 : err.code === 'schema_unavailable' ? 503 : 422;
+      return reply.code(status).send(errorBody(err.code, err.message));
+    } finally {
+      aiBusy.delete(user);
+    }
+  };
+  app.post('/api/ai/suggest', aiRoute('suggest'));
+  app.post('/api/ai/build', aiRoute('build'));
 
   app.post('/api/query', async (request, reply) => {
     const parsed = queryBody.safeParse(request.body);

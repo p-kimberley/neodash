@@ -91,6 +91,10 @@ const schema = z
     AI_MAX_TOKENS: z.coerce.number().int().positive().optional(),
     // How long a database's schema (sent to the model) is reused before it is read again.
     AI_SCHEMA_TTL_SECONDS: z.coerce.number().int().min(0).default(300),
+    // Building reports: answers the model may give per step while the report is checked and corrected,
+    // and how long the trial run of a report's query may take.
+    AI_BUILD_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(8).default(4),
+    AI_PROBE_TIMEOUT_SECONDS: z.coerce.number().positive().max(60).default(5),
   })
   .refine((c) => !c.AI_BASE_URL || c.AI_MODEL, {
     message: 'AI_MODEL is required when AI_BASE_URL is set',
@@ -215,6 +219,8 @@ export function loadConfig(rawEnv: NodeJS.ProcessEnv = process.env) {
             temperature: c.AI_TEMPERATURE,
             maxTokens: c.AI_MAX_TOKENS,
             schemaTtlSeconds: c.AI_SCHEMA_TTL_SECONDS,
+            buildMaxAttempts: c.AI_BUILD_MAX_ATTEMPTS,
+            probeTimeoutSeconds: c.AI_PROBE_TIMEOUT_SECONDS,
           }
         : undefined,
     /** Settings given under names of earlier versions (logged at startup, so they can be renamed). */

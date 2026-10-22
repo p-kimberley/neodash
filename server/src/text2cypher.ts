@@ -151,8 +151,22 @@ export function cleanAnswer(answer: string): string {
   return text.replace(/^cypher\s*\n/i, '').trim();
 }
 
+/** The names in a database's schema, for checking what a model wrote (and suggesting corrections). */
+export interface SchemaNames {
+  labels: string[];
+  relationshipTypes: string[];
+  /** Property names, on any label or relationship type. */
+  properties: string[];
+}
+
+interface SchemaParts {
+  nodes: Map<string, string[]>;
+  rels: Map<string, string[]>;
+  patterns: Set<string>;
+}
+
 export class Text2Cypher {
-  private schemas = new Map<string, { text: string; at: number }>();
+  private schemas = new Map<string, { text: string; names: SchemaNames; at: number }>();
 
   constructor(
     private readonly config: Text2CypherConfig,
@@ -166,16 +180,26 @@ export class Text2Cypher {
 
   /** The schema of a database as text for the model; read once per schemaTtlSeconds. */
   async schema(database: string): Promise<string> {
+    return (await this.cachedSchema(database)).text;
+  }
+
+  /** The label, relationship type and property names of a database (from the same cached read). */
+  async schemaNames(database: string): Promise<SchemaNames> {
+    return (await this.cachedSchema(database)).names;
+  }
+
+  private async cachedSchema(database: string) {
     const cached = this.schemas.get(database);
-    if (cached && Date.now() - cached.at < this.config.schemaTtlSeconds * 1000) return cached.text;
-    let text: string;
+    if (cached && Date.now() - cached.at < this.config.schemaTtlSeconds * 1000) return cached;
+    let parts: SchemaParts;
     try {
-      text = await this.readSchemaWithApoc(database).catch(() => this.readSchemaBuiltIn(database));
+      parts = await this.readSchemaWithApoc(database).catch(() => this.readSchemaBuiltIn(database));
     } catch (e) {
       throw new Text2CypherError(`Could not read the database schema: ${(e as Error).message}`, 'schema_unavailable');
     }
-    this.schemas.set(database, { text, at: Date.now() });
-    return text;
+    const entry = { text: describeSchema(parts), names: namesOf(parts), at: Date.now() };
+    this.schemas.set(database, entry);
+    return entry;
   }
 
   private async read<T>(database: string, query: string, parameters: Record<string, unknown> = {}) {
@@ -188,7 +212,7 @@ export class Text2Cypher {
   }
 
   /** APOC's sampled metadata: labels with typed properties, relationship types and patterns. */
-  private async readSchemaWithApoc(database: string) {
+  private async readSchemaWithApoc(database: string): Promise<SchemaParts> {
     const records: any[] = await this.read(
       database,
       `CALL apoc.meta.data({maxRels: 10, sample: $sample})
@@ -213,11 +237,11 @@ export class Text2Cypher {
       const into = elementType === 'node' ? nodes : rels;
       into.set(label, [...(into.get(label) ?? []), `${property}: ${type}`]);
     }
-    return describeSchema(nodes, rels, patterns);
+    return { nodes, rels, patterns };
   }
 
   /** The same from Neo4j's own schema procedures (no APOC needed). */
-  private async readSchemaBuiltIn(database: string) {
+  private async readSchemaBuiltIn(database: string): Promise<SchemaParts> {
     const nodes = new Map<string, string[]>();
     const rels = new Map<string, string[]>();
     const patterns = new Set<string>();
@@ -256,11 +280,11 @@ export class Text2Cypher {
         if (start && end) patterns.add(`(:${start})-[:${rel.type}]->(:${end})`);
       }
     }
-    return describeSchema(nodes, rels, patterns);
+    return { nodes, rels, patterns };
   }
 
-  /** One chat completion: the model's answer text. */
-  async chat(messages: ChatMessage[]): Promise<string> {
+  /** One chat completion: the model's answer text. `extra` adds request fields (e.g. response_format). */
+  async chat(messages: ChatMessage[], extra: Record<string, unknown> = {}): Promise<string> {
     const url = `${this.config.baseUrl.replace(/\/+$/, '')}/chat/completions`;
     let response: Response;
     try {
@@ -275,6 +299,7 @@ export class Text2Cypher {
           messages,
           temperature: this.config.temperature,
           ...(this.config.maxTokens ? { max_tokens: this.config.maxTokens } : {}),
+          ...extra,
         }),
         signal: AbortSignal.timeout(this.config.timeoutSeconds * 1000),
       });
@@ -350,7 +375,19 @@ export class Text2Cypher {
   }
 }
 
-function describeSchema(nodes: Map<string, string[]>, rels: Map<string, string[]>, patterns: Set<string>) {
+function namesOf({ nodes, rels }: SchemaParts): SchemaNames {
+  const properties = new Set<string>();
+  for (const props of [...nodes.values(), ...rels.values()]) {
+    for (const p of props) properties.add(p.split(':')[0]!.trim());
+  }
+  return {
+    labels: [...new Set([...nodes.keys()].flatMap((l) => l.split(':')))].filter(Boolean),
+    relationshipTypes: [...rels.keys()],
+    properties: [...properties].filter(Boolean),
+  };
+}
+
+function describeSchema({ nodes, rels, patterns }: SchemaParts) {
   if (!nodes.size && !rels.size) throw new Error('the database is empty');
   const list = (m: Map<string, string[]>, prefix: string) =>
     [...m.entries()].map(([name, props]) => `${prefix}${name} {${props.join(', ')}}`).join('\n');

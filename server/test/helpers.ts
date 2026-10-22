@@ -43,6 +43,12 @@ export function sessionCookie(user: User) {
 export async function makeApp(overrides: Partial<AppDeps> = {}) {
   const config = overrides.config ?? testConfig();
   const driver = overrides.driver ?? neo4j.driver(config.neo4j.uri, neo4j.auth.basic(config.neo4j.username, config.neo4j.password));
-  const app = await buildApp({ config, driver, oidc: overrides.oidc ?? fakeOidc, llmFetch: overrides.llmFetch });
+  const app = await buildApp({
+    config,
+    driver,
+    oidc: overrides.oidc ?? fakeOidc,
+    llmFetch: overrides.llmFetch,
+    cypherChecks: overrides.cypherChecks,
+  });
   return { app, driver, config };
 }

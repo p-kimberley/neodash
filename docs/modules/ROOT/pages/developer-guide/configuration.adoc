@@ -56,6 +56,8 @@ Secrets can be given as files instead of values, by setting `<NAME>_FILE` (`NEO4
 |`AI_MAX_ATTEMPTS` |`ai.maxAttempts` |`2` |Answers per request: each is checked with `EXPLAIN`, and a failed one is retried with the error.
 |`AI_TEMPERATURE` / `AI_MAX_TOKENS` |`ai.temperature` / – |`0` / – |
 |`AI_SCHEMA_TTL_SECONDS` |– |`300` |How long a database's schema, which is sent to the model, is reused.
+|`AI_BUILD_MAX_ATTEMPTS` |– |`4` |When building a report: answers per step. Each is checked (report type, fields, settings, the query with `EXPLAIN` and a short read-only trial run) and every problem is sent back to the model, with the allowed values.
+|`AI_PROBE_TIMEOUT_SECONDS` |– |`5` |How long the trial run of a built report's query may take.
 |===
 
 Variables without a Helm value can be set through `extraEnv`. Product name, logo and colours are set separately: see xref:developer-guide/style-configuration.adoc[Style Configuration].

@@ -46,9 +46,14 @@ describe.skipIf(!process.env.INTEGRATION)('Text2Cypher against Neo4j', () => {
     expect(withApoc).toMatch(/\(:Person\)-\[:ACTED_IN\]->\(:Movie\)/);
 
     const builtIn = await (t as any).readSchemaBuiltIn('neo4j');
-    expect(builtIn).toContain(':Movie {');
-    expect(builtIn).toMatch(/title: String/);
-    expect(builtIn).toMatch(/\(:Person\)-\[:ACTED_IN\]->\(:Movie\)/);
+    expect(builtIn.nodes.get('Movie')).toContain('title: String');
+    expect([...builtIn.patterns]).toContain('(:Person)-[:ACTED_IN]->(:Movie)');
+
+    // The names, for checking what a model wrote.
+    const names = await t.schemaNames('neo4j');
+    expect(names.labels).toContain('Movie');
+    expect(names.relationshipTypes).toContain('ACTED_IN');
+    expect(names.properties).toContain('title');
   });
 
   it('checks queries with EXPLAIN without running them', async () => {

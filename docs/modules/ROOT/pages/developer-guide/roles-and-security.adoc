@@ -47,7 +47,8 @@ Each sign-in, refusal and data access writes one JSON line to stdout with `"audi
 |`access.denied` |A request the user's role doesn't allow.
 |`dashboard.list`, `dashboard.view`, `dashboard.save`, `dashboard.delete` |Dashboard access and changes.
 |`query` |Every query: dashboard, report, database, duration, rows and (with `AUDIT_LOG_PARAMETERS`) parameter values.
-|`ai.query` |Each Build with AI description and the query the language model wrote.
+|`ai.query` |Each question translated in a report's English editor, and the query the language model wrote.
+|`ai.suggest` / `ai.build` |Each Build with AI request: the description, and the suggested or built reports (type and query), or the problems that stopped it.
 |===
 
 Lines include the user (subject, username and role), the client's address and a request ID. Collect the pods' logs as usual and filter on `audit`, for example:
