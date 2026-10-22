@@ -4,10 +4,10 @@ import React, { useCallback, useContext, useEffect } from 'react';
 import { RUN_QUERY_DELAY_MS } from '../../config/ReportConfig';
 import { QueryStatus, runCypherQuery } from '../../report/ReportQueryRunner';
 import { Neo4jContext, Neo4jContextState } from '../../api/Neo4jContext';
-import { Autocomplete, TextField } from '@mui/material';
+import { SuggestInput } from '../../component/field/SuggestInput';
 import debounce from 'lodash/debounce';
 import NeoField from '../../component/field/Field';
-import { Select } from '@neo4j-ndl/react';
+import { Select, TextInput } from '@neo4j-ndl/react';
 import NeoCodeEditorComponent from '../../component/editor/CodeEditorComponent';
 
 type ParameterId = string | undefined | null;
@@ -283,60 +283,52 @@ const ParameterSelectCardSettings = ({ query, database, settings, onReportSettin
         </>
       ) : (
         <>
-          <Autocomplete
-            id='autocomplete-label-type'
-            options={
+          {/* Typing searches the database for labels / types and property names; picking one sets it
+              (or, with manual property names, the typed text is the value). */}
+          <SuggestInput
+            label={settings.type == 'Node Property' ? 'Node Label' : 'Relationship Type'}
+            placeholder='Start typing...'
+            style={{ marginTop: '13px' }}
+            suggestions={
               manualPropertyNameSpecification
                 ? [settings.entityType]
                 : labelRecords.map((r) => (r._fields ? r._fields[0] : '(no data)'))
             }
-            getOptionLabel={(option) => option || ''}
-            style={{ marginTop: '13px' }}
-            inputValue={labelInputText}
-            onInputChange={(event, value) => {
+            value={labelInputText}
+            onChange={(value) => {
               setLabelInputText(value);
               if (manualPropertyNameSpecification) {
                 handleNodeLabelSelectionUpdate(value);
-              } else if (settings.type == 'Node Property') {
-                queryCallback(
-                  'CALL db.labels() YIELD label WITH label as nodeLabel WHERE toLower(nodeLabel) CONTAINS toLower($input) RETURN DISTINCT nodeLabel ORDER BY size(nodeLabel) LIMIT 5',
-                  { input: value },
-                  setLabelRecords
-                );
               } else {
                 queryCallback(
-                  'CALL db.relationshipTypes() YIELD relationshipType WITH relationshipType as relType WHERE toLower(relType) CONTAINS toLower($input) RETURN DISTINCT relType ORDER BY size(relType) LIMIT 5',
+                  settings.type == 'Node Property'
+                    ? 'CALL db.labels() YIELD label WITH label as nodeLabel WHERE toLower(nodeLabel) CONTAINS toLower($input) RETURN DISTINCT nodeLabel ORDER BY size(nodeLabel) LIMIT 5'
+                    : 'CALL db.relationshipTypes() YIELD relationshipType WITH relationshipType as relType WHERE toLower(relType) CONTAINS toLower($input) RETURN DISTINCT relType ORDER BY size(relType) LIMIT 5',
                   { input: value },
                   setLabelRecords
                 );
               }
             }}
-            size={'small'}
-            value={settings.entityType ? settings.entityType : undefined}
-            onChange={(event, newValue) => handleNodeLabelSelectionUpdate(newValue)}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                placeholder='Start typing...'
-                InputLabelProps={{ shrink: true }}
-                label={settings.type == 'Node Property' ? 'Node Label' : 'Relationship Type'}
-              />
-            )}
+            onPick={(value) => {
+              setLabelInputText(value);
+              handleNodeLabelSelectionUpdate(value);
+            }}
+            onBlur={() => !manualPropertyNameSpecification && setLabelInputText(settings.entityType || '')}
           />
           {/* Draw the property name & id selectors only after a label/type has been selected. */}
           {settings.entityType ? (
             <>
-              <Autocomplete
-                id='autocomplete-property'
-                options={
+              <SuggestInput
+                label='Property Name'
+                placeholder='Start typing...'
+                style={{ display: 'inline-block', width: '65%', marginTop: '13px', marginRight: '5%' }}
+                suggestions={
                   manualPropertyNameSpecification
                     ? [settings.propertyType]
                     : propertyRecords.map((r) => (r._fields ? r._fields[0] : '(no data)'))
                 }
-                getOptionLabel={(option) => option || ''}
-                style={{ display: 'inline-block', width: '65%', marginTop: '13px', marginRight: '5%' }}
-                inputValue={propertyInputText}
-                onInputChange={(event, value) => {
+                value={propertyInputText}
+                onChange={(value) => {
                   setPropertyInputText(value);
                   setPropertyInputDisplayText(value);
                   if (manualPropertyNameSpecification) {
@@ -349,31 +341,25 @@ const ParameterSelectCardSettings = ({ query, database, settings, onReportSettin
                     );
                   }
                 }}
-                size={'small'}
-                value={settings.propertyType}
-                onChange={(event, newValue) => handlePropertyNameSelectionUpdate(newValue)}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    placeholder='Start typing...'
-                    InputLabelProps={{ shrink: true }}
-                    label={'Property Name'}
-                  />
-                )}
+                onPick={(value) => {
+                  setPropertyInputText(value);
+                  setPropertyInputDisplayText(value);
+                  handlePropertyNameSelectionUpdate(value);
+                }}
+                onBlur={() => !manualPropertyNameSpecification && setPropertyInputText(settings.propertyType || '')}
               />
               {overridePropertyDisplayName ? (
-                <Autocomplete
-                  id='autocomplete-property-display'
-                  size={'small'}
-                  options={
+                <SuggestInput
+                  label='Property Display Name'
+                  placeholder='Start typing...'
+                  style={{ display: 'inline-block', width: '65%', marginTop: '13px', marginRight: '5%' }}
+                  suggestions={
                     manualPropertyNameSpecification
                       ? [settings.propertyTypeDisplay || settings.propertyType]
                       : propertyRecords.map((r) => (r._fields ? r._fields[0] : '(no data)'))
                   }
-                  getOptionLabel={(option) => option || ''}
-                  style={{ display: 'inline-block', width: '65%', marginTop: '13px', marginRight: '5%' }}
-                  inputValue={propertyInputDisplayText}
-                  onInputChange={(event, value) => {
+                  value={propertyInputDisplayText}
+                  onChange={(value) => {
                     setPropertyInputDisplayText(value);
                     if (manualPropertyNameSpecification) {
                       handlePropertyDisplayNameSelectionUpdate(value);
@@ -385,30 +371,28 @@ const ParameterSelectCardSettings = ({ query, database, settings, onReportSettin
                       );
                     }
                   }}
-                  value={settings.propertyTypeDisplay || settings.propertyType}
-                  onChange={(event, newValue) => handlePropertyDisplayNameSelectionUpdate(newValue)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      placeholder='Start typing...'
-                      InputLabelProps={{ shrink: true }}
-                      label={'Property Display Name'}
-                    />
-                  )}
+                  onPick={(value) => {
+                    setPropertyInputDisplayText(value);
+                    handlePropertyDisplayNameSelectionUpdate(value);
+                  }}
+                  onBlur={() =>
+                    !manualPropertyNameSpecification &&
+                    setPropertyInputDisplayText(settings.propertyTypeDisplay || settings.propertyType || '')
+                  }
                 />
               ) : (
                 <></>
               )}
-              <TextField
-                placeholder='number'
+              <TextInput
                 label='Number (optional)'
-                disabled={!settings.propertyType}
-                value={settings.id}
-                style={{ width: '30%', display: 'inline-block', marginTop: '13px' }}
+                placeholder='number'
+                size='small'
+                isDisabled={!settings.propertyType}
+                value={settings.id ?? ''}
+                style={{ width: '30%', display: 'inline-block', marginTop: '13px', verticalAlign: 'top' }}
                 onChange={(e) => {
                   handleIdSelectionUpdate(e.target.value);
                 }}
-                size={'small'}
               />
             </>
           ) : (

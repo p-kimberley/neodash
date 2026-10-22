@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Autocomplete, TextField } from '@mui/material';
+import { SuggestInput } from '../../component/field/SuggestInput';
 import NeoColorPicker from '../../component/field/ColorPicker';
 import { IconButton, Dialog, TextInput, FilledButton, Select } from '@neo4j-ndl/react';
 import { AdjustmentsHorizontalIconOutline, XMarkIconOutline, PlusIconOutline } from '@neo4j-ndl/react/icons';
@@ -253,34 +253,14 @@ export const NeoCustomReportStyleModal = ({
                           </td>
                           <td width='45%'>
                             <div style={{ border: '2px dashed grey' }} className='n-p-1'>
-                              <Autocomplete
+                              <SuggestInput
                                 className='n-align-middle n-inline-block n-w-5/12 n-pr-1'
-                                disableClearable={true}
-                                id={`autocomplete-label-type${index}`}
-                                size='small'
-                                noOptionsText='*Specify an exact field name'
-                                options={createFieldVariableSuggestions().filter((e) =>
-                                  e.toLowerCase().includes(rule.field.toLowerCase())
-                                )}
-                                value={rule.field ? rule.field : ''}
-                                inputValue={rule.field ? rule.field : ''}
-                                popupIcon={<></>}
                                 style={{ minWidth: 125 }}
-                                onInputChange={(event, value) => {
-                                  updateRuleField(index, 'field', value);
-                                }}
-                                onChange={(event, newValue) => {
-                                  updateRuleField(index, 'field', newValue);
-                                }}
-                                renderInput={(params) => (
-                                  <TextField
-                                    {...params}
-                                    placeholder='Field name...'
-                                    InputLabelProps={{ shrink: true }}
-                                    style={{ padding: '6px 0 7px' }}
-                                    size={'small'}
-                                  />
-                                )}
+                                ariaLabel='Field name'
+                                placeholder='Field name...'
+                                suggestions={createFieldVariableSuggestions()}
+                                value={rule.field ? rule.field : ''}
+                                onChange={(value) => updateRuleField(index, 'field', value)}
                               />
                               <Select
                                 type='select'
@@ -330,38 +310,17 @@ export const NeoCustomReportStyleModal = ({
                                 }}
                                 isFluid
                               />
-                              <Autocomplete
+                              <SuggestInput
                                 className='n-align-middle n-inline-block n-w-5/12 n-pr-1'
-                                disableClearable={true}
-                                id={`autocomplete-label-type${index}`}
-                                size='small'
-                                noOptionsText='*Specify an exact field name'
-                                options={createFieldVariableSuggestions().filter((e) =>
-                                  e.toLowerCase().includes(rule.targetField)
-                                )}
-                                value={rule.targetField ? rule.targetField : rule.field ? rule.field : ''}
-                                inputValue={rule.targetField ? rule.targetField : rule.field ? rule.field : ''}
-                                popupIcon={<></>}
                                 style={{
                                   minWidth: 125,
-                                  visibility: rule.customization.includes('cell') ? 'visible' : 'hidden',
                                   display: rule.customization.includes('cell') ? '' : 'none',
                                 }}
-                                onInputChange={(event, value) => {
-                                  updateRuleField(index, 'targetField', value);
-                                }}
-                                onChange={(event, newValue) => {
-                                  updateRuleField(index, 'targetField', newValue);
-                                }}
-                                renderInput={(params) => (
-                                  <TextField
-                                    {...params}
-                                    placeholder='Target field name...'
-                                    InputLabelProps={{ shrink: true }}
-                                    style={{ padding: '6px 0 7px' }}
-                                    size={'small'}
-                                  />
-                                )}
+                                ariaLabel='Target field name'
+                                placeholder='Target field name...'
+                                suggestions={createFieldVariableSuggestions()}
+                                value={rule.targetField ? rule.targetField : rule.field ? rule.field : ''}
+                                onChange={(value) => updateRuleField(index, 'targetField', value)}
                               />
                               <TextInput
                                 className='n-align-middle n-inline-block n-w-1/12 n-pr-1'

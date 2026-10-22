@@ -7,21 +7,7 @@ import { CleanIconButton } from '@neo4j-ndl/react';
  */
 export const DeletePropertyButton = ({ onClick, key }) => {
   return (
-    <CleanIconButton
-      description='Delete'
-      key={key}
-      size='medium'
-      style={{
-        background: 'white',
-        color: 'grey',
-        marginTop: '-6px',
-        marginLeft: '20px',
-        width: '26px',
-        height: '26px',
-        minHeight: '26px',
-      }}
-      onClick={onClick}
-    >
+    <CleanIconButton description='Delete property' key={key} size='small' onClick={onClick}>
       <XMarkIconOutline key={`icon${key}`} />
     </CleanIconButton>
   );

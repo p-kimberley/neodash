@@ -1,9 +1,9 @@
 import React from 'react';
-import Autocomplete from '@mui/material/Autocomplete';
-import { TextField } from '@mui/material';
+import { SuggestInput } from '../../../../component/field/SuggestInput';
 
 /**
- * Renders an auto-complete text field for property identifiers.
+ * Renders an auto-complete text field for property identifiers. Typing searches the database's
+ * property keys; picking one sets the property's name.
  * TODO - check that the same database is used that the component has selected.
  */
 export const PropertyNameAutocomplete = ({
@@ -17,31 +17,35 @@ export const PropertyNameAutocomplete = ({
   setRecords,
   queryCallback,
 }) => {
+  const setInput = (text) => {
+    const newPropertyInputTexts = [...inputs];
+    newPropertyInputTexts[index] = text;
+    setInputs(newPropertyInputTexts);
+  };
   return (
-    <Autocomplete
-      id='autocomplete-property'
-      disabled={disabled}
-      options={records.map((r) => (r._fields ? r._fields[0] : '(no data)'))}
-      getOptionLabel={(option) => option || ''}
-      style={{ display: 'inline-block', width: 170, marginLeft: '5px', marginTop: '0px' }}
-      inputValue={inputs[index]}
-      onInputChange={(event, value) => {
-        const newPropertyInputTexts = [...inputs];
-        newPropertyInputTexts[index] = value;
-        setInputs(newPropertyInputTexts);
+    <SuggestInput
+      ariaLabel='Property name'
+      placeholder='Name...'
+      isDisabled={disabled}
+      isFluid={false}
+      style={{ display: 'inline-block', width: 170 }}
+      suggestions={records.map((r) => (r._fields ? r._fields[0] : '(no data)'))}
+      value={inputs[index] ?? ''}
+      onChange={(text) => {
+        setInput(text);
         queryCallback(
           'CALL db.propertyKeys() YIELD propertyKey as propertyName WITH propertyName WHERE toLower(propertyName) CONTAINS toLower($input) RETURN DISTINCT propertyName LIMIT 5',
-          { input: value },
+          { input: text },
           setRecords
         );
       }}
-      value={values[index].name}
-      onChange={(e, val) => {
+      onPick={(picked) => {
+        setInput(picked);
         const newProperties = [...values];
-        newProperties[index].name = val;
+        newProperties[index].name = picked;
         setValues(newProperties);
       }}
-      renderInput={(params) => <TextField {...params} placeholder='Name...' InputLabelProps={{ shrink: true }} />}
+      onBlur={() => setInput(values[index]?.name || '')}
     />
   );
 };

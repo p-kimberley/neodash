@@ -1,11 +1,7 @@
 import { GraphChartVisualizationProps } from '../GraphChartVisualization';
 import React, { useEffect } from 'react';
-import { Dialog, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-import { Button } from '@mui/material';
-import { TextField, Typography } from '@mui/material';
-
-import { PlusIconOutline, XMarkIconOutline, PlayIconOutline } from '@neo4j-ndl/react/icons';
-import { IconButton, CleanIconButton } from '@neo4j-ndl/react';
+import { PlusIconOutline, PlayIconOutline } from '@neo4j-ndl/react/icons';
+import { Dialog, FilledButton, IconButton, TextInput } from '@neo4j-ndl/react';
 import { LabelTypeAutocomplete } from './autocomplete/LabelTypeAutocomplete';
 import { DeletePropertyButton } from './button/modal/DeletePropertyButton';
 import {
@@ -87,31 +83,21 @@ export const GraphChartEditModal = (props: GraphChartEditorVisualizationProps) =
 
   return (
     <Dialog
-      maxWidth={'lg'}
-      open={props.dialogOpen}
+      size='large'
+      isOpen={props.dialogOpen}
       onClose={() => {
+        props.interactivity.setContextMenuOpen(false);
         props.setDialogOpen(false);
+        setProperties([{ name: '', value: '' }]);
       }}
-      aria-labelledby='form-dialog-title'
     >
-      <DialogTitle id='form-dialog-title'>
+      <Dialog.Header>
         {props.action == EditAction.Create ? 'Create' : 'Edit'} a{' '}
         {props.type == EditType.Node ? 'Node' : 'Relationship'}
-        <CleanIconButton
-          description='Close'
-          onClick={() => {
-            props.interactivity.setContextMenuOpen(false);
-            props.setDialogOpen(false);
-            setProperties([{ name: '', value: '' }]);
-          }}
-          style={{ marginLeft: '40px', padding: '3px', float: 'right' }}
-        >
-          <XMarkIconOutline />
-        </CleanIconButton>
-      </DialogTitle>
+      </Dialog.Header>
 
-      <DialogContent style={{ minWidth: '300px' }}>
-        <DialogContentText>
+      <Dialog.Content>
+        <div>
           <LabelTypeAutocomplete
             records={labelRecords}
             setRecords={setLabelRecords}
@@ -123,7 +109,7 @@ export const GraphChartEditModal = (props: GraphChartEditorVisualizationProps) =
             setInput={setLabelInputText}
             disabled={props.type == EditType.Relationship && props.action == EditAction.Edit}
           />
-          <h4>Properties</h4>
+          <h4 style={{ margin: '16px 0 8px' }}>Properties</h4>
 
           <table>
             <tbody>
@@ -137,7 +123,7 @@ export const GraphChartEditModal = (props: GraphChartEditorVisualizationProps) =
                 return (
                   <tr key={`trEditProp${index}`} style={{ height: 40 }}>
                     <td style={{ paddingLeft: '2px', paddingRight: '2px' }}>
-                      <span style={{ color: 'black', width: '50px' }}>{index + 1}.</span>
+                      <span>{index + 1}.</span>
                     </td>
                     <td style={{ paddingLeft: '5px', paddingRight: '5px' }}>
                       <PropertyNameAutocomplete
@@ -153,18 +139,20 @@ export const GraphChartEditModal = (props: GraphChartEditorVisualizationProps) =
                       />
                     </td>
                     <td style={{ paddingLeft: '5px', paddingRight: '5px' }}>
-                      <TextField
+                      <TextInput
                         key={`txtFieldEditProp${index}`}
-                        style={{ width: '100%' }}
+                        size='small'
+                        isFluid
                         placeholder='Value...'
-                        disabled={disabled}
+                        isDisabled={disabled}
                         value={property.value}
+                        htmlAttributes={{ 'aria-label': 'Property value' }}
                         onChange={(e) => {
                           const newProperties = [...properties];
                           newProperties[index].value = e.target.value;
                           setProperties(newProperties);
                         }}
-                      ></TextField>
+                      />
                     </td>
 
                     <td>
@@ -185,12 +173,11 @@ export const GraphChartEditModal = (props: GraphChartEditorVisualizationProps) =
 
               <tr key={'trEditButtons'}>
                 <td style={{ minWidth: '450px' }} colSpan={4}>
-                  <Typography variant='h3' color='primary' style={{ textAlign: 'center', marginBottom: '5px' }}>
+                  <div className='n-flex n-justify-center n-my-2'>
                     <IconButton
-                      description='Add'
+                      description='Add property'
                       key={'btnAddProp'}
                       size='small'
-                      style={{ background: 'white', color: 'black' }}
                       onClick={() => {
                         const newProperty = { name: '', value: '' };
                         setProperties(properties.concat(newProperty));
@@ -198,58 +185,56 @@ export const GraphChartEditModal = (props: GraphChartEditorVisualizationProps) =
                     >
                       <PlusIconOutline />
                     </IconButton>
-                  </Typography>
+                  </div>
                 </td>
               </tr>
             </tbody>
           </table>
-          <Button
-            key={'btnEditProp'}
-            style={{ marginBottom: '10px' }}
-            disabled={label === undefined || label == '' || labelInputText !== label}
-            onClick={() => {
-              const newProperties = {};
+        </div>
+      </Dialog.Content>
+      <Dialog.Actions>
+        <FilledButton
+          key={'btnEditProp'}
+          isDisabled={label === undefined || label == '' || labelInputText !== label}
+          onClick={() => {
+            const newProperties = {};
 
-              properties.map((prop) => {
-                if (prop.name !== '' && prop.value !== '') {
-                  newProperties[prop.name] = prop.value;
-                }
-              });
-
-              if (props.action == EditAction.Create && props.type == EditType.Node) {
-                handleNodeCreate();
-              } else if (props.action == EditAction.Create && props.type == EditType.Relationship) {
-                handleRelationshipCreate(
-                  props.interactivity.selectedEntity,
-                  label,
-                  newProperties,
-                  props.selectedNode,
-                  props.engine,
-                  props.interactivity,
-                  props.data
-                );
-              } else if (props.action == EditAction.Edit && props.type == EditType.Node) {
-                const labels = label.split(',').map((l) => l.trim());
-                handleNodeEdit(props.interactivity.selectedEntity, labels, newProperties, props);
-              } else if (props.action == EditAction.Edit && props.type == EditType.Relationship) {
-                handleRelationshipEdit(props.interactivity.selectedEntity, newProperties, props);
-              } else if (props.action == EditAction.Delete && props.type == EditType.Node) {
-                handleNodeDelete();
-              } else if (props.action == EditAction.Delete && props.type == EditType.Relationship) {
-                handleRelationshipDelete();
+            properties.map((prop) => {
+              if (prop.name !== '' && prop.value !== '') {
+                newProperties[prop.name] = prop.value;
               }
-              props.setDialogOpen(false);
-              setProperties([{ name: '', value: '' }]);
-            }}
-            style={{ float: 'right', marginBottom: 15 }}
-            variant='contained'
-            size='medium'
-            endIcon={<PlayIconOutline className='btn-icon-base-r' />}
-          >
-            {props.action == EditAction.Create ? 'Create' : 'Save'}
-          </Button>
-        </DialogContentText>
-      </DialogContent>
+            });
+
+            if (props.action == EditAction.Create && props.type == EditType.Node) {
+              handleNodeCreate();
+            } else if (props.action == EditAction.Create && props.type == EditType.Relationship) {
+              handleRelationshipCreate(
+                props.interactivity.selectedEntity,
+                label,
+                newProperties,
+                props.selectedNode,
+                props.engine,
+                props.interactivity,
+                props.data
+              );
+            } else if (props.action == EditAction.Edit && props.type == EditType.Node) {
+              const labels = label.split(',').map((l) => l.trim());
+              handleNodeEdit(props.interactivity.selectedEntity, labels, newProperties, props);
+            } else if (props.action == EditAction.Edit && props.type == EditType.Relationship) {
+              handleRelationshipEdit(props.interactivity.selectedEntity, newProperties, props);
+            } else if (props.action == EditAction.Delete && props.type == EditType.Node) {
+              handleNodeDelete();
+            } else if (props.action == EditAction.Delete && props.type == EditType.Relationship) {
+              handleRelationshipDelete();
+            }
+            props.setDialogOpen(false);
+            setProperties([{ name: '', value: '' }]);
+          }}
+        >
+          {props.action == EditAction.Create ? 'Create' : 'Save'}
+          <PlayIconOutline className='btn-icon-base-r' />
+        </FilledButton>
+      </Dialog.Actions>
     </Dialog>
   );
 };

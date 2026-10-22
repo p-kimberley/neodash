@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { XMarkIconOutline, PlusIconOutline, SparklesIconOutline } from '@neo4j-ndl/react/icons';
 import { getPageNumbersAndNamesList } from '../advancedcharts/Utils';
 import { IconButton, Dialog, TextInput, FilledButton, Select } from '@neo4j-ndl/react';
-import { Autocomplete, TextField } from '@mui/material';
+import { SuggestInput } from '../../component/field/SuggestInput';
 
 // The set of conditional checks that are included in the rule specification.
 const RULE_CONDITIONS = {
@@ -259,10 +259,6 @@ export const NeoCustomReportActionsModal = ({
     }
   };
 
-  const handleOnChange = (customization, index, newValue) => {
-    updateRuleField(index, 'value', newValue);
-  };
-
   const actionHelperClass = 'n-w-2/3 n-inline-flex';
   const spanClass = 'n-align-middle ';
   const textInputClass = 'font-bold n-ml-2 n-mt-[1px] n-float-right n-w-full';
@@ -328,33 +324,14 @@ export const NeoCustomReportActionsModal = ({
   const td2DropdownClassname = (type) => `n-align-middle n-pr-1 ${type === 'bar' ? 'n-w-full' : 'n-w-2/5'}`;
   const td2Autocomplete = (type, index, rule) =>
     type !== 'bar' && rule.condition !== 'rowCheck' ? (
-      <Autocomplete
-        className='n-align-middle n-inline-block n-w-/5'
-        disableClearable={true}
-        id='autocomplete-label-type'
-        size='small'
-        noOptionsText='*Specify an exact field name'
-        options={createFieldVariableSuggestionsFromRule(rule, true)}
+      <SuggestInput
+        className='n-align-middle n-inline-block'
+        style={{ minWidth: 125 }}
+        ariaLabel='Field name'
+        placeholder='Field name...'
+        suggestions={createFieldVariableSuggestionsFromRule(rule, true)}
         value={rule.field ? rule.field : ''}
-        inputValue={rule.field ? rule.field : ''}
-        popupIcon={<></>}
-        style={{
-          minWidth: 125,
-        }}
-        onInputChange={(event, value) => {
-          updateRuleField(index, 'field', value);
-        }}
-        onChange={(event, newValue) => {
-          updateRuleField(index, 'field', newValue);
-        }}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            placeholder='Field name...'
-            style={{ padding: 0 }}
-            InputLabelProps={{ shrink: true }}
-          />
-        )}
+        onChange={(value) => updateRuleField(index, 'field', value)}
       />
     ) : (
       <></>
@@ -474,22 +451,15 @@ export const NeoCustomReportActionsModal = ({
 
                         <td style={td6Styling(type)}>
                           <div style={{ border: '2px dashed grey' }} className='n-p-1'>
-                            <Autocomplete
-                              disableClearable={true}
-                              size='small'
+                            <SuggestInput
                               className='n-align-middle n-inline-block n-w-full'
-                              id='autocomplete-label-type'
-                              noOptionsText='*Specify an exact field name'
-                              options={createFieldVariableSuggestionsFromRule(rule, false)}
-                              value={rule.value || ''}
-                              inputValue={rule.value || ''}
-                              popupIcon={<></>}
                               style={{ minWidth: 250 }}
-                              onInputChange={(e, value) => handleOnInputchange(rule.customization, index, value)}
-                              onChange={(e, newValue) => handleOnChange(rule.customization, index, newValue)}
-                              renderInput={(params) => (
-                                <TextField {...params} placeholder='Value name...' InputLabelProps={{ shrink: true }} />
-                              )}
+                              ariaLabel='Value'
+                              placeholder='Value name...'
+                              suggestions={createFieldVariableSuggestionsFromRule(rule, false)}
+                              value={rule.value || ''}
+                              // Typed or picked, as the previous field did both.
+                              onChange={(value) => handleOnInputchange(rule.customization, index, value)}
                             />
                           </div>
                         </td>
