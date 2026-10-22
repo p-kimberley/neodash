@@ -15,6 +15,7 @@ import { getExampleReports } from '../../extensions/ExtensionUtils';
 import { NeoReportExamplesModal } from '../../modal/ReportExamplesModal';
 import { enterHandler, openTab } from '../../utils/accessibility';
 import { session } from '../../api/client';
+import { docsUrl } from '../../utils/docs';
 
 type HelpMenuOpenEvent = React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>;
 
@@ -70,20 +71,11 @@ export const NeoAboutButton = ({ connection, onAboutModalOpen, extensions }) => 
             <></>
           )}
           <Menu.Item
-            onClick={() =>
-              openTab(
-                'https://github.com/neo4j-contrib/neodash/tree/master/docs/modules/ROOT/pages/user-guide/index.adoc'
-              )
-            }
+            onClick={() => openTab(docsUrl())}
             title={'Documentation'}
             leadingVisual={<BookOpenIconOutline />}
             htmlAttributes={{
-              onKeyDown: (e) =>
-                enterHandler(e, () =>
-                  openTab(
-                    'https://github.com/neo4j-contrib/neodash/tree/master/docs/modules/ROOT/pages/user-guide/index.adoc'
-                  )
-                ),
+              onKeyDown: (e) => enterHandler(e, () => openTab(docsUrl())),
             }}
           />
           <Menu.Item

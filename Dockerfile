@@ -16,7 +16,10 @@ COPY public ./public
 COPY src ./src
 # The typed JSON codec is shared with the backend.
 COPY server/src/codec.ts ./server/src/codec.ts
-COPY scripts/precompress.mjs ./scripts/
+COPY scripts/precompress.mjs scripts/build-docs.mjs ./scripts/
+# The documentation, served at /docs so it can be read offline.
+COPY docs/modules ./docs/modules
+COPY docs/viewer ./docs/viewer
 # Map data (public/maps) is bundled so map charts work offline; .br/.gz copies keep it small on the wire.
 RUN yarn run build-minimal && rm -f dist/config.json dist/embed-test.html dist/*.map \
     && node scripts/precompress.mjs dist

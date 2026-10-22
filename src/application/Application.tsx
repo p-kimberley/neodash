@@ -23,6 +23,7 @@ import { NeedleThemeProvider } from '@neo4j-ndl/react';
 import { getDashboardTheme } from '../dashboard/DashboardSelectors';
 import { ThemeProvider } from '@mui/material/styles';
 import { createAppTheme } from '../theme/muiTheme';
+import { rememberThemeForDocs } from '../utils/docs';
 
 const NeoReportHelpModal = React.lazy(() => import('../modal/ReportHelpModal'));
 const NeoNotificationModal = React.lazy(() => import('../modal/NotificationModal'));
@@ -91,6 +92,7 @@ const Application = ({
     } else {
       document.body.classList.remove('ndl-theme-dark');
     }
+    rememberThemeForDocs(themeMode === 'dark' ? 'dark' : 'light');
   }, [themeMode]);
 
   return (

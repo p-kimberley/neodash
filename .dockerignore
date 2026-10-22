@@ -6,7 +6,10 @@ server/dist
 .idea
 cypress
 gallery
-docs
+# Only the documentation sources go into the image build (scripts/build-docs.mjs).
+docs/*
+!docs/modules
+!docs/viewer
 dev
 k8s-deploy
 *.log

@@ -26,6 +26,11 @@
     "@jridgewell/gen-mapping" "^0.3.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
+"@asciidoctor/core@4.1.1":
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/@asciidoctor/core/-/core-4.1.1.tgz#972ff00e5213e57c2d783252dc6c81a6c538e3f3"
+  integrity sha512-kwynyx6FXXi985Q9tfIPUitZ/2vzISYmcUVVZXkSamwD91I5nL7TJt33HXjnBYwfzugLu36RZuhNA/DB4fogEA==
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.22.13", "@babel/code-frame@^7.29.7":
   version "7.29.7"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.29.7.tgz#f2fbbfea87c44a21590ec515b778b2c26d8866e7"

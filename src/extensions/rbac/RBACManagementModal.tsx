@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Dialog, FilledButton, OutlinedButton, Select } from '@neo4j-ndl/react';
 import { Neo4jContext, Neo4jContextState } from '../../api/Neo4jContext';
+import { docsUrl } from '../../utils/docs';
 import {
   Operation,
   retrieveAllowAndDenyLists,
@@ -149,7 +150,7 @@ export const RBACManagementModal = ({ open, handleClose, currentRole, createNoti
         <br />
         For more information, please refer to the{' '}
         <a
-          href='https://github.com/neo4j-contrib/neodash/tree/master/docs/modules/ROOT/pages/user-guide/extensions/access-control-management.adoc'
+          href={docsUrl('user-guide/extensions/access-control-management')}
           target='_blank'
           rel='noopener noreferrer'
           style={{ color: 'blue', textDecoration: 'underline' }}

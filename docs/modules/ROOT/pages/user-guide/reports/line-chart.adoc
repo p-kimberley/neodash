@@ -130,7 +130,7 @@ and will need to be executed manually.
 
 == Rule-Based Styling
 
-Using the link:../#_rule_based_styling[Rule-Based Styling] menu, the
+Using the xref:user-guide/extensions/rule-based-styling.adoc[Rule-Based Styling] menu, the
 following style rules can be applied to the line chart: 
 
 - The color of the line.

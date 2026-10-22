@@ -13,7 +13,7 @@ if (!root) {
   process.exit(1);
 }
 
-const EXTENSIONS = new Set(['.js', '.mjs', '.css', '.json', '.svg', '.txt', '.map']);
+const EXTENSIONS = new Set(['.js', '.mjs', '.css', '.json', '.svg', '.txt', '.map', '.html']);
 const MIN_BYTES = 1024;
 
 const files = (dir) =>

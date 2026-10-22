@@ -5,6 +5,7 @@ import { translateQuery } from './text2cypher/util/Util';
 import { GPT_LOADING_ICON } from './text2cypher/component/LoadingIcon';
 import QueryTranslatorButton from './text2cypher/component/QueryTranslatorButton';
 import RBACManagementLabelButton from './rbac/RBACManagementLabelButton';
+import { docsUrl } from '../utils/docs';
 
 // TODO: continue documenting interface
 interface Extension {
@@ -34,7 +35,7 @@ export const EXTENSIONS: Record<string, Extension> = {
     enabled: true,
     description:
       'Advanced visualizations let you take your dashboard to the next level. This extension adds a sankey chart to visualize flows, three charts to plot hierarchical data (Sunburst, Circle Packing, Treemap). A Gauge Chart to show percentages, a Radar chart to show radial data, and an Area map to visualize country-data.',
-    link: 'https://github.com/neo4j-contrib/neodash/tree/master/docs/modules/ROOT/pages/user-guide/index.adoc',
+    link: docsUrl('user-guide/extensions/advanced-visualizations'),
   },
   'rule-based-styling': {
     name: 'styling',
@@ -44,7 +45,7 @@ export const EXTENSIONS: Record<string, Extension> = {
     enabled: true,
     description:
       "The rule-based styling extension allows users to dynamically color elements in a visualization based on output values. This can be applied to tables, graphs, bar charts, line charts, and more. To use the extension, click on the 'rule-based styling' icon inside the settings of a report.",
-    link: 'https://github.com/neo4j-contrib/neodash/tree/master/docs/modules/ROOT/pages/user-guide/index.adoc',
+    link: docsUrl('user-guide/extensions/rule-based-styling'),
   },
   'report-actions': {
     name: 'actions',

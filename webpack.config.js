@@ -102,6 +102,11 @@ module.exports = (env) => {
       // The backend (server/) listens on 3000; the dev server proxies its routes so the app is
       // same-origin, exactly as in production.
       port: 5173,
+      // The documentation is built by `yarn docs` (scripts/build-docs.mjs); production builds put it in dist/docs.
+      static: [
+        { directory: path.join(__dirname, 'public') },
+        { directory: path.join(__dirname, 'docs/build'), publicPath: '/docs' },
+      ],
       hot: true,
       compress: true,
       historyApiFallback: true,

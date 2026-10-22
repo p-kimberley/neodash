@@ -6,6 +6,7 @@ import { PlusCircleIconOutline } from '@neo4j-ndl/react/icons';
 import { QueryStatus, runCypherQuery } from '../../../report/ReportQueryRunner';
 import { createNotificationThunk } from '../../../page/PageThunks';
 import { useDispatch } from 'react-redux';
+import { docsUrl } from '../../../utils/docs';
 /**
  * Configures setting the current Neo4j database connection for the dashboard.
  * @param open - Whether the modal is open or not.
@@ -152,7 +153,7 @@ export const NeoDashboardSidebarAccessModal = ({ open, database, dashboard, hand
         <br />
         For more information, please refer to the{' '}
         <a
-          href='https://github.com/neo4j-contrib/neodash/tree/master/docs/modules/ROOT/pages/user-guide/access-control-management.adoc'
+          href={docsUrl('user-guide/access-control')}
           target='_blank'
           rel='noopener noreferrer'
           style={{ color: 'blue', textDecoration: 'underline' }}

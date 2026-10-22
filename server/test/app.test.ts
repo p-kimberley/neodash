@@ -139,6 +139,8 @@ describe('serving the UI', () => {
     fs.writeFileSync(path.join(dir, 'maps', 'shapes.json'), SHAPES);
     fs.writeFileSync(path.join(dir, 'maps', 'shapes.json.br'), zlib.brotliCompressSync(SHAPES));
     fs.writeFileSync(path.join(dir, 'maps', 'shapes.json.gz'), zlib.gzipSync(SHAPES));
+    fs.mkdirSync(path.join(dir, 'docs'));
+    fs.writeFileSync(path.join(dir, 'docs', 'index.html'), '<!doctype html><title>docs</title>');
     const { makeApp: make, testConfig } = await import('./helpers.js');
     const { app: staticApp, driver: staticDriver } = await make({ config: testConfig({ STATIC_DIR: dir }) });
     try {
@@ -156,6 +158,14 @@ describe('serving the UI', () => {
       expect(plain.headers['content-encoding']).toBeUndefined();
       expect(plain.body).toBe(SHAPES);
       expect((await staticApp.inject({ url: '/api/nope' })).statusCode).toBe(401);
+      // The documentation is a static site of its own, not part of the app.
+      for (const url of ['/docs', '/docs/']) {
+        const home = await staticApp.inject({ url });
+        expect(home.statusCode).toBe(302);
+        expect(home.headers.location).toBe('/docs/index.html');
+      }
+      expect((await staticApp.inject({ url: '/docs/index.html' })).body).toContain('docs');
+      expect((await staticApp.inject({ url: '/docs/no-such-page' })).statusCode).toBe(404);
     } finally {
       await staticApp.close();
       await staticDriver.close();

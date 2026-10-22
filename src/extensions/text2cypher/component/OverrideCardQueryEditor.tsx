@@ -17,6 +17,7 @@ import {
   setSessionStoragePrepopulationReportFunction,
 } from '../../state/ExtensionActions';
 import { getPrepopulateReportExtension } from '../../state/ExtensionSelectors';
+import { docsUrl } from '../../../utils/docs';
 
 // TODO: right now if we change the database in the cardSelector, it should forgot the card history
 export const NeoOverrideCardQueryEditor = ({
@@ -188,7 +189,7 @@ export const NeoOverrideCardQueryEditor = ({
                 <a
                   target='_blank'
                   style={{ textDecoration: 'underline' }}
-                  href='https://github.com/neo4j-contrib/neodash/tree/master/docs/modules/ROOT/pages/user-guide/extensions/natural-language-queries.adoc'
+                  href={docsUrl('user-guide/extensions/natural-language-queries')}
                 >
                   documentation
                 </a>

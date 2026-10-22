@@ -22,8 +22,8 @@ export default tseslint.config(
     ],
   },
   js.configs.recommended,
-  // Dev scripts (seed data, the browser regression suite) run in Node.
-  { files: ['dev/**/*.{js,mjs}'], languageOptions: { globals: { ...globals.node } } },
+  // Dev and build scripts (seed data, the browser regression suite, docs and release tooling) run in Node.
+  { files: ['dev/**/*.{js,mjs}', 'scripts/**/*.{js,mjs}'], languageOptions: { globals: { ...globals.node } } },
   // Browser-side callbacks (page.evaluate) in the regression suite.
   { files: ['dev/e2e/tests/**/*.mjs'], languageOptions: { globals: { ...globals.browser } } },
   ...tseslint.configs.recommended,

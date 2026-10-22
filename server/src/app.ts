@@ -55,7 +55,11 @@ const queryBody = z
     timeoutSeconds: z.number().positive().optional(),
     // Where an ad-hoc query came from, for the audit log only.
     context: z
-      .object({ dashboard: z.string().max(200).optional(), page: z.number().int().optional(), report: z.string().max(200).optional() })
+      .object({
+        dashboard: z.string().max(200).optional(),
+        page: z.number().int().optional(),
+        report: z.string().max(200).optional(),
+      })
       .optional(),
   })
   .refine((b) => b.query !== undefined || (b.dashboard !== undefined && b.report !== undefined), {
@@ -90,8 +94,15 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
     }
   });
 
-  const errorBody = (code: string, message: string, extra: Record<string, unknown> = {}) => ({ error: { code, message, ...extra } });
-  const deny = (request: FastifyRequest, reply: FastifyReply, reason: string, details: Record<string, unknown> = {}) => {
+  const errorBody = (code: string, message: string, extra: Record<string, unknown> = {}) => ({
+    error: { code, message, ...extra },
+  });
+  const deny = (
+    request: FastifyRequest,
+    reply: FastifyReply,
+    reason: string,
+    details: Record<string, unknown> = {}
+  ) => {
     audit(request, 'access.denied', { reason, method: request.method, url: request.url, ...details });
     return reply.code(403).send(errorBody('forbidden', reason));
   };
@@ -128,7 +139,10 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
       result = await oidc.finishLogin(callbackUrl, login);
     } catch (e) {
       audit(request, 'auth.login.failed', { error: (e as Error).message });
-      return reply.code(401).type('text/html').send(page('Sign-in failed', 'Please <a href="/auth/login">try again</a>.'));
+      return reply
+        .code(401)
+        .type('text/html')
+        .send(page('Sign-in failed', 'Please <a href="/auth/login">try again</a>.'));
     }
     const { user, idToken } = result;
     if (!user.role) {
@@ -136,7 +150,13 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
       return reply
         .code(403)
         .type('text/html')
-        .send(page('No access', `You are signed in as <b>${escapeHtml(user.username)}</b>, but you have not been given access to NeoDash.`, true));
+        .send(
+          page(
+            'No access',
+            `You are signed in as <b>${escapeHtml(user.username)}</b>, but you have not been given access to NeoDash.`,
+            true
+          )
+        );
     }
     // Keep the cookie small: only the NeoDash roles are needed after sign-in (all roles are in the
     // audit line below), and the ID token is only a logout hint, so it is dropped if the cookie would
@@ -204,7 +224,8 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
     // pages: JSON bodies can't be sent cross-site without a CORS preflight, and Origin must match.
     if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
       const origin = request.headers.origin;
-      if (origin && !config.allowedOrigins.includes(origin)) return deny(request, reply, 'Cross-origin request rejected');
+      if (origin && !config.allowedOrigins.includes(origin))
+        return deny(request, reply, 'Cross-origin request rejected');
       const type = request.headers['content-type'] ?? '';
       if (request.method !== 'DELETE' && !type.startsWith('application/json')) {
         return reply.code(415).send(errorBody('unsupported_media_type', 'Requests must be application/json'));
@@ -281,7 +302,8 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
 
   app.post('/api/query', async (request, reply) => {
     const parsed = queryBody.safeParse(request.body);
-    if (!parsed.success) return reply.code(400).send(errorBody('invalid_request', parsed.error.issues.map((i) => i.message).join('; ')));
+    if (!parsed.success)
+      return reply.code(400).send(errorBody('invalid_request', parsed.error.issues.map((i) => i.message).join('; ')));
     const body = parsed.data;
     const user = request.user!;
 
@@ -290,7 +312,10 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
     let source: Record<string, unknown>;
     if (body.query !== undefined) {
       if (user.role !== 'editor') {
-        return deny(request, reply, 'Only editors can run ad-hoc queries', { query: body.query, context: body.context });
+        return deny(request, reply, 'Only editors can run ad-hoc queries', {
+          query: body.query,
+          context: body.context,
+        });
       }
       query = body.query;
       database = body.database ?? config.neo4j.defaultDatabase;
@@ -318,7 +343,10 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
 
     const accessMode = user.role === 'editor' ? 'WRITE' : 'READ';
     const rowLimit = Math.min(body.rowLimit ?? 1000, config.query.maxRowLimit);
-    const timeoutSeconds = Math.min(body.timeoutSeconds ?? config.query.defaultTimeoutSeconds, config.query.maxTimeoutSeconds);
+    const timeoutSeconds = Math.min(
+      body.timeoutSeconds ?? config.query.defaultTimeoutSeconds,
+      config.query.maxTimeoutSeconds
+    );
     let parameters: Record<string, unknown>;
     try {
       parameters = decodeParameters(body.parameters, neo4j);
@@ -339,7 +367,13 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
 
     try {
       const result = await runQuery(driver, query, parameters, { database, accessMode, rowLimit, timeoutSeconds });
-      audit(request, 'query', { ...auditBase, outcome: 'ok', rows: result.records.length, truncated: result.truncated, durationMs: result.durationMs });
+      audit(request, 'query', {
+        ...auditBase,
+        outcome: 'ok',
+        rows: result.records.length,
+        truncated: result.truncated,
+        durationMs: result.durationMs,
+      });
       return {
         keys: result.keys,
         records: result.records.map((r) => r.keys.map((k) => encode(r.get(k)))),
@@ -362,7 +396,14 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
     }
     const status = error.statusCode && error.statusCode < 500 ? error.statusCode : 500;
     if (status >= 500) request.log.error({ err: error }, 'request failed');
-    return reply.code(status).send(errorBody(status >= 500 ? 'internal_error' : 'bad_request', status >= 500 ? 'Internal server error' : error.message));
+    return reply
+      .code(status)
+      .send(
+        errorBody(
+          status >= 500 ? 'internal_error' : 'bad_request',
+          status >= 500 ? 'Internal server error' : error.message
+        )
+      );
   });
 
   // --- Frontend -------------------------------------------------------------------------------
@@ -373,11 +414,16 @@ export async function buildApp({ config, driver, oidc }: AppDeps) {
     // browsers that accept them; the map data shrinks from ~8 MB to well under 1 MB.
     await app.register(fastifyStatic, { root, wildcard: false, index: false, preCompressed: true });
     const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+    // The documentation (built from docs/ into /docs) is a static site of its own.
+    const docsHome = (_request: FastifyRequest, reply: FastifyReply) => reply.redirect('/docs/index.html');
+    app.get('/docs', docsHome);
+    app.get('/docs/', docsHome);
     app.setNotFoundHandler((request, reply) => {
       const pathname = request.url.split('?')[0] ?? '';
       // Missing files (anything with an extension, e.g. /maps/x.json) are a real 404, not the app.
       const isFile = /\.[a-z0-9]+$/i.test(pathname);
-      if (request.method !== 'GET' || isFile || pathname.startsWith('/api/') || pathname.startsWith('/auth/')) {
+      const notApp = ['/api/', '/auth/', '/docs/'].some((prefix) => pathname.startsWith(prefix));
+      if (request.method !== 'GET' || isFile || notApp) {
         return reply.code(404).send(errorBody('not_found', 'Not found'));
       }
       // Client-side routes (e.g. /dashboards/<uuid>) all get the app shell.

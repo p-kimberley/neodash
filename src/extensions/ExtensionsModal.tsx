@@ -9,6 +9,7 @@ import { Dialog, TextLink, Typography, Checkbox, IconButton, StatusLabel } from 
 import { PuzzlePieceIconSolid } from '@neo4j-ndl/react/icons';
 import { Section, SectionContent } from '../modal/ModalUtils';
 import Tooltip from '@mui/material/Tooltip/Tooltip';
+import { docsUrl } from '../utils/docs';
 
 const NeoExtensionsModal = ({
   extensions,
@@ -44,11 +45,7 @@ const NeoExtensionsModal = ({
             <div className='n-flex n-flex-col n-gap-token-8 n-divide-y n-divide-neutral-border-strong'>
               <Section>
                 <SectionContent>
-                  <TextLink
-                    target='_blank'
-                    href='https://github.com/neo4j-contrib/neodash/tree/master/docs/modules/ROOT/pages/user-guide/extensions.adoc'
-                    type='external'
-                  >
+                  <TextLink target='_blank' href={docsUrl('user-guide/extensions/index')} type='external'>
                     Extensions
                   </TextLink>
                   &nbsp;are a way of extending the core functionality of NeoDash with custom logic. This can be a new
@@ -115,7 +112,7 @@ const NeoExtensionsModal = ({
                                 <br />
                                 <p>
                                   Author:{' '}
-                                  <TextLink href={e.link} type='external'>
+                                  <TextLink href={e.link} target='_blank' type='external'>
                                     {e.author}
                                   </TextLink>
                                 </p>
