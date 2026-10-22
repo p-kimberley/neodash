@@ -19,7 +19,7 @@ import {
   applicationIsStandalone,
   dashboardIsDraft,
 } from '../../application/ApplicationSelectors';
-import { setDraft } from '../../application/ApplicationActions';
+import { setDraft, setSidebarOpen } from '../../application/ApplicationActions';
 import { applicationIsSidebarOpen } from '../../application/ApplicationSelectors';
 import NeoDashboardSidebarLoadModal from './modal/DashboardSidebarLoadModal';
 import { resetDashboardState } from '../DashboardActions';
@@ -93,6 +93,7 @@ export const NeoDashboardSidebar = ({
   deleteDashboardFromNeo4j,
   standaloneSettings,
   expanded,
+  closePanel,
 }) => {
   const { driver } = useContext<Neo4jContextState>(Neo4jContext);
   const [selectedDashboardIndex, setSelectedDashboardIndex] = React.useState(UNSAVED_DASHBOARD_INDEX);
@@ -199,6 +200,7 @@ export const NeoDashboardSidebar = ({
           } else {
             // Load one of the dashboards from the database.
             setModalOpen(Modal.LOAD);
+            closePanel();
             const { uuid } = dashboards[inspectedIndex];
             loadDashboardFromNeo4j(driver, dashboardDatabase, uuid, (file) => {
               setDraft(false);
@@ -322,6 +324,7 @@ export const NeoDashboardSidebar = ({
                 if (draft) {
                   setModalOpen(Modal.LOAD);
                 } else {
+                  closePanel();
                   const d = dashboards[inspectedIndex];
                   loadDashboardFromNeo4j(driver, dashboardDatabase, d.uuid, (file) => {
                     loadDashboard(d.uuid, file);
@@ -465,7 +468,7 @@ export const NeoDashboardSidebar = ({
                 selected={draft}
                 title={title}
                 saved={false}
-                onSelect={() => {}}
+                onSelect={() => closePanel()}
                 onSettingsOpen={(event) => {
                   setInspectedIndex(UNSAVED_DASHBOARD_INDEX);
                   setMenuOpen(Menu.DASHBOARD);
@@ -502,6 +505,9 @@ export const NeoDashboardSidebar = ({
                         setInspectedIndex(d.index);
                         setModalOpen(Modal.LOAD);
                       } else {
+                        // Opening a dashboard closes the panel; with unsaved changes, that waits for
+                        // the user to confirm discarding them.
+                        closePanel();
                         loadDashboardFromNeo4j(driver, dashboardDatabase, d.uuid, (file) => {
                           loadDashboard(d.uuid, file);
                           setSelectedDashboardIndex(d.index);
@@ -541,6 +547,7 @@ const mapDispatchToProps = (dispatch) => ({
   onRemovePressed: (id) => dispatch(removeReportThunk(id)),
   resetLocalDashboard: () => dispatch(resetDashboardState()),
   setDraft: (draft) => dispatch(setDraft(draft)),
+  closePanel: () => dispatch(setSidebarOpen(false)),
   loadDashboard: (uuid, text) => dispatch(loadDashboardThunk(uuid, text)),
   loadDatabaseListFromNeo4j: (driver, callback) => dispatch(loadDatabaseListFromNeo4jThunk(driver, callback)),
   loadDashboardFromNeo4j: (driver, database, uuid, callback) =>

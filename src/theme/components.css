@@ -265,14 +265,21 @@ body {
 
 /* ---------- Chart controls (field selectors under a chart) ---------- */
 
+/* One row of field selectors, scrolled sideways when they don't fit: the report leaves room for one
+   row only, so wrapped rows would fall outside the card. The bottom padding puts the scrollbar below
+   the card's edge, where the card clips it. */
 .nd-card-footer {
   position: relative;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: flex-end;
   gap: 10px 16px;
   padding: 6px 16px 100px;
   overflow-x: auto;
+}
+
+.nd-card-footer > * {
+  flex: none;
 }
 
 /* Sized to the chosen value (NDL's combobox is a fixed 320px), as the previous selects were. */
@@ -734,20 +741,12 @@ body {
   color: var(--nd-text);
 }
 
-.MuiDataGrid-root .MuiDataGrid-cell:focus,
-.MuiDataGrid-root .MuiDataGrid-columnHeader:focus
-
 /* Each face's content is clipped to the card's radius less its 1px border, so it can't poke out
    past the rounded corners. */
 .nd-card-surface {
   overflow: hidden;
   border-radius: calc(var(--nd-radius-lg) - 1px);
 }
-
-/* Floating menus drawn by charts (e.g. the graph right-click menu). */
-.nd-floating-menu
-
-.nd-floating-menu .MuiCardHeader-title
 
 /* A maximised report fills the window (minus a small margin); the report's restore button,
    Escape or a click on the backdrop shrink it back. */

@@ -6,8 +6,10 @@ import {
   card,
   expectNoErrors,
   expectReportOk,
+  deleteDashboard,
   getDashboard,
   openPage,
+  putDashboard,
   trackErrors,
 } from './helpers.mjs';
 
@@ -72,6 +74,53 @@ test('dashboards panel opens and closes', async ({ page }) => {
   await page.keyboard.press('Escape');
   await expect(page.locator('.nd-dashboard-panel.is-expanded')).toHaveCount(0);
   await expectNoErrors(page, errors);
+});
+
+test('choosing a dashboard in the panel opens it and closes the panel', async ({ page }) => {
+  const errors = trackErrors(page);
+  await openPage(page, SALES);
+  const supply = await getDashboard(page, SUPPLY);
+  await page.getByRole('button', { name: 'Dashboards', exact: true }).click();
+  const panel = page.locator('.nd-dashboard-panel.is-expanded');
+  await expect(panel).toBeVisible();
+  await panel.getByRole('button', { name: 'dashboard' }).filter({ hasText: supply.title }).click();
+  await expect(page.locator('.nd-dashboard-panel.is-expanded')).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: supply.title })).toBeVisible();
+  await expectNoErrors(page, errors);
+});
+
+// Cards clip their content to their rounded corners, and a chart's field selectors stay on the one
+// row the chart leaves for them (scrolling sideways in a narrow card) instead of spilling out of it.
+test('report cards keep their content inside', async ({ page }) => {
+  await page.goto('/');
+  const dash = await getDashboard(page, SINK);
+  const uuid = `dddd0000-0000-4000-8000-00000000c1${test.info().project.name === 'dark' ? 'dd' : 'ee'}`;
+  const graphs = dash.pages.find((p) => p.reports.some((r) => r.type === 'graph'));
+  const reports = graphs.reports.map((r, i) => ({ ...r, x: (i % 4) * 6, y: 0, width: 6, height: 5 }));
+  await putDashboard(page, uuid, { ...dash, title: 'e2e narrow cards', pages: [{ ...graphs, reports }] });
+  try {
+    await openPage(page, uuid);
+    await expect(page.locator('.nd-card-footer').first()).toBeVisible();
+    const cards = await page.evaluate(() =>
+      [...document.querySelectorAll('.nd-report-card')].map((c) => {
+        const surface = getComputedStyle(c.querySelector('.nd-card-surface'));
+        const footer = c.querySelector('.nd-card-footer');
+        const tops = footer ? [...footer.children].map((x) => Math.round(x.getBoundingClientRect().top)) : [];
+        return {
+          title: c.querySelector('input')?.value,
+          clipped: surface.overflow === 'hidden' && parseFloat(surface.borderBottomRightRadius) > 0,
+          footerRows: new Set(tops).size,
+        };
+      })
+    );
+    expect(cards.length).toBeGreaterThan(1);
+    for (const c of cards) {
+      expect(c.clipped, `${c.title} clips its content to its corners`).toBe(true);
+      expect(c.footerRows, `${c.title} has one row of field selectors`).toBeLessThanOrEqual(1);
+    }
+  } finally {
+    await deleteDashboard(page, uuid);
+  }
 });
 
 test.describe('viewer', () => {
