@@ -55,17 +55,31 @@ test('dashboard selector: search, open, breadcrumb and browser back', async ({ p
   await expectNoErrors(page, errors);
 });
 
+/**
+ * Opens the dashboards panel and waits for its slide to end: its content stays put while the panel
+ * widens over it, so a click during the slide can land behind the panel.
+ */
+const openPanel = async (page) => {
+  await page.getByRole('button', { name: 'Dashboards', exact: true }).click();
+  const panel = page.locator('.nd-dashboard-panel.is-expanded');
+  await expect(panel).toBeVisible();
+  await expect
+    .poll(() =>
+      panel.evaluate((p) => Math.round(p.getBoundingClientRect().width) >= Math.round(p.firstElementChild.offsetWidth))
+    )
+    .toBe(true);
+  return panel;
+};
+
 test('dashboards panel opens and closes', async ({ page }) => {
   const errors = trackErrors(page);
   await openPage(page, SALES);
-  const menu = page.getByRole('button', { name: 'Dashboards', exact: true });
-  await menu.click();
-  await expect(page.locator('.nd-dashboard-panel.is-expanded')).toBeVisible();
+  await openPanel(page);
   // Escape closes it, even with the menu button focused (and showing its tooltip).
   await page.keyboard.press('Escape');
   await expect(page.locator('.nd-dashboard-panel.is-expanded')).toHaveCount(0);
   // With a dashboard's actions menu open, Escape closes the menu first, then the panel.
-  await page.getByRole('button', { name: 'Dashboards', exact: true }).click();
+  await openPanel(page);
   await page.getByRole('button', { name: 'Dashboard actions' }).first().click();
   await expect(page.getByRole('menuitem').first()).toBeVisible();
   await page.keyboard.press('Escape');
@@ -80,9 +94,7 @@ test('choosing a dashboard in the panel opens it and closes the panel', async ({
   const errors = trackErrors(page);
   await openPage(page, SALES);
   const supply = await getDashboard(page, SUPPLY);
-  await page.getByRole('button', { name: 'Dashboards', exact: true }).click();
-  const panel = page.locator('.nd-dashboard-panel.is-expanded');
-  await expect(panel).toBeVisible();
+  const panel = await openPanel(page);
   await panel.getByRole('button', { name: 'dashboard' }).filter({ hasText: supply.title }).click();
   await expect(page.locator('.nd-dashboard-panel.is-expanded')).toHaveCount(0);
   await expect(page.getByRole('heading', { name: supply.title })).toBeVisible();
