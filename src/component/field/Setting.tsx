@@ -3,7 +3,6 @@ import NeoField from './Field';
 import { categoricalColorSchemes } from '../../config/ColorConfig';
 import NeoColorPicker from './ColorPicker';
 import { SELECTION_TYPES } from '../../config/CardConfig';
-import { StatusLabel } from '@neo4j-ndl/react';
 
 const generateListItem = (label, option) => {
   if (typeof option === 'boolean') {
@@ -16,32 +15,17 @@ const generateListItem = (label, option) => {
         ? colorsFull.slice(-1)[0]
         : colorsFull
       : colorsFull;
+    // The scheme's name, with its colours as a strip of swatches before it.
     return {
-      label: Array.isArray(colors) ? (
-        <>
-          {colors.map((element) => {
-            return (
-              <span
-                key={element}
-                style={{
-                  display: 'inline-block',
-                  background: element,
-                  width: '18px',
-                  height: '18px',
-                  position: 'relative',
-                  top: '3px',
-                }}
-              ></span>
-            );
-          })}
-          <StatusLabel variant='info' fill='outlined' className='n-inline-block n-ml-2'>
-            {option}
-          </StatusLabel>
-        </>
-      ) : (
-        `${option}`
-      ),
+      label: `${option}`,
       value: option,
+      leadingVisual: Array.isArray(colors) ? (
+        <span className='nd-scheme-swatches' aria-hidden='true'>
+          {colors.map((element, i) => (
+            <span key={i} style={{ background: element }} />
+          ))}
+        </span>
+      ) : undefined,
     };
   }
   return { label: option, value: option };

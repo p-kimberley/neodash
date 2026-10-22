@@ -364,6 +364,28 @@ body {
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
 }
 
+/* A colour scheme's colours, as a strip of small swatches before its name in the scheme select. */
+.nd-scheme-swatches {
+  display: inline-flex;
+  flex: none;
+  overflow: hidden;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.nd-scheme-swatches > span {
+  width: 10px;
+  height: 14px;
+}
+
+/* NDL sizes an option's leading visual for a 16px icon; let a swatch strip take its own width. */
+.ndl-combobox-option-content .ndl-combobox-option-content-leading-visual:has(> .nd-scheme-swatches) {
+  width: auto;
+  height: auto;
+  align-self: center;
+  margin-top: 0;
+}
+
 /* ---------- Code editor (Cypher / Markdown) ---------- */
 
 .nd-code-editor {

@@ -61,3 +61,23 @@ test('parameter report: the label is searched in the database and picked', async
   expect(before).not.toBe('');
   await expectNoErrors(page, errors);
 });
+
+test('colour scheme select: names with swatches', async ({ page }) => {
+  const errors = trackErrors(page);
+  await openPage(page, SINK, 1);
+  const report = card(page, 'Revenue by category and segment (grouped)');
+  await report.getByRole('button', { name: 'Settings' }).click();
+  await report.getByText('Advanced settings').click();
+  const select = report.getByRole('combobox', { name: 'Color Scheme' });
+  await select.click();
+  const options = page.getByRole('option');
+  await expect(options.first()).toBeVisible();
+  const names = await options.allInnerTexts();
+  expect(names.join('|')).not.toContain('[object Object]');
+  expect(names.map((n) => n.trim())).toContain('pastel1');
+  // Each scheme shows its colours beside its name.
+  await expect(page.getByRole('option', { name: 'pastel1' }).locator('.nd-scheme-swatches > span')).toHaveCount(9);
+  await page.screenshot({ path: `.scratch/scheme-select-${test.info().project.name}.png` });
+  await page.keyboard.press('Escape');
+  await expectNoErrors(page, errors);
+});

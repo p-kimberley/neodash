@@ -1,8 +1,11 @@
 import React from 'react';
 import { Combobox } from '@neo4j-ndl/react';
 
-/** A choice; its value can be any value (setting values include booleans and numbers). */
-export type SelectFieldOption = { label: string; value: any };
+/**
+ * A choice; its value can be any value (setting values include booleans and numbers). The label must
+ * be text; anything drawn beside it (e.g. colour swatches) goes in `leadingVisual`.
+ */
+export type SelectFieldOption = { label: string; value: any; leadingVisual?: React.ReactNode };
 
 const key = (value: any) => (value === undefined || value === null ? '' : String(value));
 
@@ -50,7 +53,11 @@ export const SelectField = ({
   className?: string;
   htmlAttributes?: React.HTMLAttributes<HTMLDivElement> & Record<string, any>;
 }) => {
-  const choices = (options || []).map((o) => ({ label: `${o.label ?? key(o.value)}`, value: key(o.value) }));
+  const choices = (options || []).map((o) => ({
+    label: `${o.label ?? key(o.value)}`,
+    value: key(o.value),
+    ...(o.leadingVisual && !isMulti ? { leadingVisual: o.leadingVisual } : {}),
+  }));
   const raw = (option) => (options || []).find((o) => key(o.value) === option.value)?.value ?? option.value;
   const toOption = (v, fallbackLabel?: string) => ({
     label: choices.find((c) => c.value === key(v))?.label ?? fallbackLabel ?? key(v),
