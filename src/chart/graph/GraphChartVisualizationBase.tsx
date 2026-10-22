@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import chroma from 'chroma-js';
 import { executeActionRule, getRuleWithFieldPropertyName } from '../../extensions/advancedcharts/Utils';
 import { getTooltip } from './component/GraphChartTooltip';
@@ -57,6 +57,11 @@ export const NeoGraphChartVisualizationBase = (props: GraphChartVisualizationPro
     (sprite, { start, end }, link) => linkPositionUpdate && linkPositionUpdate(sprite, { start, end }, link, fgRef),
     [linkPositionUpdate]
   );
+
+  // The same object while the nodes and relationships are the same: a new one restarts the layout
+  // simulation, which (in 3D) nudged every node on each re-render, e.g. when clicking a node.
+  const { nodes, links } = props.data;
+  const graphData = useMemo(() => ({ nodes, links }), [nodes, links]);
 
   if (!ready) {
     return <></>;
@@ -163,7 +168,7 @@ export const NeoGraphChartVisualizationBase = (props: GraphChartVisualizationPro
       linkThreeObject={props.config?.linkThreeObject}
       linkPositionUpdate={linkPositionUpdate ? positionLinkLabel : undefined}
       // Data to populate graph
-      graphData={props.style.width ? { nodes: props.data.nodes, links: props.data.links } : { nodes: [], links: [] }}
+      graphData={graphData}
     />
   );
 };
