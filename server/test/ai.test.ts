@@ -390,6 +390,13 @@ describe('the API', () => {
     expect(off.statusCode).toBe(404);
   });
 
+  it('describes queries for editors only, and only when configured', async () => {
+    const body = { query: 'MATCH (n) RETURN n' };
+    expect((await app.inject({ method: 'POST', url: '/api/ai/describe', headers: viewer, payload: body })).statusCode).toBe(403);
+    expect((await plain.inject({ method: 'POST', url: '/api/ai/describe', headers: editor, payload: body })).statusCode).toBe(404);
+    expect((await app.inject({ method: 'POST', url: '/api/ai/describe', headers: editor, payload: { query: ' ' } })).statusCode).toBe(400);
+  });
+
   it('rejects requests without a usable catalogue', async () => {
     const bad = await app.inject({
       method: 'POST',

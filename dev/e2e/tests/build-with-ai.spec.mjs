@@ -35,15 +35,24 @@ test('build with AI: a question in English becomes a checked query that runs', a
     const asked = card(page, 'Asked');
     await reportMenu(asked, 'Settings');
 
-    // Write the query in English, then translate.
+    // Switching to English describes the current query in plain English.
     await asked.getByRole('switch', { name: 'Write the query in English' }).click();
     const english = asked.locator('.cm-content').first();
+    await expect(english).toContainText('How many nodes have each label', { timeout: 30_000 });
+    // Write a different question, then translate.
     await english.click();
+    await page.keyboard.press('Control+A');
     await page.keyboard.type('Which movies came out most recently?');
     await asked.getByRole('button', { name: 'Translate' }).click();
 
-    // The model's query (checked by the server) replaces the report's query, and the report runs it.
+    // The model's query (checked by the server, laid out one clause per line) replaces the report's
+    // query, and the report runs it.
     await expect(asked.locator('.cm-content').first()).toContainText('MATCH (m:Movie)', { timeout: 30_000 });
+    await expect(asked.locator('.cm-line')).toHaveCount(4); // MATCH, RETURN, ORDER BY, LIMIT
+    // Back in English, the question that produced this query is kept (not described again).
+    await asked.getByRole('switch', { name: 'Write the query in English' }).click();
+    await expect(asked.locator('.cm-content').first()).toContainText('Which movies came out most recently?');
+    await asked.getByRole('switch', { name: 'Write the query in English' }).click();
     await asked.getByRole('button', { name: 'Run' }).first().click();
     await expect(asked.getByRole('columnheader', { name: /title/ })).toBeVisible({ timeout: 30_000 });
   } finally {

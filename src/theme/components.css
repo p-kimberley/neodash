@@ -512,6 +512,18 @@ body {
   color: var(--theme-color-neutral-text-weaker);
 }
 
+/* While the query is being described in English. */
+.nd-describing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 120px;
+  padding: 12px;
+  border: 1px dashed var(--theme-color-neutral-border-strong);
+  color: var(--theme-color-neutral-text-weak);
+  font-size: 13px;
+}
+
 .nd-ask-ai {
   display: flex;
   align-items: flex-start;

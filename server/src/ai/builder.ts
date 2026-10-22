@@ -1,6 +1,7 @@
 import neo4j, { type Driver } from 'neo4j-driver';
 import { Text2CypherError, reportShape, type ChatMessage, type SchemaNames, type Text2Cypher } from '../text2cypher.js';
 import { contextSchema, type BuildContext, type Catalogue, type ReportSpec, type ReportTypeDef } from './catalogue.js';
+import { formatCypher } from './format.js';
 import {
   checkColumns,
   checkSettings,
@@ -375,6 +376,8 @@ export class ReportBuilder {
     const { spec, problems } = checkSpec(answer, catalogue);
     if (!spec || problems.length) return { spec, problems };
     const type = findType(catalogue, spec.type)!;
+    // Laid out one clause per line; the laid-out query is the one checked and used.
+    if (type.input === 'cypher') spec.query = formatCypher(spec.query);
     return { spec, problems: await this.checkQuery(database, spec, type, names, parameters, probe) };
   }
 

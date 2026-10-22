@@ -161,6 +161,9 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(req),
     }),
+  /** Build with AI: a query described in plain English, for the English editor (editors only). */
+  aiDescribe: (req: { query: string; database?: string }) =>
+    request<{ text: string; model: string }>('/api/ai/describe', { method: 'POST', body: JSON.stringify(req) }),
   /** Build with AI: up to three checked report suggestions for a dashboard (editors only). */
   aiSuggest: (req: AiRequest, signal?: AbortSignal) =>
     request<{ suggestions: AiReport[]; model: string; durationMs: number }>('/api/ai/suggest', {

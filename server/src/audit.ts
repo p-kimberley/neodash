@@ -15,6 +15,7 @@ export type AuditEvent =
   | 'dashboard.delete'
   | 'query'
   | 'ai.query'
+  | 'ai.describe'
   | 'ai.suggest'
   | 'ai.build';
 

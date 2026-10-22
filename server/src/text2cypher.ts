@@ -5,6 +5,7 @@
 // model gets the error and one more try.
 
 import neo4j, { type Driver } from 'neo4j-driver';
+import { formatCypher } from './ai/format.js';
 
 export interface Text2CypherConfig {
   /** Base URL of the API, e.g. http://vllm.ai.svc:8000/v1 (requests go to <baseUrl>/chat/completions). */
@@ -59,6 +60,8 @@ const TASK = `You are an expert Neo4j Cypher translator who understands the ques
 9. Cypher is NOT SQL: do not mix the syntaxes.
 10. Words prefixed with $ are parameters; keep them as they are.
 11. Answer with the Cypher query only: no explanation, no comments, no code fences.`;
+
+const DESCRIBE_TASK = `You explain Neo4j Cypher queries to people who don't know Cypher. Describe what the query shows as a short request in plain English (one or two sentences), the way someone would ask for it, for example "The 10 best-selling products by units, most first." Mention filters, grouping, sorting and limits. Refer to parameters ($name) as "the selected <name in plain words>". Answer with the description only: no Cypher, no quotes, no preamble.`;
 
 /** What each report type expects from a query, with an example. */
 const REPORT_SHAPES: Record<string, { description: string; example: string }> = {
@@ -331,6 +334,24 @@ export class Text2Cypher {
     }
   }
 
+  /**
+   * The other way round: what a query shows, in plain English, phrased as the request someone would
+   * make for it (so it can be edited and translated back).
+   */
+  async describe(database: string, query: string): Promise<string> {
+    const schema = await this.schema(database);
+    const answer = await this.chat([
+      { role: 'system', content: `${DESCRIBE_TASK}\n\nSchema:\n${schema}` },
+      { role: 'user', content: query },
+    ]);
+    return answer
+      .trim()
+      .replace(/^```[a-z]*\s*|```$/g, '')
+      .trim()
+      .replace(/^["']|["']$/g, '')
+      .trim();
+  }
+
   async translate(request: TranslateRequest): Promise<{ query: string; attempts: number }> {
     const schema = await this.schema(request.database);
     const messages: ChatMessage[] = [{ role: 'system', content: `${TASK}\n\nSchema:\n${schema}` }];
@@ -356,7 +377,7 @@ export class Text2Cypher {
 
     let answer = '';
     for (let attempt = 1; attempt <= this.config.maxAttempts; attempt++) {
-      answer = cleanAnswer(await this.chat(messages));
+      answer = formatCypher(cleanAnswer(await this.chat(messages)));
       const error = await this.explain(request.database, answer);
       if (!error) return { query: answer, attempts: attempt };
       messages.push(

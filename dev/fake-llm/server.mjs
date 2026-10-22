@@ -101,6 +101,18 @@ http
     req.on('data', (chunk) => (raw += chunk));
     req.on('end', () => {
       const { messages = [] } = JSON.parse(raw || '{}');
+      // Describing a query in English (the report editor's English mode).
+      const system = String(messages.find((m) => m.role === 'system')?.content ?? '');
+      if (system.startsWith('You explain')) {
+        const query = String(messages.at(-1)?.content ?? '');
+        const text = /Movie/.test(query)
+          ? 'The 10 most recently released movies, newest first.'
+          : /Order/.test(query)
+            ? 'Orders with their dates and totals, newest first.'
+            : 'How many nodes have each label, most first.';
+        console.log(`describe: ${query.slice(0, 60)} -> ${text}`);
+        return send(res, 200, { choices: [{ index: 0, message: { role: 'assistant', content: text } }] });
+      }
       const built = builderAnswer(messages);
       if (built) {
         console.log(`builder: ${JSON.stringify(built).slice(0, 100)}`);

@@ -10,7 +10,10 @@ import { Neo4jContext, Neo4jContextState } from '../../api/Neo4jContext';
 import debounce from 'lodash/debounce';
 import { updateLastMessage } from '../state/QueryTranslatorActions';
 import { createNotification } from '../../application/ApplicationActions';
-import { getLastMessage, QUERY_TRANSLATOR_EXTENSION_NAME } from '../state/QueryTranslatorSelector';
+import { getHistoryPerCard, getLastMessage, QUERY_TRANSLATOR_EXTENSION_NAME } from '../state/QueryTranslatorSelector';
+import { getDatabase } from '../../settings/SettingsSelectors';
+import { api } from '../../api/client';
+import { LoadingSpinner } from '@neo4j-ndl/react';
 import { TEXT2CYPHER_LOADING_ICON } from './LoadingIcon';
 import {
   deleteSessionStoragePrepopulationReportFunction,
@@ -33,8 +36,11 @@ export const NeoOverrideCardQueryEditor = ({
   translateQuery,
   updateEnglishQuery,
   displayError,
+  displayDescribeError,
   setPrepopulationReportFunction,
   deletePrepopulationReportFunction,
+  history = [],
+  database,
 }) => {
   enum Language {
     ENGLISH,
@@ -46,6 +52,7 @@ export const NeoOverrideCardQueryEditor = ({
   const [runningTranslation, setRunningTranslation] = React.useState(false);
   const [englishQuestion, setEnglishQuestion] = React.useState('');
   const [needsUpdate, setNeedsUpdate] = React.useState(true);
+  const [describing, setDescribing] = React.useState(false);
   const debouncedEnglishQuestionUpdate = useCallback(debounce(updateEnglishQuery, 250), []);
   const { driver } = useContext<Neo4jContextState>(Neo4jContext);
 
@@ -104,6 +111,32 @@ export const NeoOverrideCardQueryEditor = ({
     </div>
   );
 
+  /**
+   * Switching to English shows the query in plain English (written by the model), to read or change
+   * and translate back. A question that produced exactly this query is kept as it is.
+   */
+  async function switchToEnglish() {
+    setLanguage(Language.ENGLISH);
+    const query = `${cypherQuery ?? ''}`.trim();
+    const last: any = Array.isArray(history) ? history[history.length - 1] : undefined;
+    const questionMatches = last && `${last.query ?? ''}`.trim() === query && lastMessage;
+    if (!query || questionMatches) {
+      return;
+    }
+    setDescribing(true);
+    try {
+      const { text } = await api.aiDescribe({ query, database: database || undefined });
+      setEnglishQuestion(text);
+      updateEnglishQuery(pagenumber, reportId, text);
+      // The description can be translated straight back (or changed first).
+      setPrepopulationReportFunction(reportId);
+    } catch (e: any) {
+      displayDescribeError(e?.message ?? String(e));
+    } finally {
+      setDescribing(false);
+    }
+  }
+
   function triggerTranslation() {
     setRunningTranslation(true);
     translateQuery(
@@ -142,12 +175,13 @@ export const NeoOverrideCardQueryEditor = ({
                   ariaLabel='Write the query in English'
                   style={{ backgroundColor: 'grey' }}
                   isChecked={language == Language.ENGLISH}
+                  isDisabled={describing}
                   onChange={() => {
                     if (language == Language.ENGLISH) {
                       setLanguage(Language.CYPHER);
                       deletePrepopulationReportFunction(reportId);
                     } else {
-                      setLanguage(Language.ENGLISH);
+                      void switchToEnglish();
                     }
                   }}
                   className='n-ml-2'
@@ -160,7 +194,7 @@ export const NeoOverrideCardQueryEditor = ({
                   <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <div>
                       <OutlinedButton
-                        isDisabled={prepopulateExtensionName == undefined}
+                        isDisabled={prepopulateExtensionName == undefined || describing}
                         style={{ marginLeft: '8px' }}
                         onClick={() => {
                           if (prepopulateExtensionName !== undefined) {
@@ -180,7 +214,16 @@ export const NeoOverrideCardQueryEditor = ({
               </td>
             </tr>
           </table>
-          {language == Language.CYPHER ? cypherEditor : englishEditor}
+          {language == Language.CYPHER ? (
+            cypherEditor
+          ) : describing ? (
+            <div className='nd-describing' role='status'>
+              <LoadingSpinner size='small' />
+              <span>Describing the query in English…</span>
+            </div>
+          ) : (
+            englishEditor
+          )}
           <div
             style={
               language == Language.CYPHER
@@ -218,6 +261,8 @@ export const NeoOverrideCardQueryEditor = ({
 
 const mapStateToProps = (state, ownProps) => ({
   lastMessage: getLastMessage(state, ownProps.pagenumber, ownProps.reportId),
+  history: getHistoryPerCard(state, ownProps.pagenumber, ownProps.reportId),
+  database: getDatabase(state, ownProps.pagenumber, ownProps.reportId),
   prepopulateExtensionName: getPrepopulateReportExtension(state, ownProps.reportId),
 });
 
@@ -230,6 +275,9 @@ const mapDispatchToProps = (dispatch) => ({
   },
   displayError: (message) => {
     dispatch(createNotification("Build with AI couldn't write the query", message));
+  },
+  displayDescribeError: (message) => {
+    dispatch(createNotification("Build with AI couldn't describe the query", message));
   },
   setPrepopulationReportFunction: (reportId) => {
     dispatch(setSessionStoragePrepopulationReportFunction(reportId, QUERY_TRANSLATOR_EXTENSION_NAME));

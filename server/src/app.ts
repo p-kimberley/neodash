@@ -43,6 +43,11 @@ export interface AppDeps {
 
 const uuidParam = z.object({ uuid: z.string().min(1).max(200) });
 
+const describeBody = z.object({
+  query: z.string().trim().min(1).max(20_000),
+  database: z.string().min(1).max(200).optional(),
+});
+
 const aiBody = z.object({
   prompt: z.string().max(4000).default(''),
   database: z.string().min(1).max(200).optional(),
@@ -391,6 +396,31 @@ export async function buildApp({ config, driver, oidc, llmFetch, cypherChecks }:
       audit(request, 'ai.query', { ...auditBase, outcome: 'error', errorCode: err.code, error: err.message });
       const status = err.code === 'model_unavailable' ? 502 : err.code === 'schema_unavailable' ? 503 : 422;
       return reply.code(status).send(errorBody(err.code, err.message, { lastAnswer: err.lastAnswer }));
+    }
+  });
+
+  // Build with AI: a report's query described in plain English (for its English editor).
+  app.post('/api/ai/describe', async (request, reply) => {
+    if (!requireEditor(request, reply, 'use Build with AI')) return reply;
+    if (!text2cypher) {
+      return reply.code(404).send(errorBody('not_configured', 'Build with AI is not configured on this server'));
+    }
+    const parsed = describeBody.safeParse(request.body);
+    if (!parsed.success)
+      return reply.code(400).send(errorBody('invalid_request', parsed.error.issues.map((i) => i.message).join('; ')));
+    const database = parsed.data.database ?? config.neo4j.defaultDatabase;
+    if (!config.neo4j.databases.includes(database)) {
+      return deny(request, reply, `Database "${database}" is not available`);
+    }
+    try {
+      const text = await text2cypher.describe(database, parsed.data.query);
+      audit(request, 'ai.describe', { database, query: parsed.data.query, outcome: 'ok', text });
+      return { text, model: text2cypher.model };
+    } catch (e) {
+      const err = e instanceof Text2CypherError ? e : new Text2CypherError((e as Error).message, 'translation_failed');
+      audit(request, 'ai.describe', { database, query: parsed.data.query, outcome: 'error', errorCode: err.code, error: err.message });
+      const status = err.code === 'model_unavailable' ? 502 : err.code === 'schema_unavailable' ? 503 : 422;
+      return reply.code(status).send(errorBody(err.code, err.message));
     }
   });
 

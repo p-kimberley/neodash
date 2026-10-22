@@ -66,7 +66,8 @@ describe('translating a question', () => {
       history: [{ question: 'All movies', query: 'MATCH (m:Movie) RETURN m' }],
       examples: [{ question: 'Count movies', answer: 'MATCH (m:Movie) RETURN count(m)' }],
     });
-    expect(result).toEqual({ query: 'MATCH (m:Movie) RETURN m.title AS category, count(*) AS value', attempts: 1 });
+    // Laid out one clause per line.
+    expect(result).toEqual({ query: 'MATCH (m:Movie)\nRETURN m.title AS category, count(*) AS value', attempts: 1 });
 
     const [request] = requests;
     expect(request!.url).toBe('http://llm.test/v1/chat/completions');
@@ -92,7 +93,7 @@ describe('translating a question', () => {
   it('gives the model the error and another try when its query fails EXPLAIN', async () => {
     const { fetchImpl, requests } = fakeModel(['SELECT * FROM movies', 'MATCH (m:Movie) RETURN m']);
     const result = await stubbed(fetchImpl, /^MATCH/).translate({ question: 'All movies', database: 'neo4j' });
-    expect(result).toEqual({ query: 'MATCH (m:Movie) RETURN m', attempts: 2 });
+    expect(result).toEqual({ query: 'MATCH (m:Movie)\nRETURN m', attempts: 2 });
     const retry: ChatMessage[] = requests[1]!.body.messages;
     expect(retry.at(-2)).toEqual({ role: 'assistant', content: 'SELECT * FROM movies' });
     expect(retry.at(-1)!.content).toContain("Invalid input 'SELECT * FROM movies'");
@@ -213,5 +214,17 @@ describe('the API', () => {
     // As earlier versions named it.
     const legacy = testConfig({ AI_BASE_URL: 'http://llm.test/v1', AI_MODEL: 'm', TEXT2CYPHER_API_KEY_FILE: file });
     expect(legacy.ai?.apiKey).toBe('sk-from-file');
+  });
+});
+
+describe('describing a query in plain English', () => {
+  it('sends the query with the schema, and returns the description without quotes or fences', async () => {
+    const { fetchImpl, requests } = fakeModel(['"The 10 newest movies, newest first."']);
+    const text = await stubbed(fetchImpl, /^MATCH/).describe('neo4j', 'MATCH (m:Movie) RETURN m ORDER BY m.released DESC LIMIT 10');
+    expect(text).toBe('The 10 newest movies, newest first.');
+    const messages: ChatMessage[] = requests[0]!.body.messages;
+    expect(messages[0]!.content).toMatch(/plain English/);
+    expect(messages[0]!.content).toContain('(:Person)-[:ACTED_IN]->(:Movie)');
+    expect(messages[1]).toEqual({ role: 'user', content: 'MATCH (m:Movie) RETURN m ORDER BY m.released DESC LIMIT 10' });
   });
 });
