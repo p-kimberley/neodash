@@ -33,7 +33,7 @@ export default tseslint.config(
     plugins: { react },
     settings: { react: { version: 'detect' } },
     languageOptions: {
-      globals: { ...globals.browser, ...globals.node, ...globals.jest, cy: 'readonly', Cypress: 'readonly' },
+      globals: { ...globals.browser, ...globals.node },
     },
     // no-new-object is now no-object-constructor; caughtErrors: 'none' keeps typescript-eslint 5's
     // behaviour for unused catch variables.
@@ -205,6 +205,12 @@ export default tseslint.config(
       yoda: 'error',
       'no-object-constructor': 'error',
     },
+  },
+  {
+    // The build's own configuration files are CommonJS, run by Node.
+    files: ['webpack.config.js', 'tailwind.config.js', 'postcss.config.js'],
+    languageOptions: { sourceType: 'commonjs', globals: { ...globals.node } },
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
   },
   {
     // Dialogs close on a backdrop click through the app's wrapper; NDL's own Dialog ignores those.

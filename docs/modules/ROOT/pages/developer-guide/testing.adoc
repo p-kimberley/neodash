@@ -13,6 +13,8 @@ APP_URL=http://localhost:3000 dev/e2e/run.sh    # against the backend container 
 dev/e2e/run.sh --project=dark tests/maximise.spec.mjs   # other arguments go to `playwright test`
 ----
 
+`yarn test` runs the same suite (`dev/e2e/run.sh`), and `yarn test:server` the backend's unit tests.
+
 A full run takes about ten minutes. Results are in `dev/e2e/report/index.html`, with a screenshot and a trace for each failure. Every test also fails on errors in the page.
 
 Tests that change a dashboard save a temporary copy under a `dddd0000-…` id and delete it afterwards. Helpers for opening pages, finding reports and saving dashboards are in `dev/e2e/tests/helpers.mjs`.
