@@ -99,7 +99,7 @@ export const NeoOverrideCardQueryEditor = ({
           updateEnglishQuestion(value);
         }}
         style={{ border: '1px dashed darkgrey' }}
-        placeholder={`Describe what this report should show…`}
+        placeholder={`Enter English here...`}
       />
     </div>
   );
@@ -139,7 +139,7 @@ export const NeoOverrideCardQueryEditor = ({
               <td style={{ width: 50, textAlign: 'right', paddingTop: '6px' }}>Cypher</td>
               <td style={{ width: 50, textAlign: 'left', paddingTop: '8px' }}>
                 <Switch
-                  ariaLabel='Build with AI'
+                  ariaLabel='Write the query in English'
                   style={{ backgroundColor: 'grey' }}
                   isChecked={language == Language.ENGLISH}
                   onChange={() => {
@@ -153,7 +153,7 @@ export const NeoOverrideCardQueryEditor = ({
                   className='n-ml-2'
                 />
               </td>
-              <td style={{ textAlign: 'left', paddingTop: '6px', whiteSpace: 'nowrap' }}>&nbsp;Build with AI&nbsp;</td>
+              <td style={{ width: 50, textAlign: 'left', paddingTop: '6px' }}>&nbsp;English&nbsp;</td>
               <td style={{ float: 'right' }}>
                 {/* Only show translation button if there's something new to translate */}
                 {language == Language.ENGLISH ? (
@@ -170,7 +170,7 @@ export const NeoOverrideCardQueryEditor = ({
                           }
                         }}
                       >
-                        Build
+                        Translate
                       </OutlinedButton>
                     </div>
                   </div>
@@ -196,7 +196,7 @@ export const NeoOverrideCardQueryEditor = ({
           >
             {language == Language.ENGLISH ? (
               <>
-                For best results, name what to show and how, for example "Orders per month as a line". See also the{' '}
+                For best results, use a descriptive question. See also the{' '}
                 <a
                   target='_blank'
                   style={{ textDecoration: 'underline' }}

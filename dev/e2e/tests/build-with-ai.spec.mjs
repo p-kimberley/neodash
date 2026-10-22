@@ -14,7 +14,7 @@ import {
   trackErrors,
 } from './helpers.mjs';
 
-test('build with AI: a description becomes a checked query that runs', async ({ page }) => {
+test('build with AI: a question in English becomes a checked query that runs', async ({ page }) => {
   const errors = trackErrors(page);
   await page.goto('/');
   const config = await (await page.request.get('/api/config')).json();
@@ -35,12 +35,12 @@ test('build with AI: a description becomes a checked query that runs', async ({ 
     const asked = card(page, 'Asked');
     await reportMenu(asked, 'Settings');
 
-    // Describe the report, then build.
-    await asked.getByRole('switch', { name: 'Build with AI' }).click();
+    // Write the query in English, then translate.
+    await asked.getByRole('switch', { name: 'Write the query in English' }).click();
     const english = asked.locator('.cm-content').first();
     await english.click();
     await page.keyboard.type('Which movies came out most recently?');
-    await asked.getByRole('button', { name: 'Build', exact: true }).click();
+    await asked.getByRole('button', { name: 'Translate' }).click();
 
     // The model's query (checked by the server) replaces the report's query, and the report runs it.
     await expect(asked.locator('.cm-content').first()).toContainText('MATCH (m:Movie)', { timeout: 30_000 });

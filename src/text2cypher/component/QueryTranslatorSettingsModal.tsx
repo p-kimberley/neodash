@@ -32,8 +32,8 @@ const QueryTranslatorSettingsModal = ({ open, setOpen, messageHistory, clearHist
       <Dialog.Header>Build with AI</Dialog.Header>
       <Dialog.Content>
         <p>
-          Describe what a report should show, in plain language: in its settings, switch the query editor from Cypher
-          to Build with AI. A language model that runs for this server writes the query.
+          Write a report's query as a question in English: in its settings, switch the query editor from Cypher to
+          English, then click Translate. A language model that runs for this server writes the query.
         </p>
         <br />
         {available ? (
