@@ -5,13 +5,10 @@
 /* Create CSS class based components */
 /* https://tailwindcss.com/docs/reusing-styles#extracting-classes-with-apply */
 @layer components {
-  /* Page structure */
-  .page-spacing {
-    @apply n-p-2 sm:n-p-3 md:n-p-4;
-  }
-
-  .page-spacing-overflow {
-    @apply n-pb-2 sm:n-pb-3 md:n-pb-4;
+  /* Page structure: the dashboard title and page tabs are inset from the window's edges; the
+     reports below keep the grid's own spacing (Page.tsx). */
+  .page-header-spacing {
+    @apply n-px-2 sm:n-px-3 md:n-px-4 n-pt-2 sm:n-pt-3 md:n-pt-4;
   }
 
   /* Tabs */

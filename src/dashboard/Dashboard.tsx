@@ -56,14 +56,12 @@ const Dashboard = ({ standaloneSettings, sidebarOpen, closeSidebar }) => {
           <div className='n-w-full n-h-full n-overflow-y-scroll n-flex n-flex-row'>
             {/* Main Content */}
             <main className='n-flex-1 n-relative n-z-0 n-scroll-smooth n-w-full'>
-              <div className='n-absolute n-inset-0 page-spacing'>
-                <div className='page-spacing-overflow'>
-                  <div>
-                    <NeoDashboardTitle />
-                    <NeoDashboardHeaderPageList />
-                    <NeoPage></NeoPage>
-                  </div>
+              <div className='n-absolute n-inset-0'>
+                <div className='page-header-spacing'>
+                  <NeoDashboardTitle />
+                  <NeoDashboardHeaderPageList />
                 </div>
+                <NeoPage></NeoPage>
               </div>
             </main>
           </div>

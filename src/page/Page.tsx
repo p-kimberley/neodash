@@ -9,6 +9,9 @@ import { getDashboardSettings } from '../dashboard/DashboardSelectors';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { GRID_COMPACTION_TYPE } from '../config/PageConfig';
 
+/** Space between reports, and between them and the edges of the page area, in px. */
+const GRID_SPACING: [number, number] = [10, 10];
+
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 /**
@@ -127,7 +130,7 @@ export const NeoPage = ({
       ],
     });
     setLastElement(
-      <div style={{ paddingBottom: '6px' }} key={getReportKey(pagenumber, '999999')}>
+      <div key={getReportKey(pagenumber, '999999')}>
         <NeoAddCard
           onCreatePressed={() => {
             const { x, y } = getAddCardButtonPosition();
@@ -144,7 +147,7 @@ export const NeoPage = ({
   }, [reports, dashboardSettings.resizing, pagenumber]);
 
   const content = (
-    <div className='n-pt-3'>
+    <div>
       <ResponsiveGridLayout
         draggableHandle='.drag-handle'
         layouts={layouts}
@@ -152,6 +155,9 @@ export const NeoPage = ({
         breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
         cols={{ lg: 24, md: 20, sm: 12, xs: 8, xxs: 4 }}
         rowHeight={100}
+        // The same space between reports, across and down, as around them.
+        margin={GRID_SPACING}
+        containerPadding={GRID_SPACING}
         compactType={GRID_COMPACTION_TYPE}
         onDrag={() => {
           if (!isDragging) {
@@ -180,7 +186,7 @@ export const NeoPage = ({
         {reports.map((report) => {
           const { id } = report;
           return (
-            <div key={getReportKey(pagenumber, id)} style={{ paddingBottom: '6px' }}>
+            <div key={getReportKey(pagenumber, id)}>
               <NeoCard
                 id={id}
                 key={getReportKey(pagenumber, id)}
