@@ -120,8 +120,9 @@ const REPORT_SHAPES: Record<string, { description: string; example: string }> = 
     example: 'MATCH (s:Skill)<-[h:HAS_SKILL]-(p:Player {name: "Messi"}) RETURN s.name AS skill, h.value AS Messi',
   },
   sankey: {
-    description: 'Two node objects and the relationship object between them.',
-    example: 'MATCH (p:Person)-[r:RATES]->(m:Movie) RETURN p, r, m',
+    description:
+      'Two node objects and the relationship object between them. Each flow is as wide as a numeric property of its relationship, named in the setting labelProperty (default "value"): set labelProperty to such a property, or to "SANKEY_UNWEIGHTED" for flows of equal width.',
+    example: 'MATCH (p:Person)-[r:RATES]->(m:Movie) RETURN p, r, m (with labelProperty "rating")',
   },
   gauge: { description: 'A single number in a single column.', example: 'MATCH (c:CPU {id: 1}) RETURN c.load * 100' },
 };

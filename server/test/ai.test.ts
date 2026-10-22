@@ -500,3 +500,97 @@ describe('the API', () => {
     expect(bad.json().error.message).toMatch(/catalogue\.types/);
   });
 });
+
+describe('report types that draw nodes and relationships', () => {
+  const GRAPHS: Catalogue = {
+    types: [
+      {
+        key: 'sankey',
+        label: 'Sankey Chart',
+        input: 'cypher',
+        fields: [
+          { key: 'properties', label: 'Node Properties', kind: 'node_properties', optional: false, multiple: false },
+        ],
+        settings: [{ key: 'labelProperty', label: 'Relationship value Property', kind: 'text' }],
+      },
+      { key: 'graph', label: 'Graph', input: 'cypher', fields: [], settings: [] },
+      { key: 'map', label: 'Map', input: 'cypher', fields: [], settings: [] },
+    ],
+  };
+  const supplies = { rel: 'SUPPLIES', start: 'a', end: 'b', numbers: { leadTimeDays: 4 } };
+  const node = (label: string, extra = {}) => ({ node: label, id: label, ...extra });
+  /** Trial runs that return what the query's text says: suppliers and their SUPPLIES relationships, names, or cities. */
+  const graphChecks = fakeChecks({
+    probe: async (_db, query) => {
+      if (/RETURN s, r, p/.test(query)) {
+        return {
+          columns: ['s', 'r', 'p'],
+          kinds: {},
+          rows: 1,
+          sample: [[node('Supplier'), supplies, node('Product')]],
+        };
+      }
+      if (/RETURN c\b/.test(query)) return { columns: ['c'], kinds: {}, rows: 1, sample: [[node('City')]] };
+      return { columns: ['name'], kinds: { name: ['text'] }, rows: 1, sample: [['Acme']] };
+    },
+  });
+  const sankey = {
+    type: 'sankey',
+    title: 'Supply',
+    query: 'MATCH (s:Supplier)-[r:SUPPLIES]->(p:Product) RETURN s, r, p',
+    selection: {},
+    description: 'Flows',
+  };
+
+  it("asks for a Sankey's flow-width property, naming the relationships' numeric properties", async () => {
+    const { builder, requests } = makeBuilder(
+      [{ options: [sankey] }, { options: [{ ...sankey, settings: { labelProperty: 'leadTimeDays' } }] }],
+      graphChecks
+    );
+    const options = await builder.suggest({
+      database: 'neo4j',
+      prompt: 'supply flows',
+      catalogue: GRAPHS,
+      context: {} as any,
+    });
+    expect(requests[1].messages.at(-1).content).toMatch(
+      /settings\.labelProperty: .*relationships returned \(SUPPLIES\) don't have it\. Set settings\.labelProperty to one of their numeric properties: leadTimeDays/
+    );
+    expect(options[0]!.settings).toEqual({ labelProperty: 'leadTimeDays' });
+  });
+
+  it('drops a Sankey that stays without a flow width (leaving the setting out would not help)', async () => {
+    const { builder } = makeBuilder([{ options: [sankey] }, { options: [sankey] }], graphChecks);
+    expect(await builder.suggest({ database: 'neo4j', prompt: 'x', catalogue: GRAPHS, context: {} as any })).toEqual(
+      []
+    );
+  });
+
+  it('accepts equal-width flows', async () => {
+    const { builder } = makeBuilder(
+      [{ options: [{ ...sankey, settings: { labelProperty: 'SANKEY_UNWEIGHTED' } }] }],
+      graphChecks
+    );
+    expect(
+      await builder.suggest({ database: 'neo4j', prompt: 'x', catalogue: GRAPHS, context: {} as any })
+    ).toHaveLength(1);
+  });
+
+  it('asks graphs for nodes and relationships, and maps for nodes with coordinates', async () => {
+    const graph = {
+      type: 'graph',
+      title: 'G',
+      query: 'MATCH (s:Supplier) RETURN s.name AS name',
+      selection: {},
+      description: 'd',
+    };
+    const map = { type: 'map', title: 'M', query: 'MATCH (c:City) RETURN c', selection: {}, description: 'd' };
+    const { builder, requests } = makeBuilder([{ options: [graph, map] }, { options: [] }], graphChecks);
+    await builder.suggest({ database: 'neo4j', prompt: 'x', catalogue: GRAPHS, context: {} as any });
+    const feedback = requests[1].messages.at(-1).content;
+    expect(feedback).toMatch(
+      /Option 1:\n- query: A graph draws nodes and relationships, but the query returns only values/
+    );
+    expect(feedback).toMatch(/Option 2:\n- query: A map places nodes by their latitude\/longitude/);
+  });
+});

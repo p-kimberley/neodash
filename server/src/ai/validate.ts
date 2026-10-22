@@ -12,6 +12,8 @@ export interface Problem {
    * still be the right query).
    */
   soft?: boolean;
+  /** A settings problem that can't be fixed by leaving the setting out (the report wouldn't work). */
+  blocking?: boolean;
 }
 
 /** Edit distance between two strings (case-insensitive). */
@@ -295,6 +297,84 @@ export function checkColumns(spec: ReportSpec, type: ReportTypeDef, probe: Probe
     }
   }
   return problems;
+}
+
+/** A Sankey with every flow the same width (its "Relationship value Property" setting). */
+export const UNWEIGHTED_SANKEY = 'SANKEY_UNWEIGHTED';
+
+/** The nodes and relationships among a trial run's rows (in columns, lists and paths). */
+function graphEntities(rows: unknown[][]) {
+  const nodes: { node: string; lat?: number; lon?: number }[] = [];
+  const rels: { rel: string; numbers?: Record<string, number> }[] = [];
+  const visit = (v: any) => {
+    if (!v || typeof v !== 'object') return;
+    if (Array.isArray(v)) return v.forEach(visit);
+    if (typeof v.node === 'string') nodes.push(v);
+    else if (typeof v.rel === 'string') rels.push(v);
+    else if (Array.isArray(v.path)) v.path.forEach(visit);
+  };
+  rows.forEach((row) => row.forEach(visit));
+  return { nodes, rels };
+}
+
+/**
+ * Checks that report types without fields to map got what they draw: graphs need nodes or
+ * relationships, maps nodes with coordinates, and Sankeys relationships whose flow-width property is a
+ * number (naming the numeric properties they do have).
+ */
+export function checkReportRows(spec: ReportSpec, type: ReportTypeDef, probe: ProbeResult): Problem[] {
+  if (!probe.rows || !probe.sample) return [];
+  const { nodes, rels } = graphEntities(probe.sample);
+  if (type.key === 'graph' || type.key === 'graph3d') {
+    return nodes.length || rels.length
+      ? []
+      : [
+          {
+            path: 'query',
+            message:
+              'A graph draws nodes and relationships, but the query returns only values. Return the nodes and relationships themselves (e.g. RETURN a, r, b), not their properties.',
+          },
+        ];
+  }
+  if (type.key === 'map') {
+    return nodes.some((n) => Number.isFinite(n.lat) && Number.isFinite(n.lon))
+      ? []
+      : [
+          {
+            path: 'query',
+            message:
+              'A map places nodes by their latitude/longitude (or point) properties, but the query returns no such nodes. Return nodes that have coordinates (and relationships between them for lines).',
+          },
+        ];
+  }
+  if (type.key === 'sankey') {
+    if (!rels.length) {
+      return [
+        {
+          path: 'query',
+          message:
+            'A Sankey diagram draws relationships as flows, but the query returns none. Return each relationship with its two nodes (e.g. RETURN a, r, b).',
+        },
+      ];
+    }
+    const weight = typeof spec.settings.labelProperty === 'string' ? spec.settings.labelProperty : 'value';
+    if (weight === UNWEIGHTED_SANKEY || rels.some((r) => typeof r.numbers?.[weight] === 'number')) return [];
+    const types = [...new Set(rels.map((r) => r.rel))];
+    const numeric = [...new Set(rels.flatMap((r) => Object.keys(r.numbers ?? {})))];
+    return [
+      {
+        path: 'settings.labelProperty',
+        message: `A Sankey's flows are sized by a numeric property of its relationships, named in settings.labelProperty (now ${JSON.stringify(weight)}), but the relationships returned (${types.join(', ')}) don't have it. ${
+          numeric.length
+            ? `Set settings.labelProperty to one of their numeric properties: ${numeric.join(', ')}.`
+            : `They have no numeric properties: return relationships that do, or set settings.labelProperty to ${JSON.stringify(UNWEIGHTED_SANKEY)} for flows of equal width.`
+        }`,
+        // Not a setting that can simply be left out: without it the diagram draws nothing.
+        blocking: true,
+      },
+    ];
+  }
+  return [];
 }
 
 /** Problems as a message the model can act on. */

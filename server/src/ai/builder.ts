@@ -4,6 +4,7 @@ import { contextSchema, type BuildContext, type Catalogue, type ReportSpec, type
 import { formatCypher } from './format.js';
 import {
   checkColumns,
+  checkReportRows,
   checkSettings,
   checkSpec,
   closest,
@@ -108,7 +109,17 @@ export function plainValue(value: unknown, depth = 0): unknown {
   }
   if (neo4j.isRelationship(value as any)) {
     const rel = value as any;
-    return { rel: rel.type, start: rel.startNodeElementId, end: rel.endNodeElementId };
+    // Its numeric properties too: a Sankey's flows are sized by one of them.
+    const numbers = Object.entries(rel.properties ?? {})
+      .filter(([, v]) => typeof v === 'number' || neo4j.isInt(v))
+      .slice(0, 10)
+      .map(([k, v]) => [k, toNumber(v)]);
+    return {
+      rel: rel.type,
+      start: rel.startNodeElementId,
+      end: rel.endNodeElementId,
+      numbers: Object.fromEntries(numbers),
+    };
   }
   if (neo4j.isPath(value as any)) {
     const path = value as any;
@@ -264,7 +275,7 @@ const OPTION_JSON =
   '{"type": "<report type key>", "title": "<short title>", "query": "<Cypher, or Markdown for text reports>", "selection": {"<field>": "<column>"}, "settings": {"<setting>": <value>}, "description": "<plain language: what it creates>", "settingsNote": "<plain language: what the settings change, or empty>"}';
 
 /** Problems with settings (or the plain-language texts): corrected if possible, else left out. */
-const isSettingProblem = (p: Problem) => p.path.startsWith('settings') || p.path === 'description';
+const isSettingProblem = (p: Problem) => !p.blocking && (p.path.startsWith('settings') || p.path === 'description');
 
 /** Each report type's settings and their allowed values, briefly, for the model. */
 function describeSettingsByType(catalogue: Catalogue): string {
@@ -448,7 +459,7 @@ export class ReportBuilder {
     }
     // The trial run's first rows go to the browser for a preview (never to the model).
     spec.preview = { columns: result.columns, rows: result.sample ?? [] };
-    return checkColumns(spec, type, result);
+    return [...checkColumns(spec, type, result), ...checkReportRows(spec, type, result)];
   }
 
   /** Checks one answer for a report's core; returns the spec and what is still wrong with it. */
