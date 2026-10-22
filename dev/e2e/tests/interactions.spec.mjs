@@ -213,3 +213,22 @@ test('graph: right-click menu, nested submenu and inspect', async ({ page }) => 
   await expect(page.locator('.nd-graph-info')).toBeVisible();
   await expectNoErrors(page, errors);
 });
+
+test('branding: legacy design-system colour overrides still apply', async ({ page }, info) => {
+  // Overrides as the Helm chart's branding.style documented them for the earlier design system.
+  await page.route('**/style.config.json', (route) =>
+    route.fulfill({
+      json: {
+        style: {
+          '--palette-light-primary-bg-strong': '200, 0, 0',
+          '--palette-dark-primary-bg-strong': '255, 120, 120',
+        },
+      },
+    })
+  );
+  await page.goto('/');
+  const button = page.getByRole('button', { name: 'New dashboard' });
+  await expect(button).toBeVisible();
+  const expected = info.project.name === 'dark' ? 'rgb(255, 120, 120)' : 'rgb(200, 0, 0)';
+  await expect.poll(() => button.evaluate((b) => getComputedStyle(b).backgroundColor)).toBe(expected);
+});

@@ -6,7 +6,9 @@ include::../banner.adoc[]
 
 When using a custom NeoDash deployment, there are several theme variables that
 can be configured. These mostly relate to css tokens for
-link:https://cdn.jsdelivr.net/npm/@neo4j-ndl/base@1.4.0/lib/tokens/css/tokens.css[Needle] and some other brand specific options.
+the Neo4j design system (Needle, `@neo4j-ndl/base` 4) and some other brand specific options. Colours are
+set per appearance as `--theme-light-color-…` and `--theme-dark-color-…`; the `--palette-light-…` /
+`--palette-dark-…` names with `"R, G, B"` values used before NeoDash 4 still work.
 
 For a simple (non-Dockerized) deployment, these configuration parameters
 can be changed by modifying `dist/style.config.json` after you have built the
@@ -30,7 +32,7 @@ An example configuration for NeoDash
   "DASHBOARD_PAGE_LIST_COLOR" : "#F3F3F0",
   "DASHBOARD_PAGE_LIST_ACTIVE_COLOR": "#009999",
   "style": {
-    "--palette-light-neutral-bg-weak" : "243, 243, 240"
+    "--theme-light-color-neutral-bg-weak" : "#f3f3f0"
   }
 }
 ....

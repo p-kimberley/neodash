@@ -111,7 +111,7 @@ which signs everyone out.
 | `maps.dataUrl` | `/maps` | Where choropleth/area-map country shapes load from; bundled in the image |
 | `branding.appName` | `NeoDash` | Product name in the header and browser tab |
 | `branding.logo.base64` / `fileName` | – / `logo.png` | Header logo (base64 PNG/SVG, e.g. `--set-file branding.logo.base64=logo.b64`), served from the pod |
-| `branding.style` | `{}` | Extra `style.config.json` entries, e.g. `--palette-light-primary-bg-strong: '0, 94, 184'` and the `--palette-dark-…` equivalent for the primary colour |
+| `branding.style` | `{}` | Extra `style.config.json` entries, e.g. `--theme-light-color-primary-bg-strong: '#005eb8'` and the `--theme-dark-color-…` equivalent for the primary colour (the earlier `--palette-…` names still work) |
 | `ingress.enabled` / `className` / `host` | `true` / `nginx` / required | |
 | `ingress.tls.enabled` / `secretName` | `true` / required | |
 | `ingress.annotations` | see below | ingress-nginx annotations; adjust for other controllers |

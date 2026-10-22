@@ -333,15 +333,19 @@ Ingress or Gateway) and a request ID. Ship pod logs with your usual collector an
 - `branding.logo.base64`: a header logo, served from the pod (works offline):
   `base64 -w0 logo.svg > logo.b64` and
   `--set-file branding.logo.base64=logo.b64 --set branding.logo.fileName=logo.svg`.
-- `branding.style`: design-system colour overrides as `"R, G, B"` values, e.g. the primary colour in
-  both appearances:
+- `branding.style`: design-system colour overrides, per appearance, e.g. the primary colour in
+  both:
 
   ```yaml
   branding:
     style:
-      --palette-light-primary-bg-strong: '0, 94, 184'
-      --palette-dark-primary-bg-strong: '120, 180, 255'
+      --theme-light-color-primary-bg-strong: '#005eb8'
+      --theme-dark-color-primary-bg-strong: '#78b4ff'
   ```
+
+  Any `--theme-light-color-…` / `--theme-dark-color-…` token of the design system can be set. The
+  names used before NeoDash 4 (`--palette-light-…` / `--palette-dark-…` with `"R, G, B"` values)
+  still work.
 
 Users choose light, dark or match-system from the sun/moon menu in the header; the choice is kept
 in their browser.

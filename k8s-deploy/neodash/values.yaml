@@ -98,10 +98,11 @@ branding:
   logo:
     base64: ''
     fileName: logo.png
-  # Any other style.config.json "style" entries, e.g. design-system colour overrides
-  # ("R, G, B" values) for the primary colour in both appearances:
-  #   --palette-light-primary-bg-strong: '0, 94, 184'
-  #   --palette-dark-primary-bg-strong: '120, 180, 255'
+  # Any other style.config.json "style" entries, e.g. design-system colour overrides for the
+  # primary colour in both appearances:
+  #   --theme-light-color-primary-bg-strong: '#005eb8'
+  #   --theme-dark-color-primary-bg-strong: '#78b4ff'
+  # (The earlier --palette-light-… / --palette-dark-… names with "R, G, B" values still work.)
   style: {}
 
 logLevel: info
