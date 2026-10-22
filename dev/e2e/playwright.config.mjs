@@ -12,7 +12,7 @@ export default defineConfig({
   workers: 2,
   timeout: 120_000,
   expect: { timeout: 15_000 },
-  // One retry: under the load of two browsers, the dev server's proxy occasionally stalls a request.
+  // One retry, in case a test still meets a slow connection (see global-setup.mjs).
   // A test that passes on retry is reported as flaky, so it stays visible.
   retries: 1,
   reporter: [['list'], ['html', { outputFolder: './report', open: 'never' }]],
