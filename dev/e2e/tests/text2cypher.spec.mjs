@@ -10,6 +10,7 @@ import {
   getDashboard,
   openPage,
   putDashboard,
+  reportMenu,
   trackErrors,
 } from './helpers.mjs';
 
@@ -37,7 +38,7 @@ test('text2cypher: a question becomes a checked query that runs', async ({ page 
   try {
     await openPage(page, uuid);
     const asked = card(page, 'Asked');
-    await asked.getByRole('button', { name: 'Settings' }).click();
+    await reportMenu(asked, 'Settings');
 
     // Write the query in English, then translate.
     await asked.getByRole('switch', { name: 'Write the query in English' }).click();

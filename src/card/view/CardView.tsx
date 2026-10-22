@@ -11,7 +11,7 @@ import { NeoReportWrapper } from '../../report/ReportWrapper';
 import { identifyStyleRuleParameters } from '../../extensions/styling/StyleRuleEvaluator';
 import { CleanIconButton } from '@neo4j-ndl/react';
 import { PlayCircleIconSolid } from '@neo4j-ndl/react/icons';
-import { extensionEnabled } from '../../utils/ReportUtils';
+import { canViewAsTable, extensionEnabled } from '../../utils/ReportUtils';
 import { objMerge } from '../../utils/ObjectManipulation';
 import { REPORT_TYPES } from '../../config/ReportConfig';
 
@@ -43,6 +43,8 @@ const NeoCardView = ({
   onFieldsUpdate,
   expanded,
   onToggleCardExpand,
+  viewAsTable = false,
+  onToggleViewAsTable = () => {},
 }) => {
   // With field selectors below, the report stops where they start (they end 12px above the card's
   // edge); without, it fills the card down to its border.
@@ -102,6 +104,9 @@ const NeoCardView = ({
       : params;
   };
 
+  const reportTypes = getReportTypes(extensions);
+  const tableView = viewAsTable && canViewAsTable(type, reportTypes);
+
   // @ts-ignore
   const reportHeader = (
     <NeoCardViewHeader
@@ -117,6 +122,9 @@ const NeoCardView = ({
       onDownloadImage={onDownloadImage}
       onToggleCardExpand={onToggleCardExpand}
       expanded={expanded}
+      canViewAsTable={active && canViewAsTable(type, reportTypes)}
+      viewAsTable={tableView}
+      onToggleViewAsTable={onToggleViewAsTable}
       parameters={getLocalParameters(title)}
     ></NeoCardViewHeader>
   );
@@ -138,11 +146,13 @@ const NeoCardView = ({
   );
 
   const localParameters = { ...getLocalParameters(query), ...getLocalParameters(settings.drilldownLink) };
-  const reportTypes = getReportTypes(extensions);
   const reportTypeHasNoFooter = reportTypes[type] && reportTypes[type].withoutFooter;
-  const withoutFooter = reportTypeHasNoFooter
-    ? reportTypes[type].withoutFooter
-    : (reportTypes[type] && !reportTypes[type].selection) || (settings && settings.hideSelections);
+  // The table view has no use for the chart's field selectors.
+  const withoutFooter =
+    tableView ||
+    (reportTypeHasNoFooter
+      ? reportTypes[type].withoutFooter
+      : (reportTypes[type] && !reportTypes[type].selection) || (settings && settings.hideSelections));
 
   const getGlobalParameter = (key: string): unknown => {
     return globalParameters ? globalParameters[key] : undefined;
@@ -200,6 +210,7 @@ const NeoCardView = ({
           dimensions={{ width: widthPx, height: heightPx }}
           type={type}
           ChartType={reportTypes[type] && reportTypes[type].component}
+          viewAsTable={tableView}
           setGlobalParameter={onGlobalParameterUpdate}
           getGlobalParameter={getGlobalParameter}
           updateReportSetting={updateReportSetting}
@@ -250,7 +261,7 @@ const NeoCardView = ({
         ) : (
           <NeoCodeViewerComponent value={'Invalid report type. Are you missing an extension?'} />
         )}
-        {reportTypes[type] ? reportFooter : <></>}
+        {reportTypes[type] && !tableView ? reportFooter : <></>}
       </ReportItemContainer>
     </div>
   );

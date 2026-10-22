@@ -8,8 +8,13 @@ each of which expect different types of data. See the relevant
 documentation pages for more information.
 
 A report can be given a title, which is displayed at the top of the report.
-To change the query of a report, open its settings by clicking
-the cog icon on the top right of the report (editors only).
+The *⋮* menu at the top right of a report holds its actions:
+
+* *View as table* shows the results behind a chart as a table (with a CSV download), and *View as
+  chart* switches back. This only changes your own view, and isn't saved with the dashboard.
+* *Download as image*, when the report's settings allow it.
+* *Settings* (editors only) opens the report's settings, where you change its query.
+
 Every report also has a maximise button next to it, which shows the report
 over the whole window; Escape or a click outside it restores it.
 

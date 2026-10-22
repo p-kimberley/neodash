@@ -838,6 +838,12 @@ body {
   overscroll-behavior: contain;
 }
 
+/* Menus opened from a maximised report (its ⋮ menu, the graph's right-click menu) go above it: NDL
+   stacks menus (popover layer) below modals. */
+body:has(.nd-maximised) .ndl-menu {
+  z-index: calc(var(--z-index-modal) + 1);
+}
+
 .ndl-dialog.nd-maximised {
   position: absolute;
   inset: 16px;

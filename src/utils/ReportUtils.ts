@@ -17,3 +17,17 @@ export async function validateQuery(query, driver, database) {
     return false;
   }
 }
+
+/**
+ * Whether a report's results can also be shown as a table ("View as table"): reports that draw query
+ * results, except those that already are a table or raw results, or show a single value.
+ */
+export const canViewAsTable = (type: string, reportTypes: Record<string, any>) => {
+  const reportType = reportTypes[type];
+  return Boolean(
+    reportType &&
+      !reportType.textOnly &&
+      reportType.maxRecords !== 1 &&
+      !['table', 'json', 'value', 'select'].includes(type)
+  );
+};

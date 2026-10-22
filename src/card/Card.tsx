@@ -85,6 +85,8 @@ const NeoCard = ({
   });
 
   const [expanded, setExpanded] = useState(false);
+  // "View as table": for this session only, not saved with the dashboard.
+  const [viewAsTable, setViewAsTable] = useState(false);
   const onToggleCardExpand = () => {
     // When we re-minimize a card, close the settings to avoid position issues.
     if (expanded && settingsOpen) {
@@ -137,6 +139,8 @@ const NeoCard = ({
             title={report.title}
             expanded={expanded}
             onToggleCardExpand={onToggleCardExpand}
+            viewAsTable={viewAsTable}
+            onToggleViewAsTable={() => setViewAsTable(!viewAsTable)}
             onGlobalParameterUpdate={onGlobalParameterUpdate}
             onSelectionUpdate={(selectable, field) => onSelectionUpdate(id, selectable, field)}
             onTitleUpdate={(title) => onTitleUpdate(id, title)}

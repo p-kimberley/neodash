@@ -80,3 +80,9 @@ export const expectReportOk = async (cardLocator, title) => {
   const visual = await largestVisual(cardLocator);
   expect(visual.width * visual.height, `report "${title}" draws nothing`).toBeGreaterThan(0);
 };
+
+/** Opens a report's actions menu (⋮) and picks an item, e.g. 'Settings' or 'View as table'. */
+export const reportMenu = async (cardLocator, item) => {
+  await cardLocator.getByRole('button', { name: 'Report actions' }).first().click();
+  await cardLocator.page().getByRole('menuitem', { name: item }).click();
+};

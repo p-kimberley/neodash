@@ -1,6 +1,6 @@
 // Dialogs close on a click outside them; a card's top row is centred on one line on both faces.
 import { test, expect } from '@playwright/test';
-import { SALES, card, expectNoErrors, openPage, trackErrors } from './helpers.mjs';
+import { SALES, card, expectNoErrors, openPage, reportMenu, trackErrors } from './helpers.mjs';
 
 test('dialogs close on a click outside them, not on a drag out of them', async ({ page }) => {
   const errors = trackErrors(page);
@@ -55,7 +55,7 @@ test("a card's top row is centred on one line, at the same height on both faces"
   expect(view.length).toBeGreaterThan(2);
   expect(Math.max(...view) - Math.min(...view)).toBeLessThanOrEqual(1);
 
-  await graph.getByRole('button', { name: 'Settings' }).click();
+  await reportMenu(graph, 'Settings');
   await expect(graph.getByRole('button', { name: 'Run' })).toBeVisible();
   const settings = await middles();
   expect(Math.max(...settings) - Math.min(...settings)).toBeLessThanOrEqual(1);

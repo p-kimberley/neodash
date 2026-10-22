@@ -29,7 +29,7 @@ Application                     application/Application.tsx
 * *Title and page tabs*: the dashboard's title, its settings and extensions, and one tab per page.
 * *Page*: lays the cards out in a grid (`react-grid-layout`) that editors can rearrange and resize.
 * *Card*: one report. It has two faces: the *view* (what everyone sees) and the *settings* (the query editor and report settings, for editors). A maximised card is shown in a dialog.
-* *Card view header*: the drag handle (editors), the report's title and its buttons (download as image, maximise, details, refresh, settings), as the report's settings allow.
+* *Card view header*: the drag handle (editors), the report's title and its buttons (maximise, details, refresh) and its ⋮ menu (view as table, download as image, settings), as the report's settings allow. "View as table" is per-card session state: the report renders its records with the table chart instead.
 * *Report*: runs the report's query through the backend (`report/ReportQueryRunner.ts`), handles loading, errors and empty results, and renders the chart.
 * *Chart*: draws one visualization from the query's records. See xref:developer-guide/adding-visualizations.adoc[Adding Visualizations].
 * *Card view footer*: the field selectors under a chart (e.g. which property to show for each node label).

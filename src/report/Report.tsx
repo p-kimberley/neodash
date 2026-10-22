@@ -21,6 +21,9 @@ import { deleteSessionStoragePrepopulationReportFunction } from '../extensions/s
 import { updateFieldsThunk } from '../card/CardThunks';
 import { getDashboardTheme } from '../dashboard/DashboardSelectors';
 
+/** Settings of the table shown by "View as table": compact rows, with a CSV download. */
+const TABLE_VIEW_SETTINGS = { compact: true, allowDownload: true };
+
 export const REPORT_LOADING_ICON = (
   <LoadingSpinner size='large' className='centered nd-report-loading' style={{ marginTop: '-30px' }} />
 );
@@ -55,6 +58,7 @@ export const NeoReport = ({
   extensions = {}, // A set of enabled extensions.
   getCustomDispatcher = () => {},
   ChartType = NeoTableChart, // The report component to render with the query results.
+  viewAsTable = false, // Whether to show the results as a table instead ("View as table").
   prepopulateExtensionName,
   deletePrepopulationReportFunction,
   theme,
@@ -235,6 +239,13 @@ export const NeoReport = ({
 
   const reportTypes = getReportTypes(extensions);
 
+  // "View as table" draws the same results with the table report, using its own plain settings (the
+  // report's chart settings and rules don't apply to it, and nothing it changes is saved).
+  const Chart = viewAsTable ? NeoTableChart : ChartType;
+  const chartSettings = viewAsTable ? TABLE_VIEW_SETTINGS : settings;
+  const chartExtensions = viewAsTable ? {} : extensions;
+  const chartUpdateReportSetting = viewAsTable ? () => {} : updateReportSetting;
+
   // Draw the report based on the query status.
   if (disabled) {
     return <div></div>;
@@ -263,13 +274,13 @@ export const NeoReport = ({
         className={'n-text-neutral-text-default'}
         style={{ height: '100%', marginTop: '0px', overflow: reportTypes[type].allowScrolling ? 'auto' : 'hidden' }}
       >
-        <ChartType
+        <Chart
           id={id}
           setPageNumber={setPageNumber}
           records={records}
-          extensions={extensions}
+          extensions={chartExtensions}
           selection={selection}
-          settings={settings}
+          settings={chartSettings}
           fullscreen={expanded}
           dimensions={dimensions}
           parameters={parameters}
@@ -278,7 +289,7 @@ export const NeoReport = ({
           createNotification={createNotification}
           setGlobalParameter={setGlobalParameter}
           getGlobalParameter={getGlobalParameter}
-          updateReportSetting={updateReportSetting}
+          updateReportSetting={chartUpdateReportSetting}
           fields={fields}
           setFields={setFields}
           theme={theme}
@@ -308,13 +319,13 @@ export const NeoReport = ({
             </Tip>
           </div>
         </div>
-        <ChartType
+        <Chart
           id={id}
           setPageNumber={setPageNumber}
           records={records}
-          extensions={extensions}
+          extensions={chartExtensions}
           selection={selection}
-          settings={settings}
+          settings={chartSettings}
           fullscreen={expanded}
           dimensions={dimensions}
           parameters={parameters}
@@ -322,7 +333,7 @@ export const NeoReport = ({
           createNotification={createNotification}
           setGlobalParameter={setGlobalParameter}
           getGlobalParameter={getGlobalParameter}
-          updateReportSetting={updateReportSetting}
+          updateReportSetting={chartUpdateReportSetting}
           fields={fields}
           setFields={setFields}
         />

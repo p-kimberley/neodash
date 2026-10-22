@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import gfm from 'remark-gfm';
 import { replaceDashboardParameters } from '../../chart/ChartUtils';
 
-import { CleanIconButton } from '@neo4j-ndl/react';
+import { CleanIconButton, Menu } from '@neo4j-ndl/react';
 import { Dialog } from '../../component/dialog/Dialog';
 import {
   DragIcon,
@@ -13,8 +13,11 @@ import {
   ArrowPathIconOutline,
   ExpandIcon,
   ShrinkIcon,
-  CameraIconSolid,
   InformationCircleIconOutline,
+  EllipsisVerticalIconOutline,
+  TableCellsIconOutline,
+  PresentationChartBarIconOutline,
+  PhotoIconOutline,
 } from '@neo4j-ndl/react/icons';
 
 const MarkdownLink = ({ node: _node, ...props }: any) => <a {...props} target='_blank' rel='noopener noreferrer' />;
@@ -31,12 +34,16 @@ const NeoCardViewHeader = ({
   onDownloadImage,
   onToggleCardExpand,
   expanded,
+  canViewAsTable = false,
+  viewAsTable = false,
+  onToggleViewAsTable = () => {},
   parameters,
 }) => {
   const [text, setText] = React.useState(title);
   const [parsedText, setParsedText] = React.useState(title);
   const [editing, setEditing] = React.useState(false);
   const [descriptionModalOpen, setDescriptionModalOpen] = React.useState(false);
+  const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
 
   function replaceParamsOnString(s, p) {
     let parsed: string;
@@ -95,11 +102,57 @@ const NeoCardViewHeader = ({
 
   const descriptionEnabled = description && description.length > 0;
 
-  // TODO: all components like buttons should probably be seperate files
-  const settingsButton = (
-    <CleanIconButton description='Settings' onClick={onToggleCardSettings} size='medium'>
-      <Cog6ToothIconOutline />
-    </CleanIconButton>
+  // The ⋮ menu: switching between the chart and a table of its results, downloading an image, and
+  // (for editors) the report's settings.
+  const closeMenuAnd = (action: () => void) => () => {
+    setMenuAnchor(null);
+    action();
+  };
+  const menuItems = [
+    canViewAsTable && (
+      <Menu.Item
+        key='table'
+        leadingVisual={viewAsTable ? <PresentationChartBarIconOutline /> : <TableCellsIconOutline />}
+        title={viewAsTable ? 'View as chart' : 'View as table'}
+        onClick={closeMenuAnd(onToggleViewAsTable)}
+      />
+    ),
+    downloadImageEnabled && (
+      <Menu.Item
+        key='image'
+        leadingVisual={<PhotoIconOutline />}
+        title='Download as image'
+        onClick={closeMenuAnd(onDownloadImage)}
+      />
+    ),
+    editable && (
+      <Menu.Item
+        key='settings'
+        leadingVisual={<Cog6ToothIconOutline />}
+        title='Settings'
+        onClick={closeMenuAnd(onToggleCardSettings)}
+      />
+    ),
+  ].filter(Boolean);
+
+  const menuButton = (
+    <>
+      <CleanIconButton
+        description='Report actions'
+        onClick={(e) => setMenuAnchor(e.currentTarget)}
+        size='medium'
+        isActive={Boolean(menuAnchor)}
+      >
+        <EllipsisVerticalIconOutline />
+      </CleanIconButton>
+      <Menu
+        anchorRef={{ current: menuAnchor }}
+        isOpen={Boolean(menuAnchor)}
+        onClose={() => setMenuAnchor(null)}
+        placement='bottom-end-top-end'      >
+        <Menu.Items>{menuItems}</Menu.Items>
+      </Menu>
+    </>
   );
 
   const refreshButton = (
@@ -117,12 +170,6 @@ const NeoCardViewHeader = ({
   const unMaximizeButton = (
     <CleanIconButton description='Restore' onClick={onToggleCardExpand} size='medium'>
       <ShrinkIcon />
-    </CleanIconButton>
-  );
-
-  const downloadImageButton = (
-    <CleanIconButton description='Download as Image' onClick={onDownloadImage} size='medium'>
-      <CameraIconSolid />
     </CleanIconButton>
   );
 
@@ -152,12 +199,11 @@ const NeoCardViewHeader = ({
       <div className='nd-card-bar'>
         <div className='nd-card-bar-title'>{cardTitle}</div>
         <div className='nd-card-bar-actions'>
-          {downloadImageEnabled ? downloadImageButton : <></>}
           {/* Every report can be maximised to fill the window. */}
           {expanded ? unMaximizeButton : maximizeButton}
           {descriptionEnabled ? descriptionButton : <></>}
           {refreshButtonEnabled ? refreshButton : <></>}
-          {editable ? settingsButton : <></>}
+          {menuItems.length > 0 ? menuButton : <></>}
         </div>
       </div>
     </>
