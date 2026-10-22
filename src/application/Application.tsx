@@ -21,8 +21,6 @@ import { downloadComponentAsImage } from '../chart/ChartUtils';
 import '@neo4j-ndl/base/lib/neo4j-ds-styles.css';
 import { NeedleThemeProvider, Toaster } from '@neo4j-ndl/react';
 import { getDashboardTheme } from '../dashboard/DashboardSelectors';
-import { ThemeProvider } from '@mui/material/styles';
-import { createAppTheme } from '../theme/muiTheme';
 import { rememberThemeForDocs } from '../utils/docs';
 
 const NeoReportHelpModal = React.lazy(() => import('../modal/ReportHelpModal'));
@@ -83,8 +81,6 @@ const Application = ({
     return () => media.removeEventListener('change', update);
   }, []);
 
-  // One Material UI theme for the whole app, matching the current appearance.
-  const muiTheme = React.useMemo(() => createAppTheme(themeMode === 'dark' ? 'dark' : 'light'), [themeMode]);
   const ref = React.useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (themeMode === 'dark') {
@@ -98,34 +94,32 @@ const Application = ({
   return (
     // The design system's theme also scopes its portalled menus, popovers and dialogs.
     <NeedleThemeProvider theme={themeMode === 'dark' ? 'dark' : 'light'} wrapperProps={{ isWrappingChildren: false }}>
-      <ThemeProvider theme={muiTheme}>
-        <div ref={ref} className={`n-bg-neutral-bg-default n-h-screen n-w-screen n-flex n-flex-col n-overflow-hidden`}>
-          {connected ? (
-            <>
-              <AppHeader
-                onHome={onHome}
-                onDownloadImage={() => downloadComponentAsImage(ref)}
-                onAboutModalOpen={onAboutModalOpen}
-              />
-              <Suspense fallback=''>{homeOpen ? <DashboardSelector /> : <Dashboard />}</Suspense>
-            </>
-          ) : (
-            <NeoDashboardPlaceholder></NeoDashboardPlaceholder>
-          )}
-          {/* TODO - move all models into a pop-ups (or modals) component. */}
-          <Suspense fallback=''>
-            <NeoAboutModal open={aboutModalOpen} handleClose={onAboutModalClose} getDebugState={getDebugState} />
-          </Suspense>
-          <Suspense fallback=''>
-            <NeoReportHelpModal open={reportHelpModalOpen} handleClose={onReportHelpModalClose} />
-          </Suspense>
-          <Suspense fallback=''>
-            <NeoNotificationModal></NeoNotificationModal>
-          </Suspense>
-          {/* Short confirmations (e.g. a table value copied), shown by toast() anywhere in the app. */}
-          <Toaster />
-        </div>
-      </ThemeProvider>
+      <div ref={ref} className={`n-bg-neutral-bg-default n-h-screen n-w-screen n-flex n-flex-col n-overflow-hidden`}>
+        {connected ? (
+          <>
+            <AppHeader
+              onHome={onHome}
+              onDownloadImage={() => downloadComponentAsImage(ref)}
+              onAboutModalOpen={onAboutModalOpen}
+            />
+            <Suspense fallback=''>{homeOpen ? <DashboardSelector /> : <Dashboard />}</Suspense>
+          </>
+        ) : (
+          <NeoDashboardPlaceholder></NeoDashboardPlaceholder>
+        )}
+        {/* TODO - move all models into a pop-ups (or modals) component. */}
+        <Suspense fallback=''>
+          <NeoAboutModal open={aboutModalOpen} handleClose={onAboutModalClose} getDebugState={getDebugState} />
+        </Suspense>
+        <Suspense fallback=''>
+          <NeoReportHelpModal open={reportHelpModalOpen} handleClose={onReportHelpModalClose} />
+        </Suspense>
+        <Suspense fallback=''>
+          <NeoNotificationModal></NeoNotificationModal>
+        </Suspense>
+        {/* Short confirmations (e.g. a table value copied), shown by toast() anywhere in the app. */}
+        <Toaster />
+      </div>
     </NeedleThemeProvider>
   );
 };

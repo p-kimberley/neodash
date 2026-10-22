@@ -16,76 +16,44 @@
   transform: translate(-50%, -50%);
 }
 
-.MuiInputBase-root {
-  font-family: 'Nunito Sans', sans-serif !important;
-}
+.MuiInputBase-root
 /* End Needle */
 
-.MuiDrawer-paper {
-  position: relative !important;
-}
+.MuiDrawer-paper
 
 .blue-grey {
   background: #607d8b !important;
   color: white !important;
 }
 
-.no-underline .MuiInput-underline::before {
-  border-bottom: none;
-}
+.no-underline .MuiInput-underline::before
 
-.MuiContainer-root {
-  padding-left: 0px !important;
-  padding-right: 0px !important;
-}
+.MuiContainer-root
 
-.MuiFormControl-root {
-  padding-top: 0px;
-}
+.MuiFormControl-root
 
-.large input {
-  font-size: 20px;
-  margin-top: -6px;
-}
+.large input
 
-.MuiChip-root {
-  border-radius: 16px !important;
-}
+.MuiChip-root
 
 .CodeMirror-lint-message-error {
   background-image: none !important;
 }
 
-.leaflet-custom-node-popup {
-  margin-left: 1px;
-  margin-bottom: 34px !important;
-}
+.leaflet-custom-node-popup
 
-.leaflet-custom-rel-popup {
-  margin-left: 0px;
-}
+.leaflet-custom-rel-popup
 
-.leaflet-marker-icon {
-  width: 50px !important;
-  margin-left: -25px !important;
-}
+.leaflet-marker-icon
 
 /* Hack to make the table header smaller, TODO - clean this up */
-.table-small-header {
-  height: 36px;
-}
+.table-small-header
 
-.MuiDataGrid-root {
-  border: none !important;
-}
+.MuiDataGrid-root
 
-.MuiDataGrid-footerContainer > div {
-  margin-top: -40px;
-}
+.MuiDataGrid-footerContainer > div
 
-.MuiChip-root:before {
-  border: none !important;
-}
+.MuiChip-root:before
 
 .react-resizable-handle {
   bottom: 4px !important;
@@ -94,9 +62,7 @@
   color: rgb(222, 222, 222);
 }
 
-.MuiDataGrid-footerContainer {
-  border: none !important;
-}
+.MuiDataGrid-footerContainer
 .neodash-card-editable-false .react-resizable-handle {
   display: none;
 }
@@ -110,72 +76,28 @@
   border-bottom: 2px solid rgba(0, 0, 0, 0.4) !important;
 }
 
-div:has(> .table-small-header) {
-  background: unset !important;
-}
+div:has(> .table-small-header)
 
-.MuiDataGrid-footerContainer {
-  border-top: none !important;
-}
+.MuiDataGrid-footerContainer
 
-.MuiTablePagination-root {
-  margin-top: -10px;
-}
+.MuiTablePagination-root
 
-.MuiDataGrid-panel {
-  translate: 0px -152%;
-}
+.MuiDataGrid-panel
 
-.MuiCard-root {
-  box-shadow: 0 0 #0000, 0 0 #0000, var(--tw-shadow) !important;
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
-}
+.MuiCard-root
 
 .white-text {
   color: white !important;
 }
-.MuiCardHeader-content .MuiInputBase-root.Mui-disabled {
-  color: inherit !important;
-}
+.MuiCardHeader-content .MuiInputBase-root.Mui-disabled
 
-.MuiCardHeader-content .MuiInput-underline.Mui-disabled:before {
-  border-bottom-style: none !important;
-}
+.MuiCardHeader-content .MuiInput-underline.Mui-disabled:before
 
-.textinput-linenumbers {
-  scrollbar-width: none;
-  resize: none;
-  background: url(linenumbers.png);
-  background-size: 20;
-  background-attachment: local;
-  background-repeat: no-repeat;
-  font-family: monospace;
-  font-size: 14px;
-  line-height: 16px;
-  border-color: #fff;
-  width: calc(100% + 30px);
-  display: block;
-  background-size: 26px;
-  white-space: pre;
-  background-position: 0px -11px;
-  padding-right: 0px !important;
-  margin-top: 0px;
-  padding-left: 30px;
-  padding-top: 0px !important;
-  padding-bottom: 0px !important;
-  margin-bottom: 0px !important;
-  overflow-x: scroll !important;
-  overflow-y: scroll;
-  min-height: 116px;
-}
+.textinput-linenumbers
 
-.textinput-linenumbers::-webkit-scrollbar {
-  display: none;
-}
+.textinput-linenumbers::-webkit-scrollbar
 
-.MuiDrawer-docked .MuiDrawer-paper {
-  overflow-x: hidden;
-}
+.MuiDrawer-docked .MuiDrawer-paper
 
 #center-aligned {
   text-align: center;
@@ -188,7 +110,7 @@ div:has(> .table-small-header) {
   right: 0;
   bottom: 0;
   /* Follows the light/dark appearance (was a fixed white). */
-  background: rgb(var(--palette-neutral-bg-weak));
+  background: var(--nd-surface);
   z-index: 1299;
 }
 
@@ -209,9 +131,7 @@ div:has(> .table-small-header) {
   margin-top: 4px;
 }
 
-.card-view .MuiTablePagination-root {
-  margin-top: 0px;
-}
+.card-view .MuiTablePagination-root
 
 @keyframes pulse {
   0% {

@@ -20,13 +20,6 @@ stripRemoteImports.postcss = true;
 // CSS source maps are left out of production builds: css-loader 7 would embed them in the JS bundle.
 const rules = (production) => [
   {
-    // ESM packages (e.g. @mui/x-date-pickers 8) import '@mui/material/Button' without an extension;
-    // MUI 5 has no exports map, so allow extension-less imports from packages' .mjs files.
-    test: /\.m?js$/,
-    include: /node_modules/,
-    resolve: { fullySpecified: false },
-  },
-  {
     test: /\.(js|jsx|ts|tsx)$/,
     exclude: /(node_modules)/,
     loader: 'babel-loader',

@@ -735,9 +735,7 @@ body {
 }
 
 .MuiDataGrid-root .MuiDataGrid-cell:focus,
-.MuiDataGrid-root .MuiDataGrid-columnHeader:focus {
-  outline-color: var(--nd-focus) !important;
-}
+.MuiDataGrid-root .MuiDataGrid-columnHeader:focus
 
 /* Each face's content is clipped to the card's radius less its 1px border, so it can't poke out
    past the rounded corners. */
@@ -747,16 +745,9 @@ body {
 }
 
 /* Floating menus drawn by charts (e.g. the graph right-click menu). */
-.nd-floating-menu {
-  min-width: 220px;
-  box-shadow: var(--nd-shadow-raised) !important;
-  color: var(--nd-text);
-}
+.nd-floating-menu
 
-.nd-floating-menu .MuiCardHeader-title {
-  font-size: var(--nd-text-lg);
-  font-weight: 650;
-}
+.nd-floating-menu .MuiCardHeader-title
 
 /* A maximised report fills the window (minus a small margin); the report's restore button,
    Escape or a click on the backdrop shrink it back. */
