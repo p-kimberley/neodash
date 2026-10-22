@@ -19,7 +19,7 @@ import AppHeader from './AppHeader';
 import { NeoDashboardPlaceholder } from '../dashboard/placeholder/DashboardPlaceholder';
 import { downloadComponentAsImage } from '../chart/ChartUtils';
 import '@neo4j-ndl/base/lib/neo4j-ds-styles.css';
-import { NeedleThemeProvider } from '@neo4j-ndl/react';
+import { NeedleThemeProvider, Toaster } from '@neo4j-ndl/react';
 import { getDashboardTheme } from '../dashboard/DashboardSelectors';
 import { ThemeProvider } from '@mui/material/styles';
 import { createAppTheme } from '../theme/muiTheme';
@@ -122,6 +122,8 @@ const Application = ({
           <Suspense fallback=''>
             <NeoNotificationModal></NeoNotificationModal>
           </Suspense>
+          {/* Short confirmations (e.g. a table value copied), shown by toast() anywhere in the app. */}
+          <Toaster />
         </div>
       </ThemeProvider>
     </NeedleThemeProvider>

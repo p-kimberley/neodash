@@ -71,7 +71,7 @@ test('every report type maximises to fill the window', async ({ page }) => {
           expect(visual.width * visual.height, 'the report shows nothing').toBeGreaterThan(0);
         }
         if (report.type === 'table') {
-          expect(await dialog.locator('.MuiDataGrid-row').count()).toBeGreaterThan(0);
+          expect(await dialog.locator('.ndl-data-grid-tbody .ndl-data-grid-tr').count()).toBeGreaterThan(0);
         }
 
         await page.keyboard.press('Escape');

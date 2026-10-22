@@ -1144,3 +1144,67 @@ body {
   margin-right: 10px;
   vertical-align: top;
 }
+
+/* ---------- Table reports (NDL data grid) ---------- */
+
+.nd-table {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+.nd-table > .ndl-data-grid-root {
+  height: 100%;
+}
+
+/* Rows stay on one line, cut off with an ellipsis, unless the report wraps its content. */
+.nd-table-nowrap .ndl-data-grid-root .ndl-div-table .ndl-data-grid-td {
+  white-space: nowrap;
+}
+.nd-table-nowrap .nd-table-cell-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nd-table-wrap .ndl-data-grid-root .ndl-div-table .ndl-data-grid-td {
+  overflow-wrap: anywhere;
+}
+
+/* Numbers line up on the right, as in a spreadsheet. */
+.ndl-data-grid-root .ndl-div-table .ndl-data-grid-td.nd-table-number,
+.ndl-data-grid-root .ndl-div-table .ndl-data-grid-th.nd-table-number .ndl-header-cell {
+  justify-content: flex-end;
+}
+
+.nd-table-header-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.nd-table-filter-mark {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  color: var(--nd-primary);
+}
+.nd-table-filter {
+  width: 240px;
+  padding: 12px;
+}
+
+.nd-table-results {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nd-table-page-size {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-size: var(--nd-text-sm);
+  color: var(--nd-text-secondary);
+}
+.nd-table-page-size .ndl-combobox.ndl-combobox-field {
+  width: 76px;
+}

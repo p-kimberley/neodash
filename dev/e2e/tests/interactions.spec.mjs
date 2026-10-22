@@ -56,7 +56,7 @@ test('style rules colour bars and table rows; rows keep their colour on hover', 
   const errors = trackErrors(page);
   await openPage(page, SALES);
   const table = card(page, 'Top products');
-  const row = table.locator('.MuiDataGrid-row[class*="rule0"]').first();
+  const row = table.locator('.ndl-data-grid-tbody .ndl-data-grid-tr[class*="rule0"]').first();
   const before = await row.evaluate((r) => getComputedStyle(r).backgroundColor);
   await row.hover();
   await page.waitForTimeout(300);

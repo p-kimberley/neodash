@@ -65,7 +65,7 @@ export const largestVisual = (root) =>
   root.evaluate((el) => {
     const rects = [
       ...el.querySelectorAll(
-        'canvas, svg, .MuiDataGrid-root, .maplibregl-map, .markdown-widget, iframe, input, .MuiTypography-root, table'
+        'canvas, svg, .ndl-data-grid-root, .maplibregl-map, .markdown-widget, iframe, input, table'
       ),
     ]
       .map((e) => e.getBoundingClientRect())

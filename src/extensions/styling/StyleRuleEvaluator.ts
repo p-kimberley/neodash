@@ -208,38 +208,36 @@ export const textColorForBackground = (background: string): string | undefined =
   }
 };
 
+/** A rule's colour for a CSS declaration; anything that could end the declaration is dropped. */
+const cssColor = (value) => `${value ?? ''}`.replace(/[;{}<>]/g, '');
+
 /**
- * Styles for the table rule classes (`.rule0`, `.rule1`, ... set on matching rows and cells), as an
- * MUI `sx` object for the table's container. (This replaced @mui/styles' makeStyles, which is
- * deprecated; the selectors and their order are the same.)
+ * CSS for a table's rule classes (`.rule0`, `.rule1`, ... set on matching rows and cells), scoped to
+ * the table by `scope` (a class on its root). Rows and cells take the rule's colour through the
+ * design system's `--cell-background`, so hovered rows keep it, slightly shaded so the hover shows.
  */
-export const generateSxBasedOnRules = (rules): Record<string, any> => {
-  const classes = {};
-  // Background rules first, each with a readable text colour; text-colour rules are added after
-  // them so that, when both apply to a cell, the author's explicit text colour wins.
+export const generateCssBasedOnRules = (rules, scope: string): string => {
+  const css: string[] = [];
+  // Background rules first, each with a readable text colour; text-colour rules come after them
+  // so that, when both apply to a cell, the author's explicit text colour wins.
   rules.forEach((rule, i) => {
     if (rule.customization == 'cell color' || rule.customization == 'row color') {
-      classes[`& .rule${i}`] = {
-        backgroundColor: rule.customizationValue,
-        color: textColorForBackground(rule.customizationValue),
-      };
-      // Hovered rows keep the rule's colour (the theme's translucent hover shade would leave the
-      // rule's text colour unreadable in dark mode), slightly shaded so the hover still shows.
-      classes[`& .MuiDataGrid-row.rule${i}:hover, & .MuiDataGrid-row.rule${i}.Mui-hovered`] = {
-        backgroundColor: rule.customizationValue,
-        boxShadow: 'inset 0 0 0 100vmax rgba(0, 0, 0, 0.06)',
-      };
+      const color = cssColor(rule.customizationValue);
+      const text = textColorForBackground(rule.customizationValue);
+      css.push(
+        `.${scope} .ndl-data-grid-tbody .rule${i} { --cell-background: ${color};${text ? ` color: ${text};` : ''} }`,
+        `.${scope}.ndl-data-grid-root .ndl-data-grid-tbody .ndl-data-grid-tr.rule${i}:hover { --cell-background: ${color}; box-shadow: inset 0 0 0 100vmax rgba(0, 0, 0, 0.06); }`
+      );
     }
   });
   rules.forEach((rule, i) => {
     if (rule.customization == 'cell text color' || rule.customization == 'row text color') {
-      classes[`& .rule${i}`] = {
-        color: rule.customizationValue,
-        fontWeight: 'bold',
-      };
+      css.push(
+        `.${scope} .ndl-data-grid-tbody .rule${i} { color: ${cssColor(rule.customizationValue)}; font-weight: bold; }`
+      );
     }
   });
-  return classes;
+  return css.join('\n');
 };
 
 export const identifyStyleRuleParameters = (rules) => {
