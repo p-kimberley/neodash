@@ -8,7 +8,7 @@ import { FONT_SANS, Mode, palettes } from './palette';
 export function createAppTheme(mode: Mode) {
   const p = palettes[mode];
   const hover = mode === 'dark' ? 'rgba(245, 247, 250, 0.07)' : 'rgba(21, 30, 41, 0.05)';
-  const selected = mode === 'dark' ? 'rgba(124, 200, 255, 0.16)' : 'rgba(0, 111, 214, 0.1)';
+  const selected = mode === 'dark' ? 'rgba(143, 227, 232, 0.16)' : 'rgba(10, 97, 144, 0.1)';
 
   return createTheme({
     palette: {

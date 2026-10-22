@@ -32,7 +32,7 @@
   --nd-surface-raised: #ffffff;
   --nd-surface-variant: #f0f3f7;
   --nd-hover: rgba(21, 30, 41, 0.06);
-  --nd-selected: rgba(0, 111, 214, 0.1);
+  --nd-selected: rgba(10, 97, 144, 0.1);
   --nd-border: #e1e6ed;
   --nd-border-strong: #c4c9d1;
   --nd-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
@@ -46,11 +46,12 @@
   --nd-icon: #46505d;
 
   /* Accent and status */
-  --nd-primary: #006fd6;
+  /* The accent is the design system's primary (baltic), so our elements match NDL's buttons and links. */
+  --nd-primary: #0a6190;
   --nd-on-primary: #ffffff;
-  --nd-primary-soft: #e6f4ff;
-  --nd-on-primary-soft: #00539f;
-  --nd-focus: #006fd6;
+  --nd-primary-soft: #e7fafb;
+  --nd-on-primary-soft: #02507b;
+  --nd-focus: #30839d;
   --nd-danger: #c8243f;
   --nd-success: #2b7a58;
   --nd-warning: #8a5a00;
@@ -84,7 +85,7 @@
   --nd-surface-raised: #232e3b;
   --nd-surface-variant: #202a36;
   --nd-hover: rgba(245, 247, 250, 0.07);
-  --nd-selected: rgba(124, 200, 255, 0.14);
+  --nd-selected: rgba(143, 227, 232, 0.14);
   --nd-border: #2c3744;
   --nd-border-strong: #475363;
   --nd-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
@@ -96,11 +97,11 @@
   --nd-text-disabled: #6b7582;
   --nd-icon: #c6ccd4;
 
-  --nd-primary: #7cc8ff;
-  --nd-on-primary: #08233a;
-  --nd-primary-soft: #1f3a52;
-  --nd-on-primary-soft: #b8e2ff;
-  --nd-focus: #7cc8ff;
+  --nd-primary: #8fe3e8;
+  --nd-on-primary: #081e2b;
+  --nd-primary-soft: #262f31;
+  --nd-on-primary-soft: #8fe3e8;
+  --nd-focus: #5db3bf;
   --nd-danger: #ff8fa3;
   --nd-success: #7fe0b6;
   --nd-warning: #ffd866;
@@ -155,9 +156,4 @@ html:root {
   /* NDL's weakest dark text (113, 119, 128) is 3.6:1; raise it to 4.5:1+. */
   --theme-dark-color-neutral-text-weakest: rgb(140 150 163);
   --theme-dark-color-neutral-icon: rgb(198 204 212);
-  --theme-dark-color-primary-text: rgb(124 200 255);
-  --theme-dark-color-primary-icon: rgb(124 200 255);
-  --theme-dark-color-primary-bg-strong: rgb(124 200 255);
-  --theme-dark-color-primary-border-strong: rgb(124 200 255);
-  --theme-dark-color-primary-bg-weak: rgb(31 58 82);
 }
