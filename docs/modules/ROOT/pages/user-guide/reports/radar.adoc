@@ -57,11 +57,7 @@ image::radar.png[Radar Chart]
 
 |Label offset from outer radius (px) |Number |16 |The distance between the grid and its labels.
 
-|Blend Mode |List |normal |Has no effect in this version (kept so that saved dashboards load unchanged).
-
-|Motion Configuration |List |gentle |Has no effect in this version (kept so that saved dashboards load unchanged).
-
-|Curve interpolation |List |linearClosed |Has no effect in this version (kept so that saved dashboards load unchanged).
+|Motion Configuration |List |gentle |How the chart animates when it draws or its data changes: default, gentle, wobbly (springy), stiff (fast), slow or molasses (slowest). Has no effect if animations are disabled.
 
 |Override no data message |Text |Query returned no data. |Override the message displayed to the user when their query returns no data.
 

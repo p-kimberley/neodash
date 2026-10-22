@@ -308,3 +308,59 @@ test('a report whose answer never arrives shows an error', async ({ page }) => {
     await deleteDashboard(page, uuid);
   }
 });
+
+// Reports on a dashboard that never set a query time limit get the 45 seconds its settings show.
+test('reports without a saved time limit get the default 45 seconds', async ({ page }) => {
+  await page.goto('/');
+  const dash = await getDashboard(page, SALES);
+  const uuid = `dddd0000-0000-4000-8000-00000000a7${test.info().project.name === 'dark' ? 'dd' : 'ee'}`;
+  const settings = { ...dash.settings };
+  delete settings.queryTimeLimit;
+  await putDashboard(page, uuid, { ...dash, title: 'e2e default time limit', settings, pages: [dash.pages[0]] });
+  try {
+    const sent = page.waitForRequest((r) => r.url().endsWith('/api/query'));
+    await page.goto(`/dashboards/${uuid}`);
+    expect(JSON.parse((await sent).postData()).timeoutSeconds).toBe(45);
+  } finally {
+    await deleteDashboard(page, uuid);
+  }
+});
+
+// "Enable interactivity" off: the chart shows no tooltip (and ignores the mouse).
+test('a chart with interactivity turned off shows no tooltip', async ({ page }) => {
+  await page.goto('/');
+  const dash = await getDashboard(page, SALES);
+  const uuid = `dddd0000-0000-4000-8000-00000000a8${test.info().project.name === 'dark' ? 'dd' : 'ee'}`;
+  const pie = dash.pages.flatMap((p) => p.reports).find((r) => r.type === 'pie');
+  const reports = [
+    { ...pie, id: 'pie-on', title: 'Interactive', x: 0, y: 0, width: 12, height: 5, settings: { ...pie.settings } },
+    {
+      ...pie,
+      id: 'pie-off',
+      title: 'Not interactive',
+      x: 12,
+      y: 0,
+      width: 12,
+      height: 5,
+      settings: { ...pie.settings, interactive: false },
+    },
+  ];
+  await putDashboard(page, uuid, { ...dash, title: 'e2e interactivity', pages: [{ title: 'Pies', reports }] });
+  try {
+    await openPage(page, uuid);
+    const tooltipShown = async (title) => {
+      const canvas = card(page, title).locator('canvas').first();
+      const box = await canvas.boundingBox();
+      // Somewhere on the pie's ring, right of its centre.
+      await page.mouse.move(box.x + box.width / 2 + box.height * 0.3, box.y + box.height / 2);
+      await page.waitForTimeout(600);
+      return card(page, title)
+        .locator('div[style*="z-index: 9999999"]')
+        .evaluateAll((els) => els.some((el) => getComputedStyle(el).display !== 'none' && el.textContent.trim()));
+    };
+    expect(await tooltipShown('Interactive')).toBe(true);
+    expect(await tooltipShown('Not interactive')).toBe(false);
+  } finally {
+    await deleteDashboard(page, uuid);
+  }
+});

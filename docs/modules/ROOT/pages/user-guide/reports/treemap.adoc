@@ -31,7 +31,7 @@ image::treemap.png[Treemap Chart]
 |Name |Type |Default Value |Description
 |Background Color |Color |#fafafa |The background color of the visualization.
 
-|Enable interactivity |on/off |on |Has no effect in this version (kept so that saved dashboards load unchanged).
+|Enable interactivity |on/off |on |If disabled, the chart shows no tooltips and ignores the mouse, including clicks that zoom into a rectangle.
 
 |Color Scheme |List |set2 |The color scheme to use for the rectangle. Colors
 are assigned automatically for each of the sub-hierarchies.

@@ -5,7 +5,7 @@ import { TooltipComponent } from 'echarts/components';
 import { ChartProps } from '../../../../chart/Chart';
 import { NoDrawableDataErrorMessage } from '../../../../component/editor/CodeViewerComponent';
 import { EChart } from '../../../../chart/echarts/EChart';
-import { brighter, labelOnColor, tooltipRow } from '../../../../chart/echarts/helpers';
+import { brighter, labelOnColor, tooltipRow, withoutInteraction } from '../../../../chart/echarts/helpers';
 import { schemeColors } from '../../../../chart/echarts/theme';
 import { buildHierarchy, HierarchyNode, ordinalColors, totalOf, useDrillDown } from '../hierarchy/Hierarchy';
 
@@ -34,6 +34,7 @@ const NeoSunburstChart = (props: ChartProps) => {
   const arcLabelsSkipAngle = settings.arcLabelsSkipAngle ? settings.arcLabelsSkipAngle : 10;
   const cornerRadius = settings.cornerRadius ? settings.cornerRadius : 3;
   const colorScheme = settings.colors ? settings.colors : 'nivo';
+  const interactive = settings.interactive !== undefined ? settings.interactive : true;
   const inheritColorFromParent = settings.inheritColorFromParent !== undefined ? settings.inheritColorFromParent : true;
   const colorOf = ordinalColors(schemeColors(colorScheme));
 
@@ -72,7 +73,10 @@ const NeoSunburstChart = (props: ChartProps) => {
   return (
     <div style={{ position: 'relative', overflow: 'hidden', width: '100%', height: '100%' }}>
       {resetButton}
-      <EChart option={option} onClick={(p) => drillInto(p.name)} />
+      <EChart
+        option={interactive ? option : withoutInteraction(option)}
+        onClick={interactive ? (p) => drillInto(p.name) : undefined}
+      />
     </div>
   );
 };

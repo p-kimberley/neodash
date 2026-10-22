@@ -230,7 +230,7 @@ const NeoGraphChart = (props: GraphChartProps) => {
       backgroundColor: isDefault(settings.backgroundColor, '#fafafa') ? themeColors.surface : settings.backgroundColor,
       linkDirectionalParticles: linkDirectionalParticles,
       linkDirectionalArrowLength: arrowLengthProp,
-      linkDirectionalParticleSpeed: settings.linkDirectionalParticleSpeed,
+      linkDirectionalParticleSpeed: settings.relationshipParticleSpeed ?? 0.005,
       nodeLabelFontSize: settings.nodeLabelFontSize,
       nodeLabelColor: isDefault(settings.nodeLabelColor, 'black') ? themeColors.text : settings.nodeLabelColor,
       relLabelFontSize: settings.relLabelFontSize,

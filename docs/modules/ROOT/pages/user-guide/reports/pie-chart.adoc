@@ -57,7 +57,7 @@ values inside the pie slices.
 |Show categories next to slices |on/off |on |If enabled, shows the
 category names next to the pie slices.
 
-|Enable interactivity |on/off |on |Has no effect in this version (kept so that saved dashboards load unchanged).
+|Enable interactivity |on/off |on |If disabled, the chart shows no tooltips and ignores the mouse.
 
 |Color Scheme |List |set2 |The color scheme to use for the slices. Colors
 are assigned automatically (consecutively) to the different categories

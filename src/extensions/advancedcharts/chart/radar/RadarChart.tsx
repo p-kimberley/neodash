@@ -11,6 +11,16 @@ import { schemeColors } from '../../../../chart/echarts/theme';
 import { palettes } from '../../../../theme/palette';
 import { getDashboardTheme } from '../../../../dashboard/DashboardSelectors';
 
+/** The "Motion Configuration" presets (named after the earlier chart library's springs), as animations. */
+const MOTION = {
+  default: { duration: 1000, easing: 'cubicOut' },
+  gentle: { duration: 700, easing: 'cubicOut' },
+  wobbly: { duration: 1000, easing: 'elasticOut' },
+  stiff: { duration: 300, easing: 'cubicOut' },
+  slow: { duration: 1500, easing: 'cubicInOut' },
+  molasses: { duration: 2500, easing: 'cubicInOut' },
+};
+
 echarts.use([RadarChart, RadarComponent, LegendComponent, TooltipComponent]);
 
 /**
@@ -40,6 +50,7 @@ const NeoRadarChart = (props: ChartProps) => {
   const gridLevels = settings.gridLevels ? settings.gridLevels : 5;
   const interactive = settings.interactive !== undefined ? settings.interactive : true;
   const animate = settings.animate !== undefined ? settings.animate : true;
+  const motion = MOTION[settings.motionConfig] ?? MOTION.gentle;
   const legend = settings.legend !== undefined ? settings.legend : false;
   const colorScheme = settings.colors ? settings.colors : 'set2';
   const keys: string[] = selection.values;
@@ -65,6 +76,10 @@ const NeoRadarChart = (props: ChartProps) => {
 
   const option = {
     animation: animate,
+    animationDuration: motion.duration,
+    animationDurationUpdate: motion.duration,
+    animationEasing: motion.easing,
+    animationEasingUpdate: motion.easing,
     tooltip: interactive
       ? {
           trigger: 'item',

@@ -118,8 +118,8 @@ this setting says.
 
 |Maximum Query Time (seconds) |Yes |45 |The maximum time a query is
 allowed to take before being cancelled automatically. Increase this if
-you have complex analytical queries. The server caps it at its own maximum (120 seconds unless
-your administrator changed it).
+you have complex analytical queries. Dashboards that never set it use 45 seconds too. The server
+caps it at its own maximum (120 seconds unless your administrator changed it).
 
 |Enable Image Download |Yes |off |If enabled, show a button next to the dashboard title that saves
 the dashboard as an image.
@@ -130,9 +130,6 @@ disabled. The server still caps the number of rows a query returns.
 
 |Resize Mode |Yes |bottom-right |Where reports can be resized: from their bottom-right corner
 only, or (`all`) also from their sides, bottom edge and lower corners.
-
-|Luma Threshold |Yes |25 |Not used in this version (text colours follow the light or dark
-appearance); kept so saved dashboards load unchanged.
 
 |Page Number |No |0 |The current page number of the dashboard being
 viewed. This can only be changed by switching pages.

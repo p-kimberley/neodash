@@ -34,7 +34,7 @@ image::sunburst.png[Sunburst Chart]
 |Show Values on Arcs |on/off |on |If enabled, show the category values
 inside the sunburst arcs.
 
-|Enable interactivity |on/off |on |Has no effect in this version (kept so that saved dashboards load unchanged).
+|Enable interactivity |on/off |on |If disabled, the chart shows no tooltips and ignores the mouse, including clicks that zoom into a slice.
 
 |Color Scheme |List |set2 |The color scheme to use for the arcs. Colors are
 assigned automatically for each of the sub-hierarchies.

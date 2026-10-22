@@ -5,7 +5,7 @@ import { TooltipComponent } from 'echarts/components';
 import { ChartProps } from '../../../../chart/Chart';
 import { NoDrawableDataErrorMessage } from '../../../../component/editor/CodeViewerComponent';
 import { EChart } from '../../../../chart/echarts/EChart';
-import { darker, labelOnColor, tooltipRow } from '../../../../chart/echarts/helpers';
+import { darker, labelOnColor, tooltipRow, withoutInteraction } from '../../../../chart/echarts/helpers';
 import { schemeColors } from '../../../../chart/echarts/theme';
 import { buildHierarchy, HierarchyNode, ordinalColors, totalOf, useDrillDown } from '../hierarchy/Hierarchy';
 
@@ -37,6 +37,7 @@ const NeoTreeMapChart = (props: ChartProps) => {
   const borderWidth = settings.borderWidth ? settings.borderWidth : 0;
   const legend = settings.legend ? settings.legend : false;
   const colorScheme = settings.colors ? settings.colors : 'nivo';
+  const interactive = settings.interactive !== undefined ? settings.interactive : true;
   const colorOf = ordinalColors(schemeColors(colorScheme));
 
   const toData = (node: HierarchyNode, branchColor: string) => {
@@ -77,7 +78,10 @@ const NeoTreeMapChart = (props: ChartProps) => {
   return (
     <div style={{ position: 'relative', overflow: 'hidden', width: '100%', height: '100%' }}>
       {resetButton}
-      <EChart option={option} onClick={(p) => drillInto(p.name)} />
+      <EChart
+        option={interactive ? option : withoutInteraction(option)}
+        onClick={interactive ? (p) => drillInto(p.name) : undefined}
+      />
     </div>
   );
 };

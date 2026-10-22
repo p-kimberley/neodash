@@ -112,7 +112,7 @@ the visualization.
 |Margin Bottom (px) |number |40 |The margin in pixels on the bottom side
 of the visualization.
 
-|Legend Label Width (px) |number |100 |Has no effect in this version (kept so that saved dashboards load unchanged).
+|Legend Label Width (px) |number |100 |The widest a series name in the legend can be; longer names are cut off with an ellipsis.
 
 |Hide Property Selection |on/off |off |If enabled, hides the property
 selector (footer of the visualization).

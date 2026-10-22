@@ -57,3 +57,10 @@ export const tooltipRow = (color: string, name: any, value: any) =>
   `<span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;background:${color}"></span>${escapeHtml(
     name
   )}: <b>${escapeHtml(value)}</b>`;
+
+/** The "Enable interactivity" setting turned off: no tooltip, and the series ignore the mouse. */
+export const withoutInteraction = (option: any) => ({
+  ...option,
+  tooltip: { show: false },
+  series: option.series.map((s) => ({ ...s, silent: true })),
+});

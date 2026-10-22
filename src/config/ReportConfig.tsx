@@ -252,12 +252,6 @@ const _REPORT_TYPES = {
         placeholder: '{label : url}',
         default: '',
       },
-      rightClickToExpandNodes: {
-        label: 'Right Click to Expand Nodes',
-        type: SELECTION_TYPES.LIST,
-        values: [true, false],
-        default: false,
-      },
     },
   },
   bar: {

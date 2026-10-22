@@ -4,6 +4,7 @@ import NeoCardViewHeader from './CardViewHeader';
 import NeoCardViewFooter from './CardViewFooter';
 import NeoCodeEditorComponent from '../../component/editor/CodeEditorComponent';
 import { CARD_FOOTER_HEIGHT, CARD_HEADER_HEIGHT } from '../../config/CardConfig';
+import { DASHBOARD_SETTINGS } from '../../config/DashboardConfig';
 import { getReportTypes } from '../../extensions/ExtensionUtils';
 import NeoCodeViewerComponent from '../../component/editor/CodeViewerComponent';
 import { NeoReportWrapper } from '../../report/ReportWrapper';
@@ -200,7 +201,7 @@ const NeoCardView = ({
           getGlobalParameter={getGlobalParameter}
           updateReportSetting={updateReportSetting}
           createNotification={createNotification}
-          queryTimeLimit={dashboardSettings.queryTimeLimit ? dashboardSettings.queryTimeLimit : 20}
+          queryTimeLimit={dashboardSettings.queryTimeLimit || DASHBOARD_SETTINGS.queryTimeLimit.default}
           setFields={onFieldsUpdate}
         />
       ) : (

@@ -9,7 +9,7 @@ import { ChartProps } from '../Chart';
 import { convertRecordObjectToString, recordToNative } from '../ChartUtils';
 import { extensionEnabled } from '../../utils/ReportUtils';
 import { EChart } from '../echarts/EChart';
-import { darker, labelOnColor, tooltipRow } from '../echarts/helpers';
+import { darker, labelOnColor, tooltipRow, withoutInteraction } from '../echarts/helpers';
 import { palettes } from '../../theme/palette';
 import { useSelector } from 'react-redux';
 import { getDashboardTheme } from '../../dashboard/DashboardSelectors';
@@ -77,6 +77,7 @@ const NeoPieChart = (props: ChartProps) => {
   const arcLabelsFontSize = settings.arcLabelsFontSize ? settings.arcLabelsFontSize : 13;
   const legend = settings.legend ? settings.legend : false;
   const colorScheme = settings.colors ? settings.colors : 'set2';
+  const interactive = settings.interactive !== undefined ? settings.interactive : true;
   const chartColorsByScheme = getD3ColorsByScheme(colorScheme);
 
   let slices = buildSlices(records, selection);
@@ -181,7 +182,7 @@ const NeoPieChart = (props: ChartProps) => {
     ],
   };
 
-  return <EChart option={option} />;
+  return <EChart option={interactive ? option : withoutInteraction(option)} />;
 };
 
 export default NeoPieChart;

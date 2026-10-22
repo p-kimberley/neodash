@@ -90,6 +90,7 @@ const NeoLineChart = (props: ChartProps) => {
   const minYValue = settings.minYValue ? settings.minYValue : 'auto';
   const maxYValue = settings.maxYValue ? settings.maxYValue : 'auto';
   const legend = settings.legend != undefined ? settings.legend : false;
+  const legendWidth = settings.legendWidth ? settings.legendWidth : 100;
   const curve = settings.curve ? settings.curve : 'linear';
   const marginRight = settings.marginRight ? settings.marginRight : 24;
   const marginLeft = settings.marginLeft ? settings.marginLeft : 36;
@@ -237,6 +238,8 @@ const NeoLineChart = (props: ChartProps) => {
           icon: 'circle',
           itemWidth: 8,
           itemHeight: 8,
+          // Long series names are cut off at the "Legend Label Width".
+          textStyle: { width: legendWidth, overflow: 'truncate' },
           // The legend shows the line colours (the points themselves are hollow).
           data: lineSeries.map((s) => ({ name: s.name, itemStyle: { color: s.color } })),
         }
