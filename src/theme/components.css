@@ -1455,6 +1455,38 @@ body:has(.nd-maximised) .ndl-menu {
   padding: 16px;
 }
 
+/* "Advanced settings": a section header that opens and closes, arrow on the left. */
+.nd-settings-disclosure {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 2px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--theme-color-neutral-text-default);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nd-settings-disclosure:hover,
+.nd-settings-disclosure:focus-visible {
+  background: var(--theme-color-neutral-hover);
+  outline: none;
+}
+
+.nd-settings-disclosure:focus-visible {
+  box-shadow: 0 0 0 2px var(--theme-color-primary-focus);
+}
+
+.nd-settings-disclosure-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--theme-color-neutral-icon);
+}
+
 /* Type and Database, with "Change with AI" at the right of the same row. */
 .nd-card-settings-top {
   display: flex;

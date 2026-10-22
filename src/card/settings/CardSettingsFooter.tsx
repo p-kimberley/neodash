@@ -9,8 +9,13 @@ import {
 import { getReportTypes } from '../../extensions/ExtensionUtils';
 import { RULE_BASED_REPORT_ACTIONS_CUSTOMIZATIONS } from '../../extensions/actions/ActionsRuleCreationModal';
 import NeoCustomReportActionsModal from '../../extensions/actions/ActionsRuleCreationModal';
-import { AdjustmentsHorizontalIconOutline, CursorArrowRaysIconOutline } from '@neo4j-ndl/react/icons';
-import { Switch, CleanIconButton } from '@neo4j-ndl/react';
+import {
+  AdjustmentsHorizontalIconOutline,
+  ChevronDownIconOutline,
+  ChevronUpIconOutline,
+  CursorArrowRaysIconOutline,
+} from '@neo4j-ndl/react/icons';
+import { CleanIconButton } from '@neo4j-ndl/react';
 
 const update = (state, mutations) => Object.assign({}, state, mutations);
 
@@ -168,12 +173,21 @@ const NeoCardSettingsFooter = ({
           <tr>
             <td>
               <div className='n-my-2'>
-                <Switch
-                  label='Advanced settings'
-                  isChecked={reportSettingsOpen}
-                  onChange={onToggleReportSettings}
-                  className='n-ml-2'
-                />
+                {/* A section that opens and closes (it only shows or hides the settings; none are turned
+                    off while it is closed). */}
+                <button
+                  type='button'
+                  className='nd-settings-disclosure'
+                  aria-expanded={Boolean(reportSettingsOpen)}
+                  onClick={onToggleReportSettings}
+                >
+                  {reportSettingsOpen ? (
+                    <ChevronUpIconOutline className='nd-settings-disclosure-icon' aria-hidden />
+                  ) : (
+                    <ChevronDownIconOutline className='nd-settings-disclosure-icon' aria-hidden />
+                  )}
+                  <span>Advanced settings</span>
+                </button>
               </div>
             </td>
             <td>
