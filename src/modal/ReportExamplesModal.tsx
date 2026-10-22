@@ -1,16 +1,18 @@
 import React from 'react';
 import NeoCodeEditorComponent from '../component/editor/CodeEditorComponent';
 import NeoReport from '../report/Report';
-import { Dialog, MenuItem } from '@neo4j-ndl/react';
+import { Dialog } from '@neo4j-ndl/react';
 import { ChartBarIconSolid } from '@neo4j-ndl/react/icons';
 import { Section, SectionTitle, SectionContent } from '../modal/ModalUtils';
-import { enterHandler } from '../utils/accessibility';
 import { useStore } from 'react-redux';
 import { ApiDriver } from '../api/ApiDriver';
 import { Neo4jContext } from '../api/Neo4jContext';
 
-export const NeoReportExamplesModal = ({ database, examples, extensions }) => {
-  const [open, setOpen] = React.useState(false);
+/**
+ * The Help menu's examples: one rendered report per report type. Opened from the header (the menu
+ * unmounts its items when it closes, so the dialog lives outside it).
+ */
+export const NeoReportExamplesModal = ({ open, onClose, database, examples, extensions }) => {
   // The examples run their synthetic queries through the backend. The dialog lives in the header,
   // outside the dashboard's driver context, so it brings its own.
   const store = useStore();
@@ -18,31 +20,16 @@ export const NeoReportExamplesModal = ({ database, examples, extensions }) => {
     driver: new ApiDriver({ getDashboard: () => (store.getState() as any).dashboard }) as any,
   }));
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   return (
     <>
-      <MenuItem
-        title='Examples'
-        onClick={handleClickOpen}
-        onKeyDown={(e) => enterHandler(e, handleClickOpen)}
-        icon={<ChartBarIconSolid />}
-      />
-
-      <Dialog open={open} onClose={handleClose} aria-labelledby='form-dialog-title' className='dialog-xl'>
-        <Dialog.Header id='form-dialog-title'>
+      <Dialog isOpen={open} onClose={onClose} className='dialog-xl'>
+        <Dialog.Header>
           <ChartBarIconSolid className='icon-base icon-inline text-r' />
           Report Examples
         </Dialog.Header>
         <Dialog.Content>
           <Neo4jContext.Provider value={neo4jContext}>
-            <div className='n-flex n-flex-col n-gap-token-4 n-divide-y n-divide-neutral-border-strong'>
+            <div className='n-flex n-flex-col n-gap-token-8 n-divide-y n-divide-neutral-border-strong'>
               {examples.map((example, index) => {
                 return (
                   <Section key={`example-${index}`}>

@@ -240,7 +240,7 @@ export const NeoReport = ({
     return <div></div>;
   } else if (status == QueryStatus.NO_QUERY) {
     return (
-      <div className={'n-text-palette-neutral-text-default'} style={{ padding: 15 }}>
+      <div className={'n-text-neutral-text-default'} style={{ padding: 15 }}>
         No query specified. <br /> Use the &nbsp;
         <Chip
           style={{ backgroundColor: '#dddddd' }}
@@ -263,7 +263,7 @@ export const NeoReport = ({
     }
     return (
       <div
-        className={'n-text-palette-neutral-text-default'}
+        className={'n-text-neutral-text-default'}
         style={{ height: '100%', marginTop: '0px', overflow: reportTypes[type].allowScrolling ? 'auto' : 'hidden' }}
       >
         <ChartType

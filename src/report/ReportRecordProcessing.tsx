@@ -169,7 +169,8 @@ export function RenderNode(value, hoverable = true) {
         </div>
       }
     >
-      {chip}
+      {/* A span takes the tooltip's props (the design system's labels don't pass them through). */}
+      <span>{chip}</span>
     </HtmlTooltip>
   );
 }
@@ -286,7 +287,7 @@ function RenderString(value) {
   const str = value?.toString() || '';
   if (str.startsWith('http') || str.startsWith('https')) {
     return (
-      <TextLink key={value} externalLink target='_blank' href={str}>
+      <TextLink key={value} target='_blank' href={str} type='external'>
         {str}
       </TextLink>
     );
@@ -301,7 +302,7 @@ function RenderLink(value, disabled = false) {
   }
   // Else, it's a 'real' link, and return a React object
   return (
-    <TextLink key={value} externalLink target='_blank' href={value}>
+    <TextLink key={value} target='_blank' href={value} type='external'>
       {value}
     </TextLink>
   );

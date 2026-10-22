@@ -1,7 +1,7 @@
 // TODO: this file (in a way) belongs to chart/parameter/ParameterSelectionChart. It would make sense to move it there
 
 import React from 'react';
-import { Button, Dialog } from '@neo4j-ndl/react';
+import { Dialog, FilledButton } from '@neo4j-ndl/react';
 import ParameterSelectCardSettings from '../../../chart/parameter/ParameterSelectCardSettings';
 import NeoCardSettingsFooter from '../../../card/settings/CardSettingsFooter';
 import { objMerge } from '../../../utils/ObjectManipulation';
@@ -12,12 +12,11 @@ const NeoFormCardSettingsModal = ({ open, setOpen, index, formFields, setFormFie
   return (
     <Dialog
       className='dialog-l'
-      open={open}
+      isOpen={open}
       onClose={() => setOpen(false)}
       style={{ overflow: 'inherit', overflowY: 'auto' }}
-      aria-labelledby='form-dialog-title'
     >
-      <Dialog.Header id='form-dialog-title'>Editing Form Field #{index + 1}</Dialog.Header>
+      <Dialog.Header>Editing Form Field #{index + 1}</Dialog.Header>
       <Dialog.Content style={{ overflow: 'inherit' }}>
         {formFields[index] ? (
           <>
@@ -43,16 +42,16 @@ const NeoFormCardSettingsModal = ({ open, setOpen, index, formFields, setFormFie
               }}
             />
 
-            <Button
+            <FilledButton
               onClick={() => {
                 setOpen(false);
               }}
               size='medium'
-              floating
+              isFloating
               style={{ float: 'right' }}
             >
               Save
-            </Button>
+            </FilledButton>
             <br />
             <br />
             <NeoCardSettingsFooter

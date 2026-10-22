@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { connect } from 'react-redux';
-import { Dialog, Button, Textarea } from '@neo4j-ndl/react';
+import { Dialog, OutlinedButton, FilledButton, TextArea } from '@neo4j-ndl/react';
 import { addModelExample, updateModelExample } from '../../state/QueryTranslatorActions';
 import { Neo4jContext, Neo4jContextState } from '../../../../api/Neo4jContext';
 import { getDatabase } from '../../../../settings/SettingsSelectors';
@@ -77,7 +77,7 @@ const ExampleEditorModal = ({
   );
 
   return (
-    <Dialog size='large' aria-labelledby='form-dialog-title' open={exampleEditorIsOpen} onClose={handleCloseEditor}>
+    <Dialog size='large' isOpen={exampleEditorIsOpen} onClose={handleCloseEditor}>
       <Dialog.Header> {index != null && index >= 0 ? 'Edit' : 'Create New'} Example </Dialog.Header>
       <Dialog.Content>
         {index != null && index >= 0 ? 'Edit' : 'Create new'} prompt and cypher query examples for the purposes of
@@ -94,39 +94,39 @@ const ExampleEditorModal = ({
           <form onSubmit={handleSubmit}>
             <div className='n-mb-6'>
               <label>Prompt</label>
-              <Textarea
+              <TextArea
                 className='n-mt-1'
                 errorText={questionErrorMessage}
-                fluid
+                isFluid
                 size='small'
                 value={questionState}
-                onChange={(e) => setQuestionState(e.target.value)}
                 label=''
                 placeholder='Enter prompt here ...'
+                htmlAttributes={{ onChange: (e) => setQuestionState(e.target.value) }}
               />
             </div>
             <div className=' n-mb-1 '>Cypher Query</div>
             {/* Cypher editor */}
             <div className='n-mb-6'>{cypherEditor}</div>
-            <p className='n-text-palette-danger-text'> {errorMessage}</p>
+            <p className='n-text-danger-text'> {errorMessage}</p>
 
             {/* Save and close buttons  */}
             <div className='n-text-right n-t-2'>
               {/* Changes button to loading button is isSaving state=true */}
               {isSaving ? (
-                <Button className='n-m-1' loading>
+                <FilledButton className='n-m-1' isLoading>
                   Saving
-                </Button>
+                </FilledButton>
               ) : (
-                <Button type='submit' className='n-m-1' disabled={isSaving}>
+                <FilledButton type='submit' className='n-m-1' isDisabled={isSaving}>
                   {' '}
                   {/* Disable the button while saving */}
                   Save
-                </Button>
+                </FilledButton>
               )}
-              <Button fill='outlined' type='button' onClick={handleFormClose} className='n-m-1'>
+              <OutlinedButton type='button' onClick={handleFormClose} className='n-m-1'>
                 Close
-              </Button>
+              </OutlinedButton>
             </div>
           </form>
         </div>

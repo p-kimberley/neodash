@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dropdown, TextInput, Textarea } from '@neo4j-ndl/react';
+import { TextInput, TextArea, Select } from '@neo4j-ndl/react';
 
 const textFieldStyle = { width: '155px', marginBottom: '10px', marginRight: '10px', marginLeft: '10px' };
 
@@ -14,21 +14,23 @@ const NeoField = ({
   numeric = false,
   select = false,
   disabled = undefined,
-  variant = undefined,
+  // The design system's inputs have no variants any more; callers may still pass one.
+  variant: _variant = undefined,
   password = false,
   helperText = undefined,
   defaultValueLabel = undefined,
   defaultValue = undefined,
   multiline = false,
   placeholder = '',
-  size = 'small',
+  size = 'small' as 'small' | 'medium' | 'large',
 }) => {
   return select === true ? (
     <div style={style}>
-      <Dropdown
+      <Select
         label={label}
         type='select'
         selectProps={{
+          placeholder: placeholder,
           options: choices,
           onChange: (newValue) => onChange(newValue.value),
           value:
@@ -38,54 +40,49 @@ const NeoField = ({
           menuPortalTarget: document.querySelector('#overlay'),
         }}
         helpText={helperText}
-        placeholder={placeholder}
         size={size}
-      ></Dropdown>
+      ></Select>
     </div>
   ) : multiline === true ? (
     <div style={style}>
-      <Textarea
+      <TextArea
         key={label}
-        variant={variant}
         label={label}
         helpText={helperText}
-        disabled={disabled}
+        isDisabled={disabled}
         value={value != null ? value : defaultValue}
-        fluid
-        onClick={(e) => {
-          onClick(e.target.textContent);
-        }}
-        onChange={(event) => {
-          if (!numeric) {
-            onChange(event.target.value);
-          } else if (
-            event.target.value.toString().length == 0 ||
-            event.target.value.endsWith('.') ||
-            event.target.value.startsWith('-')
-          ) {
-            onChange(event.target.value);
-          } else if (!isNaN(event.target.value)) {
-            onChange(Number(event.target.value));
-          }
-        }}
+        isFluid
         placeholder={placeholder}
         size={size}
-      ></Textarea>
+        htmlAttributes={{
+          onClick: (e) => {
+            onClick(e.target.textContent);
+          },
+          onChange: (event) => {
+            if (!numeric) {
+              onChange(event.target.value);
+            } else if (
+              event.target.value.toString().length == 0 ||
+              event.target.value.endsWith('.') ||
+              event.target.value.startsWith('-')
+            ) {
+              onChange(event.target.value);
+            } else if (!isNaN(event.target.value)) {
+              onChange(Number(event.target.value));
+            }
+          },
+        }}
+      ></TextArea>
     </div>
   ) : (
     <div style={style}>
       <TextInput
         key={label}
-        variant={variant}
         label={label}
         helpText={helperText}
-        type={password ? 'password' : 'text'}
-        disabled={disabled}
+        isDisabled={disabled}
         value={value != null ? value : defaultValue}
-        fluid
-        onClick={(e) => {
-          onClick(e.target.textContent);
-        }}
+        isFluid
         onChange={(event) => {
           if (!numeric) {
             onChange(event.target.value);
@@ -101,6 +98,12 @@ const NeoField = ({
         }}
         placeholder={placeholder}
         size={size}
+        htmlAttributes={{
+          type: password ? 'password' : 'text',
+          onClick: (e) => {
+            onClick(e.target.textContent);
+          },
+        }}
       ></TextInput>
     </div>
   );

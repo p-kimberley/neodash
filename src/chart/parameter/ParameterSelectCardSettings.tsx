@@ -6,7 +6,7 @@ import { QueryStatus, runCypherQuery } from '../../report/ReportQueryRunner';
 import { Neo4jContext, Neo4jContextState } from '../../api/Neo4jContext';
 import { Autocomplete, debounce, TextField } from '@mui/material';
 import NeoField from '../../component/field/Field';
-import { Dropdown } from '@neo4j-ndl/react';
+import { Select } from '@neo4j-ndl/react';
 import NeoCodeEditorComponent from '../../component/editor/CodeEditorComponent';
 
 type ParameterId = string | undefined | null;
@@ -205,8 +205,7 @@ const ParameterSelectCardSettings = ({ query, database, settings, onReportSettin
       <p style={{ color: 'grey', fontSize: 12, paddingLeft: '5px', border: '1px solid lightgrey', marginTop: '0px' }}>
         {helperText}
       </p>
-      <Dropdown
-        id='type'
+      <Select
         selectProps={{
           onChange: (newValue) => newValue && handleParameterTypeUpdate(newValue.value),
           options: parameterSelectTypes.map((option) => ({ label: option, value: option })),
@@ -216,9 +215,9 @@ const ParameterSelectCardSettings = ({ query, database, settings, onReportSettin
         }}
         label='Selection Type'
         type='select'
-        fluid
-        autoFocus
+        isFluid
         style={{ marginTop: '5px' }}
+        htmlAttributes={{ id: 'type', autoFocus: true }}
       />
 
       {settings.type == 'Free Text' || settings.type == 'Date Picker' ? (

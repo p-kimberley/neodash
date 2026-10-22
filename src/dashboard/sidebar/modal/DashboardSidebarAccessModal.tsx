@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { IconButton, Button, Dialog, TextInput } from '@neo4j-ndl/react';
+import { Dialog, TextInput, CleanIconButton, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
 import { Menu, MenuItem, Chip } from '@mui/material';
 import { Neo4jContext, Neo4jContextState } from '../../../api/Neo4jContext';
 import { PlusCircleIconOutline } from '@neo4j-ndl/react/icons';
@@ -143,8 +143,8 @@ export const NeoDashboardSidebarAccessModal = ({ open, database, dashboard, hand
   };
 
   return (
-    <Dialog size='small' open={open} onClose={handleClose} aria-labelledby='form-dialog-title'>
-      <Dialog.Header id='form-dialog-title'>Dasboard Access Control - '{dashboard?.title}'</Dialog.Header>
+    <Dialog size='small' isOpen={open} onClose={handleClose}>
+      <Dialog.Header>Dasboard Access Control - '{dashboard?.title}'</Dialog.Header>
       <Dialog.Content>
         Welcome to the Dashboard Access settings!
         <br />
@@ -175,13 +175,15 @@ export const NeoDashboardSidebarAccessModal = ({ open, database, dashboard, hand
             <TextInput
               value={newLabel}
               onChange={(e) => setNewLabel(e.target.value)}
-              onKeyDown={(e: KeyboardEvent) => {
-                handleAddNewLabel(e);
-                e.stopPropagation();
-              }}
               errorText={feedback}
               placeholder='Create New label'
-              autoComplete='off'
+              htmlAttributes={{
+                onKeyDown: (e: KeyboardEvent) => {
+                  handleAddNewLabel(e);
+                  e.stopPropagation();
+                },
+                autoComplete: 'off',
+              }}
             />
           </MenuItem>
         </Menu>
@@ -195,18 +197,23 @@ export const NeoDashboardSidebarAccessModal = ({ open, database, dashboard, hand
               style={{ marginRight: '5px', marginBottom: '5px' }}
             />
           ))}
-          <IconButton title='Add Label' size='large' clean style={{ marginBottom: '5px' }} onClick={handleOpenMenu}>
-            <PlusCircleIconOutline color='#018BFF' />
-          </IconButton>
+          <CleanIconButton
+            description='Add label'
+            size='large'
+            style={{ marginBottom: '5px' }}
+            onClick={handleOpenMenu}
+          >
+            <PlusCircleIconOutline style={{ color: 'var(--theme-color-primary-icon)' }} />
+          </CleanIconButton>
         </div>
       </div>
       <Dialog.Actions>
-        <Button onClick={handleClose} style={{ float: 'right' }} fill='outlined' floating>
+        <OutlinedButton onClick={handleClose} style={{ float: 'right' }} isFloating>
           Cancel
-        </Button>
-        <Button onClick={handleSave} color='primary' style={{ float: 'right', marginRight: '10px' }} floating>
+        </OutlinedButton>
+        <FilledButton onClick={handleSave} style={{ float: 'right', marginRight: '10px' }} isFloating>
           Save
-        </Button>
+        </FilledButton>
       </Dialog.Actions>
     </Dialog>
   );

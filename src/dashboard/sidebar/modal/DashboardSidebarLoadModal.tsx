@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Dialog } from '@neo4j-ndl/react';
+import { Dialog, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
 import { BackspaceIconOutline, TrashIconOutline } from '@neo4j-ndl/react/icons';
 
 /**
@@ -7,35 +7,34 @@ import { BackspaceIconOutline, TrashIconOutline } from '@neo4j-ndl/react/icons';
  */
 export const NeoDashboardSidebarLoadModal = ({ open, onConfirm, handleClose }) => {
   return (
-    <Dialog size='small' open={open == true} onClose={handleClose} aria-labelledby='form-dialog-title'>
-      <Dialog.Header id='form-dialog-title'>Discard Draft?</Dialog.Header>
+    <Dialog size='small' isOpen={open == true} onClose={handleClose}>
+      <Dialog.Header>Discard Draft?</Dialog.Header>
       <Dialog.Subtitle>
         You are discarding your current draft dashboard.
         <br />
         <b>Your draft will not be recoverable.</b>
       </Dialog.Subtitle>
       <Dialog.Actions>
-        <Button
+        <OutlinedButton
           onClick={() => {
             handleClose();
           }}
-          fill='outlined'
           style={{ float: 'right' }}
         >
           <BackspaceIconOutline className='btn-icon-base-l' />
           Keep
-        </Button>
-        <Button
+        </OutlinedButton>
+        <FilledButton
           onClick={() => {
             onConfirm();
             handleClose();
           }}
-          color='danger'
           style={{ float: 'right', marginRight: '5px' }}
+          variant='danger'
         >
           Discard
           <TrashIconOutline className='btn-icon-base-r' />
-        </Button>
+        </FilledButton>
       </Dialog.Actions>
     </Dialog>
   );

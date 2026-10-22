@@ -15,7 +15,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { IconButton } from '@neo4j-ndl/react';
+import { CleanIconButton } from '@neo4j-ndl/react';
 import { getModelExamples } from '../../state/QueryTranslatorSelector';
 import { deleteModelExample } from '../../state/QueryTranslatorActions';
 import { connect } from 'react-redux';
@@ -26,22 +26,21 @@ type Example = {
 };
 
 const RemoveButton = ({ onClick }) => (
-  <IconButton
+  <CleanIconButton
+    description='Delete'
     className='n-float-right n-text-right'
     style={{ color: 'red' }}
-    aria-label='remove'
     onClick={onClick}
     size='medium'
-    clean
   >
     <TrashIconOutline aria-label={'remove'} />
-  </IconButton>
+  </CleanIconButton>
 );
 
 const EditButton = ({ onClick }) => (
-  <IconButton className='n-float-right n-text-right' onClick={onClick} aria-label={'edit'} size='medium' clean>
+  <CleanIconButton description='Edit' className='n-float-right n-text-right' onClick={onClick} size='medium'>
     <PencilSquareIconOutline aria-label={'edit'} />
-  </IconButton>
+  </CleanIconButton>
 );
 
 function ExampleDisplayTable({ examples, deleteModelExample, handleEdit }) {
@@ -173,27 +172,25 @@ function ExampleDisplayTable({ examples, deleteModelExample, handleEdit }) {
           </tbody>
         </table>
         <div className='paginaton n-flex n-place-content-center n-my-[14px] n-pt-[14px]'>
-          <IconButton
+          <CleanIconButton
+            description='Edit'
             className='n-place-content-left'
             onClick={() => table.setPageIndex(0)}
-            aria-label={'edit'}
             size='medium'
-            clean
-            disabled={!table.getCanPreviousPage()}
+            isDisabled={!table.getCanPreviousPage()}
           >
             <ChevronDoubleLeftIconOutline className='n-py-0' aria-label={'firstPage'} />
-          </IconButton>
+          </CleanIconButton>
 
-          <IconButton
+          <CleanIconButton
+            description='Previous page'
             className='n-place-content-left'
             onClick={() => table.previousPage()}
-            aria-label={'previousPage'}
             size='medium'
-            clean
-            disabled={!table.getCanPreviousPage()}
+            isDisabled={!table.getCanPreviousPage()}
           >
             <ChevronLeftIconOutline className='n-py-0' aria-label={'firstPage'} />
-          </IconButton>
+          </CleanIconButton>
 
           <span className='n-mt-[6px]'>
             &nbsp;Page&nbsp;
@@ -203,27 +200,25 @@ function ExampleDisplayTable({ examples, deleteModelExample, handleEdit }) {
             &nbsp;
           </span>
 
-          <IconButton
+          <CleanIconButton
+            description='Next page'
             className='n-place-content-center'
             onClick={() => table.nextPage()}
-            aria-label={'nextPage'}
             size='medium'
-            clean
-            disabled={!table.getCanNextPage()}
+            isDisabled={!table.getCanNextPage()}
           >
             <ChevronRightIconOutline className='n-py-0' aria-label={'firstPage'} />
-          </IconButton>
+          </CleanIconButton>
 
-          <IconButton
+          <CleanIconButton
+            description='Last page'
             className='n- n-place-content-center n-mr-[3px]'
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-            aria-label={'lastPage'}
             size='medium'
-            clean
-            disabled={!table.getCanNextPage()}
+            isDisabled={!table.getCanNextPage()}
           >
             <ChevronDoubleRightIconOutline className='n-py-0' aria-label={'firstPage'} />
-          </IconButton>
+          </CleanIconButton>
         </div>
       </div>
     </div>

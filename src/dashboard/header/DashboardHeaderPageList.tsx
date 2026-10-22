@@ -8,7 +8,7 @@ import { setConnectionModalOpen } from '../../application/ApplicationActions';
 import { setPageNumberThunk } from '../../settings/SettingsThunks';
 import { getDashboardIsEditable, getPageNumber } from '../../settings/SettingsSelectors';
 import { applicationIsStandalone } from '../../application/ApplicationSelectors';
-import { Tabs, IconButton } from '@neo4j-ndl/react';
+import { Tabs, CleanIconButton } from '@neo4j-ndl/react';
 import { PlusIconOutline } from '@neo4j-ndl/react/icons';
 import DashboardHeaderPageTitle from './DashboardHeaderPageTitle';
 import { DndContext, useSensor, useSensors } from '@dnd-kit/core';
@@ -33,9 +33,9 @@ export const NeoDashboardHeaderPageList = ({
   const debouncedSetCanSwitchPages = useCallback(debounce(setCanSwitchPages, 50), []);
 
   const pageAddButton = (
-    <IconButton aria-label={'add page'} className='n-relative -n-top-1' size='large' onClick={addPage} clean>
+    <CleanIconButton description='Add page' className='n-relative -n-top-1' size='large' onClick={addPage}>
       <PlusIconOutline />
-    </IconButton>
+    </CleanIconButton>
   );
 
   function handleDragEnd(event) {
@@ -71,7 +71,12 @@ export const NeoDashboardHeaderPageList = ({
 
   const content = (
     <div className='n-flex n-flex-row n-w-full'>
-      <Tabs fill='underline' onChange={(tabId) => (canSwitchPages ? selectPage(tabId) : null)} value={pagenumber}>
+      {/* Tab ids are strings in the design system; pages are numbered. */}
+      <Tabs
+        fill='underline'
+        onChange={(tabId) => (canSwitchPages ? selectPage(Number(tabId)) : null)}
+        value={`${pagenumber}`}
+      >
         <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
           <SortableContext items={pages} strategy={horizontalListSortingStrategy}>
             {pages.map((page, i) => (

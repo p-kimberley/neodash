@@ -116,7 +116,7 @@ const NeoCard = ({
   const component = (
     <div
       ref={observe}
-      className='nd-report-card n-bg-neutral-bg-weak overflow-hidden n-shadow-l4 border-2 border-neutral-border-strong min-w-max rounded-lg px-4 py-5 sm:p-6 n-h-full'
+      className='nd-report-card n-bg-neutral-bg-weak overflow-hidden n-shadow-raised border-2 border-neutral-border-strong min-w-max rounded-lg px-4 py-5 sm:p-6 n-h-full'
     >
       {/* The front of the card, referred to as the 'view' */}
       <Collapse disablestrictmodecompat='true' in={!settingsOpen} timeout={collapseTimeout} className='n-h-full'>
@@ -202,13 +202,7 @@ const NeoCard = ({
   // Look into React Portals: https://stackoverflow.com/questions/61432878/how-to-render-child-component-outside-of-its-parent-component-dom-hierarchy
   if (expanded) {
     return (
-      <Dialog
-        open={expanded}
-        onClose={onToggleCardExpand}
-        disableCloseButton
-        aria-labelledby='form-dialog-title'
-        className='nd-maximised'
-      >
+      <Dialog isOpen={expanded} onClose={onToggleCardExpand} hasDisabledCloseButton className='nd-maximised'>
         <Dialog.Content className='nd-maximised-content'>{component}</Dialog.Content>
       </Dialog>
     );

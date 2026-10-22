@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Button, Dialog, Dropdown } from '@neo4j-ndl/react';
+import { Dialog, FilledButton, OutlinedButton, Select } from '@neo4j-ndl/react';
 import { Neo4jContext, Neo4jContextState } from '../../api/Neo4jContext';
 import {
   Operation,
@@ -142,8 +142,8 @@ export const RBACManagementModal = ({ open, handleClose, currentRole, createNoti
   };
 
   return (
-    <Dialog size='large' open={open} onClose={handleClose} aria-labelledby='form-dialog-title'>
-      <Dialog.Header id='form-dialog-title'>Access Control - '{currentRole}'</Dialog.Header>
+    <Dialog size='large' isOpen={open} onClose={handleClose}>
+      <Dialog.Header>Access Control - '{currentRole}'</Dialog.Header>
       <Dialog.Content>
         This screen lets you handle user assignment and access control for a specific role.
         <br />
@@ -162,8 +162,9 @@ export const RBACManagementModal = ({ open, handleClose, currentRole, createNoti
           <br />
           <h5>Manage Users</h5>
           <p>Select a list of users to assign to the current role.</p>
-          <Dropdown
+          <Select
             type='select'
+            ariaLabel='Users'
             selectProps={{
               value: selectedUsers.map((user) => ({ value: user, label: user })),
               options: neo4jUsers.map((user) => ({ value: user, label: user })),
@@ -176,10 +177,10 @@ export const RBACManagementModal = ({ open, handleClose, currentRole, createNoti
           <br />
           <h5>Label Access</h5>
           <p>For a given database, control what labels the role is or is not allowed to see.</p>
-          <Dropdown
+          {/* errorText={!selectedDatabase && 'Please choose a database in order to proceed'} */}
+          <Select
             type='select'
             label='Database'
-            // errorText={!selectedDatabase && 'Please choose a database in order to proceed'}
             selectProps={{
               value: { value: selectedDatabase, label: selectedDatabase },
               placeholder: 'Select a database',
@@ -200,7 +201,7 @@ export const RBACManagementModal = ({ open, handleClose, currentRole, createNoti
             <br />
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <div style={{ width: '45%' }}>
-                <Dropdown
+                <Select
                   type='select'
                   label='Allow List'
                   helpText={
@@ -228,7 +229,7 @@ export const RBACManagementModal = ({ open, handleClose, currentRole, createNoti
                 />
               </div>
               <div style={{ width: '45%' }}>
-                <Dropdown
+                <Select
                   type='select'
                   label='Deny List'
                   helpText={
@@ -262,12 +263,12 @@ export const RBACManagementModal = ({ open, handleClose, currentRole, createNoti
         )}
       </Dialog.Content>
       <Dialog.Actions>
-        <Button onClick={handleClose} style={{ float: 'right' }} fill='outlined' floating>
+        <OutlinedButton onClick={handleClose} style={{ float: 'right' }} isFloating>
           Cancel
-        </Button>
-        <Button onClick={handleSave} color='primary' style={{ float: 'right', marginRight: '10px' }} floating>
+        </OutlinedButton>
+        <FilledButton onClick={handleSave} style={{ float: 'right', marginRight: '10px' }} isFloating>
           Save
-        </Button>
+        </FilledButton>
       </Dialog.Actions>
     </Dialog>
   );

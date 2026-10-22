@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import debounce from 'lodash/debounce';
 import { setPageTitle } from '../../page/PageActions';
 import { removePageThunk } from '../DashboardThunks';
-import { Tab, Menu, MenuItems, MenuItem, IconButton } from '@neo4j-ndl/react';
+import { Tabs, Menu, CleanIconButton } from '@neo4j-ndl/react';
 import { EllipsisHorizontalIconOutline, PencilIconOutline, TrashIconOutline } from '@neo4j-ndl/react/icons';
 import { NeoDeletePageModal } from '../../modal/DeletePageModal';
 import { useSortable } from '@dnd-kit/sortable';
@@ -57,8 +57,15 @@ export const DashboardHeaderPageTitle = ({ title, tabIndex, removePage, setPageT
   }, [title]);
 
   const content = (
-    <div className='n-inline-flex' ref={setNodeRef} style={style} id={`tab_${tabIndex}`} {...attributes} {...listeners}>
-      <Tab tabId={tabIndex} key={tabIndex}>
+    <div
+      className='n-inline-flex n-items-center nd-page-tab'
+      ref={setNodeRef}
+      style={style}
+      id={`tab_${tabIndex}`}
+      {...attributes}
+      {...listeners}
+    >
+      <Tabs.Tab id={`${tabIndex}`} key={tabIndex}>
         {!editing ? (
           title ? (
             title
@@ -105,50 +112,50 @@ export const DashboardHeaderPageTitle = ({ title, tabIndex, removePage, setPageT
             />
           </form>
         )}
-        {!disabled && !editing && (
-          <>
-            <IconButton
-              aria-label='Page actions'
-              className={classnames('n-relative n-top-1 visible-on-tab-hover', {
-                'open-menu': menuOpen,
-              })}
-              style={{ height: '1.1rem' }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setAnchorEl(e.currentTarget);
-              }}
-              size='small'
-              clean
-            >
-              <EllipsisHorizontalIconOutline />
-            </IconButton>
-            <Menu anchorEl={anchorEl} open={menuOpen} onClose={() => setAnchorEl(null)}>
-              <MenuItems>
-                <MenuItem
-                  icon={<PencilIconOutline />}
-                  title={'Edit name'}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (editing) {
-                      debouncedSetPageTitle(tabIndex, titleText);
-                    }
-                    !disabled && handleMenuEditClick(e);
-                  }}
-                />
-                <MenuItem
-                  className='n-text-palette-danger-text'
-                  icon={<TrashIconOutline />}
-                  title='Delete'
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    !disabled && setDeleteModalOpen(true);
-                  }}
-                />
-              </MenuItems>
-            </Menu>
-          </>
-        )}
-      </Tab>
+      </Tabs.Tab>
+      {/* Outside the tab (itself a button): a button can't contain another. */}
+      {!disabled && !editing && (
+        <>
+          <CleanIconButton
+            description='Page actions'
+            className={classnames('n-relative visible-on-tab-hover', {
+              'open-menu': menuOpen,
+            })}
+            style={{ height: '1.1rem' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setAnchorEl(e.currentTarget);
+            }}
+            size='small'
+          >
+            <EllipsisHorizontalIconOutline />
+          </CleanIconButton>
+          <Menu anchorRef={{ current: anchorEl }} isOpen={menuOpen} onClose={() => setAnchorEl(null)}>
+            <Menu.Items>
+              <Menu.Item
+                leadingVisual={<PencilIconOutline />}
+                title={'Edit name'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (editing) {
+                    debouncedSetPageTitle(tabIndex, titleText);
+                  }
+                  !disabled && handleMenuEditClick(e);
+                }}
+              />
+              <Menu.Item
+                className='n-text-danger-text'
+                leadingVisual={<TrashIconOutline />}
+                title='Delete'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  !disabled && setDeleteModalOpen(true);
+                }}
+              />
+            </Menu.Items>
+          </Menu>
+        </>
+      )}
       <NeoDeletePageModal
         modalOpen={deleteModalOpen}
         onRemove={() => removePage(tabIndex)}

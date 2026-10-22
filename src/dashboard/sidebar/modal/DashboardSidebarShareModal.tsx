@@ -17,8 +17,8 @@ export const NeoDashboardSidebarShareModal = ({ uuid, open, handleClose }) => {
   }
 
   return (
-    <Dialog size='small' open={open == true} onClose={handleClose} aria-labelledby='form-dialog-title'>
-      <Dialog.Header id='form-dialog-title'>Share Dashboard</Dialog.Header>
+    <Dialog size='small' isOpen={open == true} onClose={handleClose}>
+      <Dialog.Header>Share Dashboard</Dialog.Header>
       <Dialog.Subtitle>
         Anyone with access to NeoDash can open this link after signing in. To share the dashboard as a file, use Export
         in the dashboard's menu.
@@ -27,15 +27,15 @@ export const NeoDashboardSidebarShareModal = ({ uuid, open, handleClose }) => {
         <Checkbox
           label='Include the current page and filter values'
           style={{ fontSize: 'small' }}
-          checked={includeView}
-          name='include-view'
+          isChecked={includeView}
           onClick={() => setIncludeView(!includeView)}
+          htmlAttributes={{ name: 'include-view' }}
         />
         <br />
         <span>Link:</span>
         <br />
         <span style={{ display: 'block', width: '100%', overflow: 'hidden' }}>
-          <TextLink href={getShareURL()} externalLink>
+          <TextLink href={getShareURL()} type='external'>
             {getShareURL()}
           </TextLink>
         </span>

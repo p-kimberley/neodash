@@ -9,7 +9,7 @@ import { getReportTypes } from '../../extensions/ExtensionUtils';
 import NeoCodeViewerComponent from '../../component/editor/CodeViewerComponent';
 import { NeoReportWrapper } from '../../report/ReportWrapper';
 import { identifyStyleRuleParameters } from '../../extensions/styling/StyleRuleEvaluator';
-import { IconButton } from '@neo4j-ndl/react';
+import { CleanIconButton } from '@neo4j-ndl/react';
 import { PlayCircleIconSolid } from '@neo4j-ndl/react/icons';
 import { extensionEnabled } from '../../utils/ReportUtils';
 import { objMerge } from '../../utils/ObjectManipulation';
@@ -207,16 +207,15 @@ const NeoCardView = ({
         />
       ) : (
         <>
-          <IconButton
+          <CleanIconButton
+            description='Run'
             style={{ float: 'right', marginRight: '9px' }}
-            aria-label='run'
             onClick={() => {
               setActive(true);
             }}
-            clean
           >
             <PlayCircleIconSolid className='n-w-5 n-h-5' aria-label={'play'} />
-          </IconButton>
+          </CleanIconButton>
           <NeoCodeEditorComponent
             value={query}
             language={'cypher'}
@@ -232,9 +231,7 @@ const NeoCardView = ({
 
   return (
     <div
-      className={`card-view n-bg-palette-neutral-bg-weak n-text-palette-neutral-text-default ${
-        expanded ? 'expanded' : ''
-      }`}
+      className={`card-view n-bg-neutral-bg-weak n-text-neutral-text-default ${expanded ? 'expanded' : ''}`}
       style={settings && settings.backgroundColor ? { backgroundColor: settings.backgroundColor } : {}}
     >
       {reportHeader}

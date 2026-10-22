@@ -28,7 +28,7 @@ export const NeoNotificationModal = ({
     <div>
       <Dialog
         size='large'
-        open={open}
+        isOpen={open}
         onClose={() => {
           if (dismissable) {
             onNotificationClose();
@@ -37,10 +37,9 @@ export const NeoNotificationModal = ({
             }
           }
         }}
-        aria-labelledby='form-dialog-title'
-        disableCloseButton={!dismissable}
+        hasDisabledCloseButton={!dismissable}
       >
-        <Dialog.Header id='form-dialog-title'>{title}</Dialog.Header>
+        <Dialog.Header>{title}</Dialog.Header>
 
         <Dialog.Content style={{ minWidth: '300px' }}>{text && text.toString()}</Dialog.Content>
       </Dialog>

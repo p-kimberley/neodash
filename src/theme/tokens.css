@@ -128,38 +128,41 @@
 
 /*
  * Align the Neo4j design system's own variables (used by its components and n-* utility classes)
- * with the tokens above. Its values are "R, G, B" triples. The selectors are more specific than
+ * with the tokens above. The selectors are more specific than
  * the design system's, so they win regardless of stylesheet order.
  */
-html:root {
-  --palette-neutral-bg-default: 245, 247, 250;
-  --palette-neutral-bg-weak: 255, 255, 255;
-  --palette-neutral-bg-strong: 236, 240, 245;
-  --palette-neutral-border-weak: 225, 230, 237;
-  --palette-neutral-border-strong: 196, 201, 209;
-  --palette-neutral-text-default: 21, 30, 41;
-  --palette-neutral-text-weak: 70, 80, 93;
-  --palette-neutral-text-weaker: 99, 108, 120;
+/* Also on the design system's theme-scoped portals (menus, popovers, dialogs), which set its own values. */
+html:root,
+html body .ndl-theme-light {
+  --theme-color-neutral-bg-default: rgb(245 247 250);
+  --theme-color-neutral-bg-weak: rgb(255 255 255);
+  --theme-color-neutral-bg-strong: rgb(236 240 245);
+  --theme-color-neutral-border-weak: rgb(225 230 237);
+  --theme-color-neutral-border-strong: rgb(196 201 209);
+  --theme-color-neutral-text-default: rgb(21 30 41);
+  --theme-color-neutral-text-weak: rgb(70 80 93);
+  --theme-color-neutral-text-weaker: rgb(99 108 120);
   /* NDL's weakest text (178, 183, 189) is 2:1 on white; raise it to 4.5:1. */
-  --palette-neutral-text-weakest: 112, 120, 132;
-  --palette-neutral-icon: 70, 80, 93;
+  --theme-color-neutral-text-weakest: rgb(112 120 132);
+  --theme-color-neutral-icon: rgb(70 80 93);
 }
 
-body.ndl-theme-dark {
-  --palette-neutral-bg-default: 18, 25, 34;
-  --palette-neutral-bg-weak: 27, 36, 48;
-  --palette-neutral-bg-strong: 35, 46, 59;
-  --palette-neutral-border-weak: 44, 55, 68;
-  --palette-neutral-border-strong: 71, 83, 99;
-  --palette-neutral-text-default: 241, 244, 248;
-  --palette-neutral-text-weak: 198, 204, 212;
-  --palette-neutral-text-weaker: 168, 176, 187;
+body.ndl-theme-dark,
+html body .ndl-theme-dark {
+  --theme-color-neutral-bg-default: rgb(18 25 34);
+  --theme-color-neutral-bg-weak: rgb(27 36 48);
+  --theme-color-neutral-bg-strong: rgb(35 46 59);
+  --theme-color-neutral-border-weak: rgb(44 55 68);
+  --theme-color-neutral-border-strong: rgb(71 83 99);
+  --theme-color-neutral-text-default: rgb(241 244 248);
+  --theme-color-neutral-text-weak: rgb(198 204 212);
+  --theme-color-neutral-text-weaker: rgb(168 176 187);
   /* NDL's weakest dark text (113, 119, 128) is 3.6:1; raise it to 4.5:1+. */
-  --palette-neutral-text-weakest: 140, 150, 163;
-  --palette-neutral-icon: 198, 204, 212;
-  --palette-primary-text: 124, 200, 255;
-  --palette-primary-icon: 124, 200, 255;
-  --palette-primary-bg-strong: 124, 200, 255;
-  --palette-primary-border-strong: 124, 200, 255;
-  --palette-primary-bg-weak: 31, 58, 82;
+  --theme-color-neutral-text-weakest: rgb(140 150 163);
+  --theme-color-neutral-icon: rgb(198 204 212);
+  --theme-color-primary-text: rgb(124 200 255);
+  --theme-color-primary-icon: rgb(124 200 255);
+  --theme-color-primary-bg-strong: rgb(124 200 255);
+  --theme-color-primary-border-strong: rgb(124 200 255);
+  --theme-color-primary-bg-weak: rgb(31 58 82);
 }

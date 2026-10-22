@@ -46,6 +46,8 @@ test('every report type maximises to fill the window', async ({ page }) => {
         await c.getByRole('button', { name: 'maximize' }).click();
         const dialog = page.locator('.nd-maximised');
         await expect(dialog).toBeVisible();
+        // The maximised report runs its query again.
+        await expect(dialog.locator('.nd-report-loading')).toHaveCount(0, { timeout: 30_000 });
         await page.waitForTimeout(1500);
 
         // An even margin on every side, and nothing behind it scrolls.

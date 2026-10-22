@@ -6,7 +6,7 @@ import NeoCodeEditorComponent, {
   DEFAULT_CARD_SETTINGS_HELPER_TEXT_STYLE,
 } from '../../component/editor/CodeEditorComponent';
 import { getReportTypes } from '../../extensions/ExtensionUtils';
-import { Dropdown } from '@neo4j-ndl/react';
+import { Select } from '@neo4j-ndl/react';
 import { EXTENSIONS_CARD_SETTINGS_COMPONENT } from '../../extensions/ExtensionConfig';
 import { objMerge } from '../../utils/ObjectManipulation';
 
@@ -104,9 +104,7 @@ const NeoCardSettingsContent = ({
 
   return (
     <CardContent className='n-py-2'>
-      <Dropdown
-        data-test='type-dropdown'
-        id='type'
+      <Select
         label='Type'
         type='select'
         selectProps={{
@@ -122,15 +120,14 @@ const NeoCardSettingsContent = ({
           },
           menuPortalTarget: document.querySelector('#overlay'),
         }}
-        fluid
+        isFluid
         style={{ marginLeft: '0px', marginRight: '10px', width: '47%', maxWidth: '200px', display: 'inline-block' }}
+        htmlAttributes={{ 'data-test': 'type-dropdown', id: 'type' }}
       />
 
       {report?.disableDatabaseSelector == undefined ? (
-        <Dropdown
-          id='databaseSelector'
+        <Select
           label='Database'
-          placeholder='neo4j'
           type='select'
           selectProps={{
             onChange: (newValue) => {
@@ -142,10 +139,12 @@ const NeoCardSettingsContent = ({
               value: database,
             })),
             value: { label: databaseText, value: databaseText },
+            placeholder: 'neo4j',
             menuPortalTarget: document.querySelector('#overlay'),
           }}
-          fluid
+          isFluid
           style={{ marginLeft: '0px', marginRight: '10px', width: '47%', maxWidth: '200px', display: 'inline-block' }}
+          htmlAttributes={{ id: 'databaseSelector' }}
         />
       ) : (
         <></>

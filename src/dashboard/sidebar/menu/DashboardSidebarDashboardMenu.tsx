@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, MenuItem, MenuItems } from '@neo4j-ndl/react';
+import { Menu } from '@neo4j-ndl/react';
 import {
   ArrowUturnLeftIconOutline,
   CloudArrowUpIconOutline,
@@ -28,35 +28,26 @@ export const NeoDashboardSidebarDashboardMenu = ({
   handleClose,
 }) => {
   return (
-    <Menu
-      anchorOrigin={{
-        horizontal: 'left',
-        vertical: 'bottom',
-      }}
-      transformOrigin={{
-        horizontal: 'left',
-        vertical: 'top',
-      }}
-      anchorEl={anchorEl}
-      open={open}
-      onClose={handleClose}
-      size='small'
-    >
+    <Menu anchorRef={{ current: anchorEl }} isOpen={open} onClose={handleClose} placement='bottom-start-top-start'>
       {!draft ? (
-        <MenuItems>
-          <MenuItem onClick={handleInfoClicked} icon={<InformationCircleIconOutline />} title='Info' />
-          <MenuItem onClick={handleLoadClicked} icon={<CloudArrowUpIconOutline />} title='Load' />
-          {/* <MenuItem onClick={() => {}} icon={<DocumentDuplicateIconOutline />} title='Clone' /> */}
-          <MenuItem onClick={handleExportClicked} icon={<DocumentTextIconOutline />} title='Export' />
-          <MenuItem onClick={handleAccessClicked} icon={<FingerPrintIconOutline />} title='Access' />
-          <MenuItem onClick={handleShareClicked} icon={<ShareIconOutline />} title='Share' />
-          <MenuItem onClick={handleDeleteClicked} icon={<TrashIconOutline />} title='Delete' />
-        </MenuItems>
+        <Menu.Items>
+          <Menu.Item onClick={handleInfoClicked} leadingVisual={<InformationCircleIconOutline />} title='Info' />
+          <Menu.Item onClick={handleLoadClicked} leadingVisual={<CloudArrowUpIconOutline />} title='Load' />
+          {/* <Menu.Item onClick={() => {}} leadingVisual={<DocumentDuplicateIconOutline />} title='Clone' /> */}
+          <Menu.Item onClick={handleExportClicked} leadingVisual={<DocumentTextIconOutline />} title='Export' />
+          <Menu.Item onClick={handleAccessClicked} leadingVisual={<FingerPrintIconOutline />} title='Access' />
+          <Menu.Item onClick={handleShareClicked} leadingVisual={<ShareIconOutline />} title='Share' />
+          <Menu.Item onClick={handleDeleteClicked} leadingVisual={<TrashIconOutline />} title='Delete' />
+        </Menu.Items>
       ) : (
-        <MenuItems>
-          <MenuItem onClick={handleSaveClicked} icon={<CloudArrowUpIconOutline />} title='Save' />
-          <MenuItem onClick={handleDiscardClicked} icon={<ArrowUturnLeftIconOutline />} title='Discard Draft' />
-        </MenuItems>
+        <Menu.Items>
+          <Menu.Item onClick={handleSaveClicked} leadingVisual={<CloudArrowUpIconOutline />} title='Save' />
+          <Menu.Item
+            onClick={handleDiscardClicked}
+            leadingVisual={<ArrowUturnLeftIconOutline />}
+            title='Discard Draft'
+          />
+        </Menu.Items>
       )}
     </Menu>
   );

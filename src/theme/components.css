@@ -31,54 +31,63 @@ body {
   z-index: 25;
 }
 
-.dashboard-sidebar-slot .ndl-side-navigation {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  background: var(--nd-surface);
-  border-right: 1px solid var(--nd-border);
-}
-
-.dashboard-sidebar-slot .ndl-side-navigation.ndl-expanded {
-  box-shadow: var(--nd-shadow-raised);
-}
-
-/* The header's menu button opens and closes the panel, so the design system's own drawer button is hidden. */
-.dashboard-sidebar-slot .ndl-side-navigation-drawer-button {
-  display: none;
-}
-
 /*
  * Slide: the panel's width animates, but its content is laid out at full width from the start and
  * revealed as the panel grows, so nothing re-wraps or jumps mid-animation. Keep the duration in
  * sync with SIDEBAR_TRANSITION_MS in DashboardSidebar.tsx.
  */
-.dashboard-sidebar-slot .ndl-side-navigation {
+.nd-dashboard-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 20rem;
   overflow: hidden;
+  background: var(--nd-surface);
+  border-right: 1px solid var(--nd-border);
+  box-shadow: var(--nd-shadow-raised);
   transition:
     width 220ms cubic-bezier(0.2, 0, 0, 1),
-    min-width 220ms cubic-bezier(0.2, 0, 0, 1),
     box-shadow 220ms ease;
   will-change: width;
 }
 
 /* Closed: zero width, and hidden (after the slide) so its controls can't be tabbed to. */
-.dashboard-sidebar-slot .ndl-side-navigation:not(.ndl-expanded) {
-  width: 0 !important;
-  min-width: 0 !important;
+.nd-dashboard-panel:not(.is-expanded) {
+  width: 0;
   border-right-width: 0;
+  box-shadow: none;
   visibility: hidden;
   transition:
     width 220ms cubic-bezier(0.2, 0, 0, 1),
-    min-width 220ms cubic-bezier(0.2, 0, 0, 1),
     box-shadow 220ms ease,
     visibility 0s linear 220ms;
 }
 
-.dashboard-sidebar-slot .ndl-side-navigation.ndl-expanded .ndl-side-navigation-nav {
+.nd-dashboard-panel-content {
   width: 20rem;
-  min-width: 20rem;
+  height: 100%;
+  overflow-y: auto;
+  padding: 12px 0;
+}
+
+.nd-dashboard-panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 8px 8px;
+}
+
+.nd-dashboard-panel-header {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 8px;
+}
+
+.nd-dashboard-panel-action {
+  float: right;
+  margin-left: 2px;
 }
 
 /* The backdrop stays mounted and fades, rather than appearing and vanishing abruptly. */
@@ -102,7 +111,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dashboard-sidebar-slot .ndl-side-navigation,
+  .nd-dashboard-panel,
   .dashboard-sidebar-scrim {
     transition: none;
   }
@@ -722,16 +731,10 @@ body {
 
 /* A maximised report fills the window (minus a small margin); the report's restore button,
    Escape or a click on the backdrop shrink it back. */
-/* NDL centres dialogs with a full-height inline-block spacer; next to a block-level dialog it wraps
-   onto a second line, making the wrapper scrollable (the dialog scrolls away, and its scrollbar eats
-   the right-hand margin). The maximised dialog is positioned instead, so neither is needed. */
-.ndl-modal-wrapper:has(> .nd-maximised) {
+/* The maximised dialog is positioned with an even margin; nothing behind it scrolls. */
+.ndl-modal-root:has(> .nd-maximised) {
   overflow: hidden;
   overscroll-behavior: contain;
-}
-
-.ndl-modal-wrapper:has(> .nd-maximised)::after {
-  display: none;
 }
 
 .ndl-dialog.nd-maximised {
@@ -929,4 +932,19 @@ body {
 
 .nd-show-more:hover {
   text-decoration: underline;
+}
+
+/*
+ * Buttons: icons placed among a button's children (often trailing; the design system only has a
+ * leading slot) sit on the label's line rather than wrapping onto their own.
+ */
+/* Only when there is an icon: text-only labels keep the ellipsis of a block. */
+.ndl-btn .ndl-btn-content:has(> svg) {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* The dashboards panel lists its dashboards left-aligned. */
+.nd-dashboard-panel .ndl-btn .ndl-btn-inner {
+  justify-content: flex-start;
 }

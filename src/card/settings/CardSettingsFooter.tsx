@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import debounce from 'lodash/debounce';
 import { useCallback } from 'react';
-import { FormGroup, Tooltip } from '@mui/material';
+import { FormGroup } from '@mui/material';
 import NeoSetting from '../../component/field/Setting';
 import {
   NeoCustomReportStyleModal,
@@ -11,7 +11,7 @@ import { getReportTypes } from '../../extensions/ExtensionUtils';
 import { RULE_BASED_REPORT_ACTIONS_CUSTOMIZATIONS } from '../../extensions/actions/ActionsRuleCreationModal';
 import NeoCustomReportActionsModal from '../../extensions/actions/ActionsRuleCreationModal';
 import { AdjustmentsHorizontalIconOutline, SparklesIconOutline } from '@neo4j-ndl/react/icons';
-import { IconButton, Switch } from '@neo4j-ndl/react';
+import { Switch, CleanIconButton } from '@neo4j-ndl/react';
 
 const update = (state, mutations) => Object.assign({}, state, mutations);
 
@@ -159,7 +159,7 @@ const NeoCardSettingsFooter = ({
               <FormGroup className='n-my-2'>
                 <Switch
                   label='Advanced settings'
-                  checked={reportSettingsOpen}
+                  isChecked={reportSettingsOpen}
                   onChange={onToggleReportSettings}
                   className='n-ml-2'
                 />
@@ -167,34 +167,28 @@ const NeoCardSettingsFooter = ({
             </td>
             <td>
               {RULE_BASED_REPORT_CUSTOMIZATIONS[type] && extensions.styling && extensions.styling.active ? (
-                <Tooltip title='Set rule-based styling' aria-label='' disableInteractive>
-                  <IconButton
-                    style={{ float: 'right', marginRight: '10px' }}
-                    aria-label='custom styling'
-                    onClick={() => {
-                      setCustomReportStyleModalOpen(true); // Open the modal.
-                    }}
-                    clean
-                  >
-                    <AdjustmentsHorizontalIconOutline />
-                  </IconButton>
-                </Tooltip>
+                <CleanIconButton
+                  description='Set rule-based styling'
+                  style={{ float: 'right', marginRight: '10px' }}
+                  onClick={() => {
+                    setCustomReportStyleModalOpen(true); // Open the modal.
+                  }}
+                >
+                  <AdjustmentsHorizontalIconOutline />
+                </CleanIconButton>
               ) : (
                 <></>
               )}
               {extensions.actions && extensions.actions.active && RULE_BASED_REPORT_ACTIONS_CUSTOMIZATIONS[type] ? (
-                <Tooltip title='Set report actions' aria-label='' disableInteractive>
-                  <IconButton
-                    style={{ float: 'right' }}
-                    aria-label='custom actions'
-                    clean
-                    onClick={() => {
-                      setCustomReportActionsModalOpen(true); // Open the modal.
-                    }}
-                  >
-                    <SparklesIconOutline />
-                  </IconButton>
-                </Tooltip>
+                <CleanIconButton
+                  description='Set report actions'
+                  style={{ float: 'right' }}
+                  onClick={() => {
+                    setCustomReportActionsModalOpen(true); // Open the modal.
+                  }}
+                >
+                  <SparklesIconOutline />
+                </CleanIconButton>
               ) : (
                 <></>
               )}

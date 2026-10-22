@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Dialog } from '@neo4j-ndl/react';
+import { Dialog, OutlinedButton, FilledButton } from '@neo4j-ndl/react';
 import { BackspaceIconOutline, ExclamationTriangleIconOutline } from '@neo4j-ndl/react/icons';
 
 /**
@@ -7,14 +7,14 @@ import { BackspaceIconOutline, ExclamationTriangleIconOutline } from '@neo4j-ndl
  */
 export const NeoDashboardSidebarCreateModal = ({ open, onConfirm, handleClose }) => {
   return (
-    <Dialog size='small' open={open == true} onClose={handleClose} aria-labelledby='form-dialog-title'>
-      <Dialog.Header id='form-dialog-title'>Discard Draft?</Dialog.Header>
+    <Dialog size='small' isOpen={open == true} onClose={handleClose}>
+      <Dialog.Header>Discard Draft?</Dialog.Header>
       <Dialog.Subtitle>
         Creating a new dashboard will delete your current draft. Save the draft first to ensure your dashboard is
         stored.
       </Dialog.Subtitle>
       <Dialog.Actions>
-        <Button
+        <FilledButton
           onClick={() => {
             handleClose();
           }}
@@ -22,19 +22,18 @@ export const NeoDashboardSidebarCreateModal = ({ open, onConfirm, handleClose })
         >
           <BackspaceIconOutline className='btn-icon-base-l' />
           Cancel
-        </Button>
-        <Button
+        </FilledButton>
+        <OutlinedButton
           onClick={() => {
             onConfirm();
             handleClose();
           }}
-          color='danger'
-          fill='outlined'
           style={{ float: 'right', marginRight: '5px' }}
+          variant='danger'
         >
           Continue
           <ExclamationTriangleIconOutline className='btn-icon-base-r' />
-        </Button>
+        </OutlinedButton>
       </Dialog.Actions>
     </Dialog>
   );

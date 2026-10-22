@@ -38,11 +38,11 @@ const NeoFormCardSettings = ({ query, database, settings, extensions, onReportSe
   const addFieldButton = (
     <div style={{ width: '100%', display: 'flex' }}>
       <IconButton
+        description='Add'
         className='form-add-parameter'
         style={{ marginLeft: 'auto', marginRight: 'auto', marginTop: 5, marginBottom: 5 }}
-        aria-label='add'
         size='medium'
-        floating
+        isFloating
         onClick={() => {
           const newField = { type: 'Node Property', settings: {}, query: '' };
           const newIndex = formFields.length;
@@ -91,8 +91,11 @@ const NeoFormCardSettings = ({ query, database, settings, extensions, onReportSe
               <SortableList.Item id={index + 1}>
                 <Banner
                   key={index + 1}
-                  id={`list${index}`}
-                  description={
+                  variant='neutral'
+                  htmlAttributes={{ id: `list${index}` }}
+                  style={{ width: '100%' }}
+                >
+                  {
                     <div>
                       <span style={{ lineHeight: '32px' }}>
                         <SortableList.DragHandle />{' '}
@@ -101,8 +104,8 @@ const NeoFormCardSettings = ({ query, database, settings, extensions, onReportSe
                           : '(undefined)'}
                       </span>
                       <IconButton
+                        description='Remove field'
                         className='n-float-right'
-                        aria-label='remove field'
                         size='small'
                         onClick={() => {
                           updateFormFields([...formFields.slice(0, index), ...formFields.slice(index + 1)]);
@@ -111,8 +114,8 @@ const NeoFormCardSettings = ({ query, database, settings, extensions, onReportSe
                         <XMarkIconOutline />
                       </IconButton>
                       <IconButton
+                        description='Edit field'
                         className='n-float-right'
-                        aria-label='edit field'
                         size='small'
                         onClick={() => {
                           setSelectedFieldIndex(index);
@@ -123,8 +126,7 @@ const NeoFormCardSettings = ({ query, database, settings, extensions, onReportSe
                       </IconButton>
                     </div>
                   }
-                  style={{ width: '100%' }}
-                ></Banner>
+                </Banner>
               </SortableList.Item>
             )}
           />

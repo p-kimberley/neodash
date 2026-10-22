@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconButton } from '@neo4j-ndl/react';
+import { CleanIconButton } from '@neo4j-ndl/react';
 import {
   ChevronDownIconOutline,
   ChevronUpIconOutline,
@@ -65,27 +65,25 @@ export const NeoGraphChartSearch = ({
           <span className='nd-graph-search-count' aria-live='polite'>
             {matches.length === 0 ? 'No matches' : `${current + 1} of ${matches.length}`}
           </span>
-          <IconButton
-            aria-label='previous match'
+          <CleanIconButton
+            description='Previous match'
             size='small'
-            clean
-            disabled={matches.length < 2}
+            isDisabled={matches.length < 2}
             onClick={() => onStep(-1)}
           >
             <ChevronUpIconOutline />
-          </IconButton>
-          <IconButton
-            aria-label='next match'
+          </CleanIconButton>
+          <CleanIconButton
+            description='Next match'
             size='small'
-            clean
-            disabled={matches.length < 2}
+            isDisabled={matches.length < 2}
             onClick={() => onStep(1)}
           >
             <ChevronDownIconOutline />
-          </IconButton>
-          <IconButton aria-label='clear search' size='small' clean onClick={() => setText('')}>
+          </CleanIconButton>
+          <CleanIconButton description='Clear search' size='small' onClick={() => setText('')}>
             <XMarkIconOutline />
-          </IconButton>
+          </CleanIconButton>
         </>
       ) : (
         <></>

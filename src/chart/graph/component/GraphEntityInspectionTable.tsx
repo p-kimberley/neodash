@@ -8,7 +8,7 @@ export const formatProperty = (property) => {
   const str = property?.toString() || '';
   if (str.startsWith('http://') || str.startsWith('https://')) {
     return (
-      <TextLink externalLink href={str}>
+      <TextLink href={str} type='external'>
         {str}
       </TextLink>
     );

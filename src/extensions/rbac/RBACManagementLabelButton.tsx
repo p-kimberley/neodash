@@ -4,7 +4,6 @@ import { IconButton } from '@neo4j-ndl/react';
 import { UserCircleIconOutline } from '@neo4j-ndl/react/icons';
 import { RBACManagementMenu } from './RBACManagementMenu';
 
-import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { createNotificationThunk } from '../../page/PageThunks';
 
 const RBACManagementLabelButton = ({ createNotification }) => {
@@ -21,11 +20,9 @@ const RBACManagementLabelButton = ({ createNotification }) => {
   };
 
   const button = (
-    <Tooltip title='Access Control' aria-label='Access Control' disableInteractive>
-      <IconButton className='n-mx-1' aria-label='Access Control' onClick={handleButtonClick}>
-        <UserCircleIconOutline />
-      </IconButton>
-    </Tooltip>
+    <IconButton description='Access Control' className='n-mx-1' onClick={handleButtonClick}>
+      <UserCircleIconOutline />
+    </IconButton>
   );
 
   return (

@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
-import { CardHeader, Dialog, DialogContent, DialogTitle, TextField, Tooltip } from '@mui/material';
+import { CardHeader, Dialog, DialogContent, DialogTitle, TextField } from '@mui/material';
 import debounce from 'lodash/debounce';
 import { useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import gfm from 'remark-gfm';
 import { replaceDashboardParameters } from '../../chart/ChartUtils';
 
-import { IconButton } from '@neo4j-ndl/react';
+import { CleanIconButton } from '@neo4j-ndl/react';
 import {
   DragIcon,
   Cog6ToothIconOutline,
@@ -68,15 +68,14 @@ const NeoCardViewHeader = ({
         <tr>
           {editable ? (
             <td>
-              <IconButton
+              <CleanIconButton
+                description='Move report'
                 className='n-mb-3 n-relative -n-left-3 drag-handle'
-                clean
                 size='medium'
-                aria-label={'drag'}
                 onClick={() => {}}
               >
                 <DragIcon />
-              </IconButton>
+              </CleanIconButton>
             </td>
           ) : (
             <></>
@@ -120,51 +119,39 @@ const NeoCardViewHeader = ({
 
   // TODO: all components like buttons should probably be seperate files
   const settingsButton = (
-    <Tooltip title='Settings' aria-label='settings' disableInteractive>
-      <IconButton aria-label='settings' onClick={onToggleCardSettings} clean size='medium'>
-        <Cog6ToothIconOutline />
-      </IconButton>
-    </Tooltip>
+    <CleanIconButton description='Settings' onClick={onToggleCardSettings} size='medium'>
+      <Cog6ToothIconOutline />
+    </CleanIconButton>
   );
 
   const refreshButton = (
-    <Tooltip title='Refresh' aria-label='refresh' disableInteractive>
-      <IconButton aria-label='refresh' onClick={onManualRefreshCard} clean size='medium'>
-        <ArrowPathIconOutline />
-      </IconButton>
-    </Tooltip>
+    <CleanIconButton description='Refresh' onClick={onManualRefreshCard} size='medium'>
+      <ArrowPathIconOutline />
+    </CleanIconButton>
   );
 
   const maximizeButton = (
-    <Tooltip title='Maximize' aria-label='maximize' disableInteractive>
-      <IconButton aria-label='maximize' onClick={onToggleCardExpand} clean size='medium'>
-        <ExpandIcon />
-      </IconButton>
-    </Tooltip>
+    <CleanIconButton description='Maximize' onClick={onToggleCardExpand} size='medium'>
+      <ExpandIcon />
+    </CleanIconButton>
   );
 
   const unMaximizeButton = (
-    <Tooltip title='Restore' aria-label='restore' disableInteractive>
-      <IconButton aria-label='un-maximize' onClick={onToggleCardExpand} clean size='medium'>
-        <ShrinkIcon />
-      </IconButton>
-    </Tooltip>
+    <CleanIconButton description='Restore' onClick={onToggleCardExpand} size='medium'>
+      <ShrinkIcon />
+    </CleanIconButton>
   );
 
   const downloadImageButton = (
-    <Tooltip title='Download as Image' aria-label='download' disableInteractive>
-      <IconButton onClick={onDownloadImage} aria-label='download csv' clean size='medium'>
-        <CameraIconSolid />
-      </IconButton>
-    </Tooltip>
+    <CleanIconButton description='Download as Image' onClick={onDownloadImage} size='medium'>
+      <CameraIconSolid />
+    </CleanIconButton>
   );
 
   const descriptionButton = (
-    <Tooltip title='Details' aria-label='details' disableInteractive>
-      <IconButton onClick={() => setDescriptionModalOpen(true)} aria-label='details' clean size='medium'>
-        <InformationCircleIconOutline />
-      </IconButton>
-    </Tooltip>
+    <CleanIconButton description='Details' onClick={() => setDescriptionModalOpen(true)} size='medium'>
+      <InformationCircleIconOutline />
+    </CleanIconButton>
   );
 
   return (
@@ -177,14 +164,13 @@ const NeoCardViewHeader = ({
       >
         <DialogTitle id='form-dialog-title'>
           {title}
-          <IconButton
+          <CleanIconButton
+            description='Close'
             onClick={() => setDescriptionModalOpen(false)}
             style={{ padding: '3px', float: 'right' }}
-            aria-label={'rect badge'}
-            clean
           >
             <XMarkIconOutline />
-          </IconButton>
+          </CleanIconButton>
         </DialogTitle>
         <DialogContent style={{ minWidth: '400px' }}>
           <div>

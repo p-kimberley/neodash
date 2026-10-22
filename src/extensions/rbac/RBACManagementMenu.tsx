@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Menu, MenuItem, MenuItems } from '@neo4j-ndl/react';
+import { Menu } from '@neo4j-ndl/react';
 import { UserIconOutline } from '@neo4j-ndl/react/icons';
 import { Neo4jContext, Neo4jContextState } from '../../api/Neo4jContext';
 import { runCypherQuery } from '../../report/ReportQueryRunner';
@@ -50,25 +50,17 @@ export const RBACManagementMenu = ({ anchorEl, MenuOpen, handleClose, createNoti
 
   return (
     <>
-      <Menu
-        anchorOrigin={{
-          horizontal: 'right',
-          vertical: 'bottom',
-        }}
-        transformOrigin={{
-          horizontal: 'right',
-          vertical: 'top',
-        }}
-        anchorEl={anchorEl}
-        open={MenuOpen}
-        onClose={handleClose}
-        size='small'
-      >
-        <MenuItems className='n-overflow-y-scroll n-h-44'>
+      <Menu anchorRef={{ current: anchorEl }} isOpen={MenuOpen} onClose={handleClose} placement='bottom-end-top-end'>
+        <Menu.Items className='n-overflow-y-scroll n-h-44'>
           {roles.map((role) => (
-            <MenuItem key={role} onClick={() => handleRoleClicked(role)} icon={<UserIconOutline />} title={role} />
+            <Menu.Item
+              key={role}
+              onClick={() => handleRoleClicked(role)}
+              leadingVisual={<UserIconOutline />}
+              title={role}
+            />
           ))}
-        </MenuItems>
+        </Menu.Items>
       </Menu>
 
       <RBACManagementModal

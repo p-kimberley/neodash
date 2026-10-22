@@ -56,11 +56,21 @@ test('dashboard selector: search, open, breadcrumb and browser back', async ({ p
 test('dashboards panel opens and closes', async ({ page }) => {
   const errors = trackErrors(page);
   await openPage(page, SALES);
-  const menu = page.getByLabel('Dashboards menu');
+  const menu = page.getByRole('button', { name: 'Dashboards', exact: true });
   await menu.click();
-  await expect(page.locator('.ndl-side-navigation, .nd-dashboard-panel').first()).toBeVisible();
+  await expect(page.locator('.nd-dashboard-panel.is-expanded')).toBeVisible();
+  // Escape closes it, even with the menu button focused (and showing its tooltip).
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(800);
+  await expect(page.locator('.nd-dashboard-panel.is-expanded')).toHaveCount(0);
+  // With a dashboard's actions menu open, Escape closes the menu first, then the panel.
+  await page.getByRole('button', { name: 'Dashboards', exact: true }).click();
+  await page.getByRole('button', { name: 'Dashboard actions' }).first().click();
+  await expect(page.getByRole('menuitem').first()).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('menuitem')).toHaveCount(0);
+  await expect(page.locator('.nd-dashboard-panel.is-expanded')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.nd-dashboard-panel.is-expanded')).toHaveCount(0);
   await expectNoErrors(page, errors);
 });
 

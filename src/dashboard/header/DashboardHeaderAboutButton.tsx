@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
-import { IconButton, Menu, MenuItems, MenuItem } from '@neo4j-ndl/react';
+import { Menu, CleanIconButton } from '@neo4j-ndl/react';
 import {
   QuestionMarkCircleIconOutline,
   BookOpenIconOutline,
   InformationCircleIconOutline,
+  ChartBarIconSolid,
 } from '@neo4j-ndl/react/icons';
-import { Tooltip } from '@mui/material';
 
 import { DASHBOARD_HEADER_BUTTON_COLOR } from '../../config/ApplicationConfig';
 import StyleConfig from '../../config/StyleConfig';
@@ -29,6 +29,11 @@ export const NeoAboutButton = ({ connection, onAboutModalOpen, extensions }) => 
     setAnchorEl(null);
   };
   const menuOpen = Boolean(anchorEl);
+  const [examplesOpen, setExamplesOpen] = useState(false);
+  const openExamples = () => {
+    setExamplesOpen(true);
+    handleHelpMenuClose();
+  };
 
   const menuAboutHandler = (e) => {
     onAboutModalOpen(e);
@@ -37,67 +42,69 @@ export const NeoAboutButton = ({ connection, onAboutModalOpen, extensions }) => 
 
   return (
     <>
-      <Tooltip title={'Help and documentation'} disableInteractive>
-        <IconButton
-          className='logo-btn n-p-1'
-          aria-label={'help'}
-          style={DASHBOARD_HEADER_BUTTON_COLOR ? { color: DASHBOARD_HEADER_BUTTON_COLOR } : {}}
-          size='large'
-          onClick={handleHelpMenuOpen}
-          clean
-        >
-          <QuestionMarkCircleIconOutline className='header-icon' type='outline' />
-        </IconButton>
-      </Tooltip>
-      <Menu
-        anchorOrigin={{
-          horizontal: 'right',
-          vertical: 'bottom',
-        }}
-        transformOrigin={{
-          horizontal: 'right',
-          vertical: 'top',
-        }}
-        anchorEl={anchorEl}
-        open={menuOpen}
-        onClose={handleHelpMenuClose}
+      <CleanIconButton
+        description={'Help and documentation'}
+        className='logo-btn n-p-1'
+        style={DASHBOARD_HEADER_BUTTON_COLOR ? { color: DASHBOARD_HEADER_BUTTON_COLOR } : {}}
         size='large'
+        onClick={handleHelpMenuOpen}
       >
-        <MenuItems>
+        <QuestionMarkCircleIconOutline className='header-icon' />
+      </CleanIconButton>
+      <Menu
+        anchorRef={{ current: anchorEl }}
+        isOpen={menuOpen}
+        onClose={handleHelpMenuClose}
+        placement='bottom-end-top-end'
+      >
+        <Menu.Items>
           {/* The examples run free-form (synthetic) queries, which only editors may run. */}
           {session.me?.role === 'editor' ? (
-            <NeoReportExamplesModal
-              extensions={extensions}
-              examples={getExampleReports(extensions)}
-              database={connection.database}
-            ></NeoReportExamplesModal>
+            <Menu.Item
+              title='Examples'
+              onClick={openExamples}
+              leadingVisual={<ChartBarIconSolid />}
+              htmlAttributes={{ onKeyDown: (e) => enterHandler(e, openExamples) }}
+            />
           ) : (
             <></>
           )}
-          <MenuItem
-            onKeyDown={(e) =>
-              enterHandler(e, () =>
-                openTab(
-                  'https://github.com/neo4j-contrib/neodash/tree/master/docs/modules/ROOT/pages/user-guide/index.adoc'
-                )
-              )
-            }
+          <Menu.Item
             onClick={() =>
               openTab(
                 'https://github.com/neo4j-contrib/neodash/tree/master/docs/modules/ROOT/pages/user-guide/index.adoc'
               )
             }
             title={'Documentation'}
-            icon={<BookOpenIconOutline />}
+            leadingVisual={<BookOpenIconOutline />}
+            htmlAttributes={{
+              onKeyDown: (e) =>
+                enterHandler(e, () =>
+                  openTab(
+                    'https://github.com/neo4j-contrib/neodash/tree/master/docs/modules/ROOT/pages/user-guide/index.adoc'
+                  )
+                ),
+            }}
           />
-          <MenuItem
+          <Menu.Item
             title={'About'}
             onClick={menuAboutHandler}
-            onKeyDown={(e) => enterHandler(e, menuAboutHandler)}
-            icon={<InformationCircleIconOutline />}
+            leadingVisual={<InformationCircleIconOutline />}
+            htmlAttributes={{ onKeyDown: (e) => enterHandler(e, menuAboutHandler) }}
           />
-        </MenuItems>
+        </Menu.Items>
       </Menu>
+      {examplesOpen ? (
+        <NeoReportExamplesModal
+          open={examplesOpen}
+          onClose={() => setExamplesOpen(false)}
+          extensions={extensions}
+          examples={getExampleReports(extensions)}
+          database={connection.database}
+        />
+      ) : (
+        <></>
+      )}
     </>
   );
 };

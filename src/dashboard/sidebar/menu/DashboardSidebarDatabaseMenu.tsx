@@ -1,29 +1,16 @@
 import React from 'react';
-import { Menu, MenuItem, MenuItems } from '@neo4j-ndl/react';
+import { Menu } from '@neo4j-ndl/react';
 
 /**
  * Configures setting the current Neo4j database connection for the dashboard.
  */
 export const NeoDashboardSidebarDatabaseMenu = ({ anchorEl, open, handleClose, databases, selected, setSelected }) => {
   return (
-    <Menu
-      anchorOrigin={{
-        horizontal: 'left',
-        vertical: 'bottom',
-      }}
-      transformOrigin={{
-        horizontal: 'left',
-        vertical: 'top',
-      }}
-      anchorEl={anchorEl}
-      open={open}
-      onClose={handleClose}
-      size='small'
-    >
-      <MenuItems>
+    <Menu anchorRef={{ current: anchorEl }} isOpen={open} onClose={handleClose} placement='bottom-start-top-start'>
+      <Menu.Items>
         {databases.map((d) => {
           return (
-            <MenuItem
+            <Menu.Item
               onClick={() => {
                 setSelected(d);
               }}
@@ -33,8 +20,8 @@ export const NeoDashboardSidebarDatabaseMenu = ({ anchorEl, open, handleClose, d
                   ? {
                       borderWidth: '1px',
                       borderStyle: 'solid',
-                      color: 'rgb(var(--palette-primary-bg-strong))',
-                      borderColor: 'rgb(var(--palette-primary-bg-strong))',
+                      color: 'var(--theme-color-primary-bg-strong)',
+                      borderColor: 'var(--theme-color-primary-bg-strong)',
                       borderRadius: '8px',
                     }
                   : {}
@@ -42,7 +29,7 @@ export const NeoDashboardSidebarDatabaseMenu = ({ anchorEl, open, handleClose, d
             />
           );
         })}
-      </MenuItems>
+      </Menu.Items>
     </Menu>
   );
 };

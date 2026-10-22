@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
-import { Button, IconButton, Label, Menu, MenuItem, MenuItems, Typography } from '@neo4j-ndl/react';
+import { Menu, Typography, CleanIconButton, FilledButton, StatusLabel, OutlinedButton } from '@neo4j-ndl/react';
 import {
   ArrowRightOnRectangleIconOutline,
   Bars3IconOutline,
@@ -10,7 +10,7 @@ import {
   MoonIconOutline,
   SunIconOutline,
 } from '@neo4j-ndl/react/icons';
-import { Tooltip } from '@mui/material';
+
 import { isEditor, session } from '../api/client';
 import { saveDashboardToNeo4jThunk } from '../dashboard/DashboardThunks';
 import { signOut } from '../dashboard/header/DashboardHeaderLogoutButton';
@@ -45,17 +45,15 @@ const ThemeMenu = ({ preference, theme, onChange }) => {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   return (
     <>
-      <Tooltip title='Appearance' disableInteractive>
-        <IconButton aria-label='Appearance' clean size='large' onClick={(e) => setAnchor(e.currentTarget)}>
-          {theme === 'dark' ? <MoonIconOutline /> : <SunIconOutline />}
-        </IconButton>
-      </Tooltip>
-      <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
-        <MenuItems>
+      <CleanIconButton description='Appearance' size='large' onClick={(e) => setAnchor(e.currentTarget)}>
+        {theme === 'dark' ? <MoonIconOutline /> : <SunIconOutline />}
+      </CleanIconButton>
+      <Menu anchorRef={{ current: anchor }} isOpen={Boolean(anchor)} onClose={() => setAnchor(null)}>
+        <Menu.Items>
           {THEMES.map((t) => (
-            <MenuItem
+            <Menu.Item
               key={t.value}
-              icon={t.icon}
+              leadingVisual={t.icon}
               title={
                 <span className='n-flex n-items-center n-justify-between n-gap-6 n-w-full'>
                   {t.title}
@@ -68,7 +66,7 @@ const ThemeMenu = ({ preference, theme, onChange }) => {
               }}
             />
           ))}
-        </MenuItems>
+        </Menu.Items>
       </Menu>
     </>
   );
@@ -95,26 +93,26 @@ const UserMenu = () => {
         </span>
         <span className='app-header-user-name'>{name}</span>
       </button>
-      <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
+      <Menu anchorRef={{ current: anchor }} isOpen={Boolean(anchor)} onClose={() => setAnchor(null)}>
         <div className='n-px-4 n-py-3 n-flex n-flex-col n-gap-1' style={{ minWidth: 240 }}>
           <Typography variant='subheading-medium'>{name}</Typography>
           {me.user.email ? <Typography variant='body-small'>{me.user.email}</Typography> : <></>}
           <div className='n-mt-1'>
-            <Label color={me.role === 'editor' ? 'info' : 'default'} fill='semi-filled'>
+            <StatusLabel variant={me.role === 'editor' ? 'info' : 'default'} fill='semi-filled'>
               {me.role === 'editor' ? 'Editor' : 'Viewer'}
-            </Label>
+            </StatusLabel>
           </div>
         </div>
-        <MenuItems>
-          <MenuItem
-            icon={<ArrowRightOnRectangleIconOutline className='n-w-5 n-h-5' />}
+        <Menu.Items>
+          <Menu.Item
+            leadingVisual={<ArrowRightOnRectangleIconOutline className='n-w-5 n-h-5' />}
             title='Sign out'
             onClick={() => {
               setAnchor(null);
               signOut();
             }}
           />
-        </MenuItems>
+        </Menu.Items>
       </Menu>
     </>
   );
@@ -126,6 +124,8 @@ const UserMenu = () => {
  */
 /** Editors: save the open dashboard; shows whether there are unsaved changes. */
 const SaveControl = ({ draft, onSave }) => {
+  // Filled while there is something to save, outlined (and disabled) otherwise.
+  const SaveButton = draft ? FilledButton : OutlinedButton;
   const [saving, setSaving] = useState(false);
   return (
     <div className='app-header-save'>
@@ -137,11 +137,10 @@ const SaveControl = ({ draft, onSave }) => {
       ) : (
         <span className='app-header-saved'>All changes saved</span>
       )}
-      <Button
+      <SaveButton
         size='small'
-        fill={draft ? 'filled' : 'outlined'}
-        disabled={!draft || saving}
-        loading={saving}
+        isDisabled={!draft || saving}
+        isLoading={saving}
         onClick={async () => {
           setSaving(true);
           try {
@@ -152,7 +151,7 @@ const SaveControl = ({ draft, onSave }) => {
         }}
       >
         Save
-      </Button>
+      </SaveButton>
     </div>
   );
 };
@@ -177,18 +176,15 @@ export const AppHeader = ({
   <header className='app-header'>
     <nav className='app-header-crumbs' aria-label='Breadcrumb'>
       {!homeOpen ? (
-        <Tooltip title={sidebarOpen ? 'Hide dashboards' : 'Dashboards'} disableInteractive>
-          <IconButton
-            aria-label='Dashboards menu'
-            aria-expanded={Boolean(sidebarOpen)}
-            className='app-header-menu'
-            clean
-            size='large'
-            onClick={() => onToggleSidebar(!sidebarOpen)}
-          >
-            <Bars3IconOutline />
-          </IconButton>
-        </Tooltip>
+        <CleanIconButton
+          description={sidebarOpen ? 'Hide dashboards' : 'Dashboards'}
+          className='app-header-menu'
+          size='large'
+          onClick={() => onToggleSidebar(!sidebarOpen)}
+          htmlAttributes={{ 'aria-expanded': Boolean(sidebarOpen) }}
+        >
+          <Bars3IconOutline />
+        </CleanIconButton>
       ) : (
         <></>
       )}

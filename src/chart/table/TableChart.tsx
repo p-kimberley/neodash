@@ -7,7 +7,7 @@ import {
   generateSxBasedOnRules,
   useStyleRules,
 } from '../../extensions/styling/StyleRuleEvaluator';
-import { Box, Tooltip, Snackbar } from '@mui/material';
+import { Box, Snackbar } from '@mui/material';
 import { downloadCSV } from '../ChartUtils';
 import { getRendererForValue, rendererForType, RenderSubValue } from '../../report/ReportRecordProcessing';
 
@@ -18,7 +18,7 @@ import {
   performActionOnElement,
 } from '../../extensions/advancedcharts/Utils';
 
-import { IconButton } from '@neo4j-ndl/react';
+import { CleanIconButton } from '@neo4j-ndl/react';
 import { CloudArrowDownIconOutline, XMarkIconOutline } from '@neo4j-ndl/react/icons';
 import Button from '@mui/material/Button';
 import { extensionEnabled } from '../../utils/ReportUtils';
@@ -345,32 +345,23 @@ export const NeoTableChart = (props: ChartProps) => {
           message='Value copied to clipboard.'
           action={
             <React.Fragment>
-              <IconButton
-                size='small'
-                aria-label='close'
-                color='inherit'
-                onClick={() => setNotificationOpen(false)}
-                clean
-              >
+              <CleanIconButton description='Close' size='small' onClick={() => setNotificationOpen(false)}>
                 <XMarkIconOutline />
-              </IconButton>
+              </CleanIconButton>
             </React.Fragment>
           }
         />
 
         {allowDownload && rows && rows.length > 0 ? (
-          <Tooltip title='Download CSV' aria-label='' disableInteractive>
-            <IconButton
-              onClick={() => {
-                downloadCSV(rows);
-              }}
-              aria-label='download csv'
-              className='n-absolute n-z-10 n-bottom-2 n-left-1'
-              clean
-            >
-              <CloudArrowDownIconOutline />
-            </IconButton>
-          </Tooltip>
+          <CleanIconButton
+            description='Download CSV'
+            onClick={() => {
+              downloadCSV(rows);
+            }}
+            className='n-absolute n-z-10 n-bottom-2 n-left-1'
+          >
+            <CloudArrowDownIconOutline />
+          </CleanIconButton>
         ) : (
           <></>
         )}

@@ -17,7 +17,7 @@ import {
   PlayIconSolid,
   PencilSquareIconOutline,
 } from '@neo4j-ndl/react/icons';
-import { Button, IconButton } from '@neo4j-ndl/react';
+import { CleanIconButton, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
 import { modelClientInitializationThunk } from '../state/QueryTranslatorThunks';
 import { Status } from '../util/Status';
 import { getSessionStorageValuesWithPrefix } from '../../../sessionStorage/SessionStorageSelectors';
@@ -113,16 +113,15 @@ export const ClientSettings = ({
 
   // Prevent authentication if all required fields are not full (EX: look at checkIfDisabled)
   const authButton = (
-    <IconButton
+    <CleanIconButton
+      description='Connect'
       key={'auth-setting'}
-      aria-label='connect'
       onClick={(e) => {
         e.preventDefault();
         updateModelProvider(modelProvider);
         updateClientSettings(settingState);
         authenticate(setStatus);
       }}
-      clean
       style={{
         marginTop: 24,
         marginRight: 28,
@@ -134,11 +133,11 @@ export const ClientSettings = ({
       {status == Status.AUTHENTICATED ? (
         <CheckCircleIconSolid />
       ) : status == Status.NOT_AUTHENTICATED ? (
-        <PlayCircleIconSolid color='white' />
+        <PlayCircleIconSolid style={{ color: 'white' }} />
       ) : (
         <ExclamationTriangleIconSolid />
       )}
-    </IconButton>
+    </CleanIconButton>
   );
 
   const component = (
@@ -177,27 +176,25 @@ export const ClientSettings = ({
       <br />
       {status == Status.AUTHENTICATED && Object.keys(defaultSettings).every((n) => localSettings[n] !== undefined) ? (
         <div className='n-flex n-justify-between'>
-          <Button floating onClick={handleOpenEditSolutions}>
+          <FilledButton isFloating onClick={handleOpenEditSolutions}>
             Tweak Prompts
             <PencilSquareIconOutline className='btn-icon-base-r' />
-          </Button>
+          </FilledButton>
           {Object.keys(messageHistory).length > 0 ? (
-            <Button fill='outlined' onClick={() => deleteAllMessageHistory()}>
-              Delete Model History
-            </Button>
+            <OutlinedButton onClick={() => deleteAllMessageHistory()}>Delete Model History</OutlinedButton>
           ) : (
             <></>
           )}
-          <Button
+          <FilledButton
             style={{ marginRight: '30px' }}
             onClick={() => {
               handleClose();
             }}
-            floating
+            isFloating
           >
             Start Querying
             <PlayIconSolid className='btn-icon-base-r' />
-          </Button>
+          </FilledButton>
         </div>
       ) : (
         <></>

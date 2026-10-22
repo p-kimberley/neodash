@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Dialog, TextLink } from '@neo4j-ndl/react';
+import { Dialog, TextLink, OutlinedButton } from '@neo4j-ndl/react';
 import { BookOpenIconOutline, BeakerIconOutline } from '@neo4j-ndl/react/icons';
 import { Section, SectionTitle, SectionContent } from './ModalUtils';
 
@@ -19,10 +19,10 @@ export const NeoAboutModal = ({ open, handleClose, getDebugState }) => {
 
   return (
     <>
-      <Dialog onClose={handleClose} open={open} aria-labelledby='form-dialog-title' size='large'>
+      <Dialog onClose={handleClose} isOpen={open} size='large'>
         <Dialog.Header>About NeoDash</Dialog.Header>
         <Dialog.Content>
-          <div className='n-flex n-flex-col n-gap-token-4 n-divide-y n-divide-neutral-border-strong'>
+          <div className='n-flex n-flex-col n-gap-token-8 n-divide-y n-divide-neutral-border-strong'>
             <Section>
               <SectionContent>
                 NeoDash is a dashboard builder for the Neo4j graph database. With NeoDash, all you need to do is write
@@ -32,10 +32,10 @@ export const NeoAboutModal = ({ open, handleClose, getDebugState }) => {
             <Section>
               <SectionTitle>Core Features</SectionTitle>
               <SectionContent>
-                <ul className='n-list-disc n-pl-token-8'>
+                <ul className='n-list-disc n-pl-token-32'>
                   <li>
                     An editor to write and execute&nbsp;
-                    <TextLink externalLink target='_blank' href='https://neo4j.com/developer/cypher/'>
+                    <TextLink target='_blank' href='https://neo4j.com/developer/cypher/' type='external'>
                       Cypher
                     </TextLink>
                     &nbsp;queries.
@@ -85,12 +85,12 @@ export const NeoAboutModal = ({ open, handleClose, getDebugState }) => {
               </SectionContent>
             </Section>
           </div>
-          <div className='n-flex n-flex-row n-justify-between n-mt-token-8'>
+          <div className='n-flex n-flex-row n-justify-between n-mt-token-32'>
             <div>
-              <Button onClick={downloadDebugFile} fill='outlined' color='neutral' size='small'>
+              <OutlinedButton onClick={downloadDebugFile} size='small' variant='neutral'>
                 Debug Report
                 <BeakerIconOutline className='btn-icon-sm-r' />
-              </Button>
+              </OutlinedButton>
             </div>
             <div>
               <i style={{ float: 'right', fontSize: '11px' }}>v{version}</i>

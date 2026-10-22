@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import { ChartProps } from '../../../chart/Chart';
-import { Button } from '@neo4j-ndl/react';
+import { FilledButton } from '@neo4j-ndl/react';
 import { PlayIconSolid } from '@neo4j-ndl/react/icons';
 import NeoCodeViewerComponent from '../../../component/editor/CodeViewerComponent';
 import { REPORT_LOADING_ICON } from '../../../report/Report';
@@ -83,10 +83,9 @@ const NeoForm = (props: ChartProps) => {
           </div>
         ))}
         {hasSubmitButton ? (
-          <Button
+          <FilledButton
             style={{ marginLeft: 15 }}
-            id='form-submit'
-            disabled={!submitButtonActive || isParametersDefined(props.query)}
+            isDisabled={!submitButtonActive || isParametersDefined(props.query)}
             onClick={() => {
               if (!props.query || !props.query.trim()) {
                 props.createNotification(
@@ -125,10 +124,11 @@ const NeoForm = (props: ChartProps) => {
                 }
               });
             }}
+            htmlAttributes={{ id: 'form-submit' }}
           >
             {buttonText}
             <PlayIconSolid className='btn-icon-base-r' />
-          </Button>
+          </FilledButton>
         ) : (
           <></>
         )}
@@ -154,14 +154,13 @@ const NeoForm = (props: ChartProps) => {
 
   const resetButton = (
     <div>
-      <Button
-        color='neutral'
+      <FilledButton
         onClick={() => {
           setStatus(FormStatus.DATA_ENTRY);
         }}
       >
         {resetButtonText}
-      </Button>
+      </FilledButton>
     </div>
   );
 

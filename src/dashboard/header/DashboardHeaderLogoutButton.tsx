@@ -1,6 +1,5 @@
 import React from 'react';
-import { IconButton } from '@neo4j-ndl/react';
-import { Tooltip } from '@mui/material';
+import { CleanIconButton } from '@neo4j-ndl/react';
 
 import { DASHBOARD_HEADER_BUTTON_COLOR } from '../../config/ApplicationConfig';
 import StyleConfig from '../../config/StyleConfig';
@@ -21,20 +20,17 @@ export async function signOut() {
 }
 
 export const NeoLogoutButton = () => (
-  <Tooltip title={'Sign out'} disableInteractive>
-    <IconButton
-      className='logo-btn n-p-1'
-      aria-label={'Sign out'}
-      style={DASHBOARD_HEADER_BUTTON_COLOR ? { color: DASHBOARD_HEADER_BUTTON_COLOR } : {}}
-      onClick={() => {
-        signOut();
-      }}
-      size='large'
-      clean
-    >
-      <ArrowRightOnRectangleIconOutline className='header-icon' type='outline' />
-    </IconButton>
-  </Tooltip>
+  <CleanIconButton
+    description={'Sign out'}
+    className='logo-btn n-p-1'
+    style={DASHBOARD_HEADER_BUTTON_COLOR ? { color: DASHBOARD_HEADER_BUTTON_COLOR } : {}}
+    onClick={() => {
+      signOut();
+    }}
+    size='large'
+  >
+    <ArrowRightOnRectangleIconOutline className='header-icon' />
+  </CleanIconButton>
 );
 
 export default NeoLogoutButton;

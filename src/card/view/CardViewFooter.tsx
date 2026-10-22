@@ -3,7 +3,8 @@ import { CardActions, FormControl, MenuItem, Select } from '@mui/material';
 import { categoricalColorSchemes } from '../../config/ColorConfig';
 import { getReportTypes } from '../../extensions/ExtensionUtils';
 import { SELECTION_TYPES } from '../../config/CardConfig';
-import { Dropdown } from '@neo4j-ndl/react';
+// The design system's select, distinct from Material UI's Select used for the colour schemes.
+import { Select as NdlSelect } from '@neo4j-ndl/react';
 
 const NeoCardViewFooter = ({
   fields,
@@ -102,11 +103,11 @@ const NeoCardViewFooter = ({
             const fieldsToRender = selectionIsMandatory ? sortedFields : sortedFields.concat(['(none)']);
             return (
               <FormControl key={index} size={'small'} className='nd-field-select'>
-                <Dropdown
-                  id={selectable}
+                <NdlSelect
                   label={selectableFields[selectable].label}
                   type='select'
                   selectProps={{
+                    placeholder: selectableFields[selectable].multiple ? 'Select (multiple)' : 'Select',
                     onChange: (newValue) => {
                       if (newValue && selectableFields[selectable].multiple) {
                         onSelectionUpdate(
@@ -125,13 +126,13 @@ const NeoCardViewFooter = ({
                     isClearable: false,
                     menuPortalTarget: document.querySelector('#overlay'),
                   }}
-                  fluid
+                  isFluid
                   style={{
                     minWidth: selectableFields[selectable].multiple ? 180 : 140,
                     display: 'inline-block',
                   }}
-                  placeholder={selectableFields[selectable].multiple ? 'Select (multiple)' : 'Select'}
-                ></Dropdown>
+                  htmlAttributes={{ id: selectable }}
+                ></NdlSelect>
               </FormControl>
             );
           }

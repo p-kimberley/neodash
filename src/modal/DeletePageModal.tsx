@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Dialog } from '@neo4j-ndl/react';
+import { Dialog, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
 import { BackspaceIconOutline, TrashIconSolid } from '@neo4j-ndl/react/icons';
 
 /**
@@ -7,31 +7,30 @@ import { BackspaceIconOutline, TrashIconSolid } from '@neo4j-ndl/react/icons';
  */
 export const NeoDeletePageModal = ({ modalOpen, onRemove, handleClose }) => {
   return (
-    <Dialog size='small' open={modalOpen == true} onClose={handleClose} aria-labelledby='form-dialog-title'>
-      <Dialog.Header id='form-dialog-title'>Delete page?</Dialog.Header>
+    <Dialog size='small' isOpen={modalOpen == true} onClose={handleClose}>
+      <Dialog.Header>Delete page?</Dialog.Header>
       <Dialog.Subtitle>Are you sure you want to remove this page? This cannot be undone.</Dialog.Subtitle>
       <Dialog.Actions>
-        <Button
+        <OutlinedButton
           onClick={() => {
             handleClose();
           }}
-          fill='outlined'
           style={{ float: 'right' }}
         >
           <BackspaceIconOutline className='btn-icon-base-l' />
           Cancel
-        </Button>
-        <Button
+        </OutlinedButton>
+        <FilledButton
           onClick={() => {
             onRemove();
             handleClose();
           }}
-          color='danger'
           style={{ float: 'right', marginRight: '5px' }}
+          variant='danger'
         >
           Remove
           <TrashIconSolid className='btn-icon-base-r' />
-        </Button>
+        </FilledButton>
       </Dialog.Actions>
     </Dialog>
   );

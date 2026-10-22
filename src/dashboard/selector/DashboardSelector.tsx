@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { connect } from 'react-redux';
-import { Button, Dialog, LoadingSpinner, TextInput, Typography } from '@neo4j-ndl/react';
+import { Dialog, LoadingSpinner, TextInput, Typography, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
 import { ClockIconOutline, MagnifyingGlassIconOutline, PlusIconOutline } from '@neo4j-ndl/react/icons';
 import { api, DashboardSummary, isEditor } from '../../api/client';
 import { applyUrlStateThunk } from '../../application/UrlState';
@@ -91,16 +91,20 @@ export const DashboardSelector = ({ current, draft, openDashboard, continueEditi
       <div className='selector-inner'>
         <div className='selector-head'>
           <div>
-            <Typography variant='h3'>Dashboards</Typography>
-            <Typography variant='body-medium' className='selector-muted'>
+            <Typography variant='title-1' as='h1'>
+              Dashboards
+            </Typography>
+            <Typography variant='body-medium' as='p' className='selector-muted'>
               {dashboards ? `${dashboards.length} dashboard${dashboards.length === 1 ? '' : 's'}` : ' '}
             </Typography>
           </div>
           {editor ? (
-            <Button onClick={() => guard('start a new dashboard', createDashboard)} color='primary' fill='filled'>
-              <PlusIconOutline className='n-w-5 n-h-5 n-mr-1' />
+            <FilledButton
+              onClick={() => guard('start a new dashboard', createDashboard)}
+              leadingVisual={<PlusIconOutline className='n-w-5 n-h-5' />}
+            >
               New dashboard
-            </Button>
+            </FilledButton>
           ) : (
             <></>
           )}
@@ -109,12 +113,12 @@ export const DashboardSelector = ({ current, draft, openDashboard, continueEditi
         <div className='selector-tools'>
           <div className='selector-search'>
             <TextInput
-              aria-label='Search dashboards'
               placeholder='Search by name or author'
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              leftIcon={<MagnifyingGlassIconOutline />}
-              fluid
+              leadingElement={<MagnifyingGlassIconOutline />}
+              isFluid
+              htmlAttributes={{ 'aria-label': 'Search dashboards' }}
             />
           </div>
           <div className='selector-sort' role='group' aria-label='Sort'>
@@ -177,26 +181,26 @@ export const DashboardSelector = ({ current, draft, openDashboard, continueEditi
         )}
       </div>
 
-      <Dialog open={Boolean(pending)} onClose={() => setPending(null)} size='small'>
+      <Dialog isOpen={Boolean(pending)} onClose={() => setPending(null)} size='small'>
         <Dialog.Header>Discard unsaved changes?</Dialog.Header>
         <Dialog.Content>
           “{current?.title || 'Untitled dashboard'}” has changes that have not been saved. If you {pending?.label}, they
           will be lost.
         </Dialog.Content>
         <Dialog.Actions>
-          <Button fill='outlined' color='neutral' onClick={() => setPending(null)}>
+          <OutlinedButton onClick={() => setPending(null)} variant='neutral'>
             Keep editing
-          </Button>
-          <Button
-            color='danger'
+          </OutlinedButton>
+          <FilledButton
             onClick={() => {
               const action = pending;
               setPending(null);
               action?.run();
             }}
+            variant='danger'
           >
             Discard changes
-          </Button>
+          </FilledButton>
         </Dialog.Actions>
       </Dialog>
     </main>

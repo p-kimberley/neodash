@@ -3,7 +3,7 @@ import NeoField from './Field';
 import { categoricalColorSchemes } from '../../config/ColorConfig';
 import NeoColorPicker from './ColorPicker';
 import { SELECTION_TYPES } from '../../config/CardConfig';
-import { Label } from '@neo4j-ndl/react';
+import { StatusLabel } from '@neo4j-ndl/react';
 
 const generateListItem = (label, option) => {
   if (typeof option === 'boolean') {
@@ -34,9 +34,9 @@ const generateListItem = (label, option) => {
               ></span>
             );
           })}
-          <Label color='info' fill='outlined' className='n-inline-block n-ml-2'>
+          <StatusLabel variant='info' fill='outlined' className='n-inline-block n-ml-2'>
             {option}
-          </Label>
+          </StatusLabel>
         </>
       ) : (
         `${option}`

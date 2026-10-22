@@ -1,6 +1,6 @@
 import React from 'react';
 import { DocumentArrowDownIconOutline } from '@neo4j-ndl/react/icons';
-import { Button, Dialog } from '@neo4j-ndl/react';
+import { Dialog, OutlinedButton } from '@neo4j-ndl/react';
 import { valueIsArray, valueIsObject } from '../../../chart/ChartUtils';
 import { TextareaAutosize } from '@mui/material';
 
@@ -53,15 +53,15 @@ export const NeoDashboardSidebarExportModal = ({ open, dashboard, handleClose })
   };
 
   return (
-    <Dialog size='large' open={open} onClose={handleClose} aria-labelledby='form-dialog-title'>
-      <Dialog.Header id='form-dialog-title'>Export Dashboard</Dialog.Header>
+    <Dialog size='large' isOpen={open} onClose={handleClose}>
+      <Dialog.Header>Export Dashboard</Dialog.Header>
       <Dialog.Content>
         Export your dashboard as a JSON file, or copy-paste the file from here.
         <br />
-        <Button onClick={downloadDashboard} fill='outlined' color='neutral' floating>
+        <OutlinedButton onClick={downloadDashboard} isFloating variant='neutral'>
           Save to file
           <DocumentArrowDownIconOutline className='btn-icon-base-r' aria-label={'save arrow'} />
-        </Button>
+        </OutlinedButton>
         <br />
         <br />
         <TextareaAutosize

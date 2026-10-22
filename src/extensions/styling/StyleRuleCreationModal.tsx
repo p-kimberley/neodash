@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Autocomplete, TextField } from '@mui/material';
 import NeoColorPicker from '../../component/field/ColorPicker';
-import { IconButton, Button, Dialog, Dropdown, TextInput } from '@neo4j-ndl/react';
+import { IconButton, Dialog, TextInput, FilledButton, Select } from '@neo4j-ndl/react';
 import { AdjustmentsHorizontalIconOutline, XMarkIconOutline, PlusIconOutline } from '@neo4j-ndl/react/icons';
 
 // The set of conditional checks that are included in the rule specification.
@@ -206,13 +206,8 @@ export const NeoCustomReportStyleModal = ({
   return (
     <div>
       {customReportStyleModalOpen ? (
-        <Dialog
-          className='dialog-xl'
-          open={customReportStyleModalOpen == true}
-          onClose={handleClose}
-          aria-labelledby='form-dialog-title'
-        >
-          <Dialog.Header id='form-dialog-title'>
+        <Dialog className='dialog-xl' isOpen={customReportStyleModalOpen == true} onClose={handleClose}>
+          <Dialog.Header>
             <AdjustmentsHorizontalIconOutline className='icon-base icon-inline text-r' aria-label={'Adjust'} />
             Rule-Based Styling
           </Dialog.Header>
@@ -287,8 +282,9 @@ export const NeoCustomReportStyleModal = ({
                                   />
                                 )}
                               />
-                              <Dropdown
+                              <Select
                                 type='select'
+                                ariaLabel='Condition'
                                 className='n-align-middle n-w-2/12 n-pr-1'
                                 selectProps={{
                                   onChange: (newValue) => updateRuleField(index, 'condition', newValue.value),
@@ -299,7 +295,7 @@ export const NeoCustomReportStyleModal = ({
                                   value: { label: rule.condition, value: rule.condition },
                                 }}
                                 style={{ minWidth: 70, display: 'inline-block' }}
-                                fluid
+                                isFluid
                               />
                               <TextInput
                                 className='n-align-middle n-inline-block n-w-5/12'
@@ -307,7 +303,7 @@ export const NeoCustomReportStyleModal = ({
                                 placeholder='Value...'
                                 value={rule.value}
                                 onChange={(e) => updateRuleField(index, 'value', e.target.value)}
-                                fluid
+                                isFluid
                               ></TextInput>
                             </div>
                           </td>
@@ -316,8 +312,9 @@ export const NeoCustomReportStyleModal = ({
                           </td>
                           <td width='45%'>
                             <div style={{ border: '2px dashed grey' }} className='n-p-1'>
-                              <Dropdown
+                              <Select
                                 type='select'
+                                ariaLabel='Style'
                                 className='n-align-middle n-w-5/12 n-pr-1'
                                 style={{ minWidth: 100, display: 'inline-block' }}
                                 selectProps={{
@@ -331,7 +328,7 @@ export const NeoCustomReportStyleModal = ({
                                     value: rule.customization,
                                   },
                                 }}
-                                fluid
+                                isFluid
                               />
                               <Autocomplete
                                 className='n-align-middle n-inline-block n-w-5/12 n-pr-1'
@@ -369,9 +366,9 @@ export const NeoCustomReportStyleModal = ({
                               <TextInput
                                 className='n-align-middle n-inline-block n-w-1/12 n-pr-1'
                                 style={{ minWidth: 30 }}
-                                disabled={true}
+                                isDisabled={true}
                                 value={'='}
-                                fluid
+                                isFluid
                               ></TextInput>
                               <div className='n-align-middle n-w-6/12 n-inline-block'>
                                 <NeoColorPicker
@@ -387,9 +384,9 @@ export const NeoCustomReportStyleModal = ({
                           </td>
                           <td width='2.5%'>
                             <IconButton
-                              aria-label='remove rule'
+                              description='Remove rule'
                               size='medium'
-                              floating
+                              isFloating
                               onClick={() => {
                                 setRules([...rules.slice(0, index), ...rules.slice(index + 1)]);
                               }}
@@ -406,9 +403,9 @@ export const NeoCustomReportStyleModal = ({
                     <td colSpan={5}>
                       <div className='n-text-center n-mt-1'>
                         <IconButton
-                          aria-label='add'
+                          description='Add'
                           size='medium'
-                          floating
+                          isFloating
                           onClick={() => {
                             const newRule = getDefaultRule(RULE_BASED_REPORT_CUSTOMIZATIONS[type][0].value);
                             setRules(rules.concat(newRule));
@@ -424,16 +421,16 @@ export const NeoCustomReportStyleModal = ({
             </div>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button
+            <FilledButton
               onClick={() => {
                 handleClose();
               }}
               size='large'
-              floating
+              isFloating
             >
               Save
               <AdjustmentsHorizontalIconOutline className='btn-icon-lg-r' />
-            </Button>
+            </FilledButton>
           </Dialog.Actions>
         </Dialog>
       ) : (

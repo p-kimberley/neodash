@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect } from 'react';
 import { connect } from 'react-redux';
-import { Button, Switch } from '@neo4j-ndl/react';
+import { Switch, OutlinedButton } from '@neo4j-ndl/react';
 import NeoCodeEditorComponent, {
   DEFAULT_CARD_SETTINGS_HELPER_TEXT_STYLE,
 } from '../../../component/editor/CodeEditorComponent';
@@ -120,8 +120,9 @@ export const NeoOverrideCardQueryEditor = ({
               <td style={{ width: 50 }}>Cypher</td>
               <td style={{ width: 50 }}>
                 <Switch
+                  ariaLabel='Write the query in English'
                   style={{ backgroundColor: 'grey' }}
-                  checked={language == Language.ENGLISH}
+                  isChecked={language == Language.ENGLISH}
                   onChange={() => {
                     if (language == Language.ENGLISH) {
                       setLanguage(Language.CYPHER);
@@ -137,9 +138,8 @@ export const NeoOverrideCardQueryEditor = ({
               <td style={{ width: '100px', float: 'right' }}>
                 {/* Only show translation button if there's something new to translate */}
                 {language == Language.ENGLISH ? (
-                  <Button
-                    fill='outlined'
-                    disabled={prepopulateExtensionName == undefined}
+                  <OutlinedButton
+                    isDisabled={prepopulateExtensionName == undefined}
                     style={{ float: 'right' }}
                     onClick={() => {
                       if (prepopulateExtensionName !== undefined) {
@@ -150,7 +150,7 @@ export const NeoOverrideCardQueryEditor = ({
                     }}
                   >
                     Translate
-                  </Button>
+                  </OutlinedButton>
                 ) : (
                   <></>
                 )}

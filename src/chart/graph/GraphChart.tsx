@@ -14,8 +14,8 @@ import { parseNodeIconConfig } from './util/NodeUtils';
 import { GraphChartVisualizationProps, Link, layouts } from './GraphChartVisualization';
 import { handleExpand } from './util/ExplorationUtils';
 import { categoricalColorSchemes } from '../../config/ColorConfig';
-import { IconButtonArray, IconButton } from '@neo4j-ndl/react';
-import { Tooltip } from '@mui/material';
+import { IconButtonArray, CleanIconButton } from '@neo4j-ndl/react';
+
 import { downloadCSV } from '../ChartUtils';
 import { generateSafeColumnKey } from '../table/TableChart';
 import { GraphChartContextMenu } from './component/GraphChartContextMenu';
@@ -305,24 +305,16 @@ const NeoGraphChart = (props: GraphChartProps) => {
     <div ref={observe} style={{ width: '100%', height: '100%' }}>
       <NeoGraphChartCanvas>
         <IconButtonArray
-          aria-label={'graph icon'}
-          floating
+          isFloating
           orientation='horizontal'
           className='n-z-10 n-absolute n-bottom-2 n-right-4'
+          htmlAttributes={{ 'aria-label': 'graph icon' }}
         >
           <GraphChartContextMenu {...chartProps} />
           <NeoGraphChartFitViewButton {...chartProps} />
-          <Tooltip title={mode === '3d' ? 'Show in 2D' : 'Show in 3D'} disableInteractive>
-            <IconButton
-              aria-label={mode === '3d' ? 'show in 2D' : 'show in 3D'}
-              size='small'
-              onClick={toggleMode}
-              clean
-              grouped
-            >
-              {mode === '3d' ? <CubeTransparentIconOutline /> : <CubeIconOutline />}
-            </IconButton>
-          </Tooltip>
+          <CleanIconButton description={mode === '3d' ? 'Show in 2D' : 'Show in 3D'} size='small' onClick={toggleMode}>
+            {mode === '3d' ? <CubeTransparentIconOutline /> : <CubeIconOutline />}
+          </CleanIconButton>
           {/* Frozen layouts are 2D only. */}
           {lockable && settings.lockable && mode === '2d' ? <NeoGraphChartLockButton {...chartProps} /> : <></>}
           {settings.drilldownLink ? <NeoGraphChartDeepLinkButton {...chartProps} /> : <></>}
@@ -340,22 +332,22 @@ const NeoGraphChart = (props: GraphChartProps) => {
         <Visualization {...chartProps} />
         <NeoGraphChartInfoPopup {...chartProps} />
         {settings.allowDownload && props.records && props.records.length > 0 ? (
-          <IconButtonArray floating orientation='horizontal' className='n-z-10 n-absolute n-bottom-2 n-left-4'>
-            <Tooltip title='Download CSV.' aria-label={'download csv'} disableInteractive>
-              <IconButton aria-label='download csv' size='small' clean grouped>
-                <CloudArrowDownIconOutline
-                  onClick={() => {
-                    const rows = props.records.map((record, rownumber) => {
-                      return Object.assign(
-                        { id: rownumber },
-                        ...record._fields.map((field, i) => ({ [generateSafeColumnKey(record.keys[i])]: field }))
-                      );
-                    });
-                    downloadCSV(rows);
-                  }}
-                />
-              </IconButton>
-            </Tooltip>
+          <IconButtonArray isFloating orientation='horizontal' className='n-z-10 n-absolute n-bottom-2 n-left-4'>
+            <CleanIconButton
+              description='Download CSV'
+              size='small'
+              onClick={() => {
+                const rows = props.records.map((record, rownumber) => {
+                  return Object.assign(
+                    { id: rownumber },
+                    ...record._fields.map((field, i) => ({ [generateSafeColumnKey(record.keys[i])]: field }))
+                  );
+                });
+                downloadCSV(rows);
+              }}
+            >
+              <CloudArrowDownIconOutline />
+            </CleanIconButton>
           </IconButtonArray>
         ) : (
           <></>

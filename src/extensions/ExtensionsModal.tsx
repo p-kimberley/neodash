@@ -5,7 +5,7 @@ import { createNotificationThunk } from '../page/PageThunks';
 import { getDashboardExtensions } from '../dashboard/DashboardSelectors';
 import { setExtensionEnabled } from '../dashboard/DashboardActions';
 import { setExtensionReducerEnabled } from './state/ExtensionActions';
-import { Dialog, Label, TextLink, Typography, Checkbox, IconButton } from '@neo4j-ndl/react';
+import { Dialog, TextLink, Typography, Checkbox, IconButton, StatusLabel } from '@neo4j-ndl/react';
 import { PuzzlePieceIconSolid } from '@neo4j-ndl/react/icons';
 import { Section, SectionContent } from '../modal/ModalUtils';
 import Tooltip from '@mui/material/Tooltip/Tooltip';
@@ -30,26 +30,24 @@ const NeoExtensionsModal = ({
 
   return (
     <>
-      <Tooltip title='Extensions' aria-label='extensions' disableInteractive>
-        <IconButton className='n-mx-1' aria-label='Extensions' onClick={handleClickOpen}>
-          <PuzzlePieceIconSolid />
-        </IconButton>
-      </Tooltip>
+      <IconButton description='Extensions' className='n-mx-1' onClick={handleClickOpen}>
+        <PuzzlePieceIconSolid />
+      </IconButton>
 
       {open ? (
-        <Dialog size='large' open={open} onClose={handleClose} aria-labelledby='form-dialog-title'>
-          <Dialog.Header id='form-dialog-title'>
+        <Dialog size='large' isOpen={open} onClose={handleClose}>
+          <Dialog.Header>
             <PuzzlePieceIconSolid className='icon-base icon-inline text-r' />
             Extensions
           </Dialog.Header>
           <Dialog.Content>
-            <div className='n-flex n-flex-col n-gap-token-4 n-divide-y n-divide-neutral-border-strong'>
+            <div className='n-flex n-flex-col n-gap-token-8 n-divide-y n-divide-neutral-border-strong'>
               <Section>
                 <SectionContent>
                   <TextLink
-                    externalLink
                     target='_blank'
                     href='https://github.com/neo4j-contrib/neodash/tree/master/docs/modules/ROOT/pages/user-guide/extensions.adoc'
+                    type='external'
                   >
                     Extensions
                   </TextLink>
@@ -68,44 +66,45 @@ const NeoExtensionsModal = ({
                           <tbody>
                             <tr>
                               <td>
-                                <div className='n-flex n-flex-row n-gap-token-4 n-items-center'>
-                                  <Typography variant='h5'>{e.label}</Typography>
+                                <div className='n-flex n-flex-row n-gap-token-8 n-items-center'>
+                                  <Typography variant='subheading-large'>{e.label}</Typography>
                                   {e.enabled && e.author == 'Neo4j Professional Services' && (
-                                    <Label color='info' fill='outlined'>
+                                    <StatusLabel variant='info' fill='outlined'>
                                       Expert
-                                    </Label>
+                                    </StatusLabel>
                                   )}
                                 </div>
                               </td>
                               <td style={{ width: 50 }}></td>
                               <td style={{ float: 'right' }}>
                                 <Tooltip title='Enable the extension' aria-label='' disableInteractive>
-                                  <Checkbox
-                                    id={`checkbox-${e.name}`}
-                                    label='Active'
-                                    disabled={!e.enabled}
-                                    style={{ fontSize: 'small' }}
-                                    checked={extensions[e.name]}
-                                    name='enable'
-                                    onClick={() => {
-                                      let active = extensions[e.name] == undefined ? true : undefined;
-                                      if (e.enabled) {
-                                        setExtensionEnabled(e.name, active);
+                                  <span>
+                                    <Checkbox
+                                      label='Active'
+                                      isDisabled={!e.enabled}
+                                      style={{ fontSize: 'small' }}
+                                      isChecked={extensions[e.name]}
+                                      onClick={() => {
+                                        let active = extensions[e.name] == undefined ? true : undefined;
+                                        if (e.enabled) {
+                                          setExtensionEnabled(e.name, active);
 
-                                        // Subscribing the reducer binded to the newly enabled extension
-                                        // to the extensionReducer
-                                        if (e.reducerPrefix) {
-                                          setExtensionReducerEnabled(e.reducerPrefix, active);
+                                          // Subscribing the reducer binded to the newly enabled extension
+                                          // to the extensionReducer
+                                          if (e.reducerPrefix) {
+                                            setExtensionReducerEnabled(e.reducerPrefix, active);
+                                          }
+                                        } else {
+                                          onExtensionUnavailableTriggered(e.label);
+                                          // If an extension presents a reducer, we need to unbind it from the extension reducer
+                                          if (e.reducerPrefix) {
+                                            setExtensionReducerEnabled(e.reducerPrefix, active);
+                                          }
                                         }
-                                      } else {
-                                        onExtensionUnavailableTriggered(e.label);
-                                        // If an extension presents a reducer, we need to unbind it from the extension reducer
-                                        if (e.reducerPrefix) {
-                                          setExtensionReducerEnabled(e.reducerPrefix, active);
-                                        }
-                                      }
-                                    }}
-                                  />
+                                      }}
+                                      htmlAttributes={{ id: `checkbox-${e.name}`, name: 'enable' }}
+                                    />
+                                  </span>
                                 </Tooltip>
                               </td>
                             </tr>
@@ -116,7 +115,7 @@ const NeoExtensionsModal = ({
                                 <br />
                                 <p>
                                   Author:{' '}
-                                  <TextLink externalLink href={e.link}>
+                                  <TextLink href={e.link} type='external'>
                                     {e.author}
                                   </TextLink>
                                 </p>

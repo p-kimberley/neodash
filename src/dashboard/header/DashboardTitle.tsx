@@ -6,12 +6,11 @@ import { applicationGetConnection, applicationGetStandaloneSettings } from '../.
 import { getDashboardTitle, getDashboardExtensions, getDashboardSettings } from '../DashboardSelectors';
 import { getDashboardIsEditable } from '../../settings/SettingsSelectors';
 import { updateDashboardSetting } from '../../settings/SettingsActions';
-import { Typography, IconButton } from '@neo4j-ndl/react';
+import { Typography, CleanIconButton } from '@neo4j-ndl/react';
 import { CheckIconOutline, PencilSquareIconOutline } from '@neo4j-ndl/react/icons';
 import NeoSettingsModal from '../../settings/SettingsModal';
 import NeoExtensionsModal from '../../extensions/ExtensionsModal';
 import { EXTENSIONS_DRAWER_BUTTONS } from '../../extensions/ExtensionConfig';
-import { Tooltip } from '@mui/material';
 import NeoExportModal from '../../modal/ExportModal';
 import { setDraft } from '../../application/ApplicationActions';
 
@@ -95,41 +94,39 @@ export const NeoDashboardTitle = ({
               }}
             />
           </form>
-          <Tooltip title={'Stop Editing'} disableInteractive>
-            <IconButton
-              className='logo-btn n-p-1'
-              aria-label={'stop-editing'}
-              size='large'
-              onClick={() => setEditing(false)}
-              clean
-            >
-              <CheckIconOutline className='header-icon' type='outline' />
-            </IconButton>
-          </Tooltip>
+          <CleanIconButton
+            description={'Stop Editing'}
+            className='logo-btn n-p-1'
+            size='large'
+            onClick={() => setEditing(false)}
+          >
+            <CheckIconOutline className='header-icon' />
+          </CleanIconButton>
         </div>
       ) : !standaloneSettings.standalone /* out of edit mode - if Not Standalone we display the edit button */ ? (
         <div className={'n-flex n-flex-row n-flex-wrap n-justify-between n-items-center'}>
-          <Typography variant='h3'>{dashboardTitle ? dashboardTitle : '(no title)'}</Typography>
-          <Tooltip title={'Edit'} disableInteractive>
-            {editable ? (
-              <IconButton
-                className='logo-btn n-p-1'
-                aria-label={'edit'}
-                size='large'
-                onClick={() => setEditing(true)}
-                clean
-              >
-                <PencilSquareIconOutline className='header-icon' type='outline' />
-              </IconButton>
-            ) : (
-              <></>
-            )}
-          </Tooltip>
+          <Typography variant='title-1' as='h1'>
+            {dashboardTitle ? dashboardTitle : '(no title)'}
+          </Typography>
+          {editable ? (
+            <CleanIconButton
+              description='Edit'
+              className='logo-btn n-p-1'
+              size='large'
+              onClick={() => setEditing(true)}
+            >
+              <PencilSquareIconOutline className='header-icon' />
+            </CleanIconButton>
+          ) : (
+            <></>
+          )}
         </div>
       ) : (
         /* if we are in Standalone just title is displayed with no edit button */
         <div className={'n-flex n-flex-row n-flex-wrap n-justify-between n-items-center'}>
-          <Typography variant='h3'>{dashboardTitle}</Typography>
+          <Typography variant='title-1' as='h1'>
+            {dashboardTitle}
+          </Typography>
         </div>
       )}
       {/* If the app is not running in standalone mode (i.e. in edit mode) always show dashboard settings. */}

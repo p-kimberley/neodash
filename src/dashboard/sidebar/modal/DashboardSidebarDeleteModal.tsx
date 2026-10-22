@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Dialog } from '@neo4j-ndl/react';
+import { Dialog, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
 import { BackspaceIconOutline, TrashIconSolid } from '@neo4j-ndl/react/icons';
 
 /**
@@ -7,14 +7,13 @@ import { BackspaceIconOutline, TrashIconSolid } from '@neo4j-ndl/react/icons';
  */
 export const NeoDashboardSidebarDeleteModal = ({ open, title, onConfirm, handleClose }) => {
   return (
-    <Dialog size='small' open={open == true} onClose={handleClose} aria-labelledby='form-dialog-title'>
-      <Dialog.Header id='form-dialog-title'>Delete Dashboard '{title}'?</Dialog.Header>
+    <Dialog size='small' isOpen={open == true} onClose={handleClose}>
+      <Dialog.Header>Delete Dashboard '{title}'?</Dialog.Header>
       <Dialog.Subtitle>
         Are you sure you want to delete this dashboard? <br /> This action cannot be undone.
       </Dialog.Subtitle>
       <Dialog.Actions>
-        <Button
-          fill='outlined'
+        <OutlinedButton
           onClick={() => {
             handleClose();
           }}
@@ -22,19 +21,18 @@ export const NeoDashboardSidebarDeleteModal = ({ open, title, onConfirm, handleC
         >
           <BackspaceIconOutline className='btn-icon-base-l' />
           Cancel
-        </Button>
-        <Button
+        </OutlinedButton>
+        <FilledButton
           onClick={() => {
             onConfirm();
             handleClose();
           }}
-          color='danger'
-          fill='filled'
           style={{ float: 'right', marginRight: '5px' }}
+          variant='danger'
         >
           Delete
           <TrashIconSolid className='btn-icon-base-r' />
-        </Button>
+        </FilledButton>
       </Dialog.Actions>
     </Dialog>
   );

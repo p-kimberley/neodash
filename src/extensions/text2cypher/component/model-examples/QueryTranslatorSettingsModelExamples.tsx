@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { getModelExamples } from '../../state/QueryTranslatorSelector';
-import { Dialog, Button } from '@neo4j-ndl/react';
+import { Dialog, FilledButton } from '@neo4j-ndl/react';
 import ExampleEditorModal from './ExampleEditorModal';
 import ExampleDisplayTable from './ExampleDisplayTable';
 
@@ -26,14 +26,11 @@ const QueryTranslatorSettingsModelExamples = ({ handleCloseEditSolutions, exampl
   if (!exampleEditorIsOpen) {
     return (
       <Dialog
-        className='dialog-xl n-bg-palette-neutral-bg-default ndl-theme-light'
-        open={open}
+        className='dialog-xl n-bg-neutral-bg-default ndl-theme-light'
+        isOpen={open}
         onClose={handleCloseWithoutSave}
-        aria-labelledby='form-dialog-title'
       >
-        <Dialog.Header className='n-ml-2' id='form-dialog-title'>
-          LLM Examples
-        </Dialog.Header>
+        <Dialog.Header className='n-ml-2'>LLM Examples</Dialog.Header>
         <Dialog.Content className='n-ml-2'>
           You can define custom English to Cypher translation examples here. <br /> Adding your own examples will
           improve the accuracy of translating English to Cypher in your dashboard.
@@ -41,12 +38,12 @@ const QueryTranslatorSettingsModelExamples = ({ handleCloseEditSolutions, exampl
           <br />
           <ExampleDisplayTable handleEdit={handleEdit} />
           <div>
-            <Button className='n-float-left' onClick={handleAdd}>
+            <FilledButton className='n-float-left' onClick={handleAdd}>
               Create New
-            </Button>
-            <Button className='n-float-right' onClick={handleCloseEditSolutions}>
+            </FilledButton>
+            <FilledButton className='n-float-right' onClick={handleCloseEditSolutions}>
               Save
-            </Button>
+            </FilledButton>
           </div>
         </Dialog.Content>
       </Dialog>

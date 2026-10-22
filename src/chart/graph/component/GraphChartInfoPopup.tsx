@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { ClickAwayListener, Popper } from '@mui/material';
-import { IconButton } from '@neo4j-ndl/react';
+import { CleanIconButton } from '@neo4j-ndl/react';
 import { XMarkIconOutline } from '@neo4j-ndl/react/icons';
 import { GraphChartVisualizationProps } from '../GraphChartVisualization';
 import { getEntityHeader } from '../util/NodeUtils';
@@ -71,9 +71,9 @@ export const NeoGraphChartInfoPopup = (props: GraphChartVisualizationProps) => {
         <div ref={contentRef} className='nd-floating-menu nd-graph-info' role='dialog' aria-label='Properties'>
           <div className='nd-graph-info-header'>
             <span className='nd-graph-info-title'>{getEntityHeader(selectedEntity, props?.engine?.selection)}</span>
-            <IconButton aria-label='close' size='small' clean onClick={() => setPropertyInspectorOpen(false)}>
+            <CleanIconButton description='Close' size='small' onClick={() => setPropertyInspectorOpen(false)}>
               <XMarkIconOutline />
-            </IconButton>
+            </CleanIconButton>
           </div>
           <div className='nd-graph-info-body'>
             <GraphEntityInspectionTable entity={selectedEntity} />

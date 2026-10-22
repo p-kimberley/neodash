@@ -91,7 +91,7 @@ const NeoCardSettings = ({
 
   return (
     <div
-      className={`card-view n-bg-palette-neutral-bg-weak n-text-palette-neutral-text-default ${
+      className={`card-view n-bg-neutral-bg-weak n-text-neutral-text-default ${
         expanded ? 'expanded' : ''
       } n-overflow-y-auto n-h-full`}
     >

@@ -19,6 +19,7 @@ import AppHeader from './AppHeader';
 import { NeoDashboardPlaceholder } from '../dashboard/placeholder/DashboardPlaceholder';
 import { downloadComponentAsImage } from '../chart/ChartUtils';
 import '@neo4j-ndl/base/lib/neo4j-ds-styles.css';
+import { NeedleThemeProvider } from '@neo4j-ndl/react';
 import { getDashboardTheme } from '../dashboard/DashboardSelectors';
 import { ThemeProvider } from '@mui/material/styles';
 import { createAppTheme } from '../theme/muiTheme';
@@ -93,35 +94,35 @@ const Application = ({
   }, [themeMode]);
 
   return (
-    <ThemeProvider theme={muiTheme}>
-      <div
-        ref={ref}
-        className={`n-bg-palette-neutral-bg-default n-h-screen n-w-screen n-flex n-flex-col n-overflow-hidden`}
-      >
-        {connected ? (
-          <>
-            <AppHeader
-              onHome={onHome}
-              onDownloadImage={() => downloadComponentAsImage(ref)}
-              onAboutModalOpen={onAboutModalOpen}
-            />
-            <Suspense fallback=''>{homeOpen ? <DashboardSelector /> : <Dashboard />}</Suspense>
-          </>
-        ) : (
-          <NeoDashboardPlaceholder></NeoDashboardPlaceholder>
-        )}
-        {/* TODO - move all models into a pop-ups (or modals) component. */}
-        <Suspense fallback=''>
-          <NeoAboutModal open={aboutModalOpen} handleClose={onAboutModalClose} getDebugState={getDebugState} />
-        </Suspense>
-        <Suspense fallback=''>
-          <NeoReportHelpModal open={reportHelpModalOpen} handleClose={onReportHelpModalClose} />
-        </Suspense>
-        <Suspense fallback=''>
-          <NeoNotificationModal></NeoNotificationModal>
-        </Suspense>
-      </div>
-    </ThemeProvider>
+    // The design system's theme also scopes its portalled menus, popovers and dialogs.
+    <NeedleThemeProvider theme={themeMode === 'dark' ? 'dark' : 'light'} wrapperProps={{ isWrappingChildren: false }}>
+      <ThemeProvider theme={muiTheme}>
+        <div ref={ref} className={`n-bg-neutral-bg-default n-h-screen n-w-screen n-flex n-flex-col n-overflow-hidden`}>
+          {connected ? (
+            <>
+              <AppHeader
+                onHome={onHome}
+                onDownloadImage={() => downloadComponentAsImage(ref)}
+                onAboutModalOpen={onAboutModalOpen}
+              />
+              <Suspense fallback=''>{homeOpen ? <DashboardSelector /> : <Dashboard />}</Suspense>
+            </>
+          ) : (
+            <NeoDashboardPlaceholder></NeoDashboardPlaceholder>
+          )}
+          {/* TODO - move all models into a pop-ups (or modals) component. */}
+          <Suspense fallback=''>
+            <NeoAboutModal open={aboutModalOpen} handleClose={onAboutModalClose} getDebugState={getDebugState} />
+          </Suspense>
+          <Suspense fallback=''>
+            <NeoReportHelpModal open={reportHelpModalOpen} handleClose={onReportHelpModalClose} />
+          </Suspense>
+          <Suspense fallback=''>
+            <NeoNotificationModal></NeoNotificationModal>
+          </Suspense>
+        </div>
+      </ThemeProvider>
+    </NeedleThemeProvider>
   );
 };
 

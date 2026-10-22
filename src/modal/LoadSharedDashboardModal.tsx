@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Button, Dialog } from '@neo4j-ndl/react';
+import { Dialog, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
 import { PlayIconSolid, AdjustmentsVerticalIconOutline, BackspaceIconOutline } from '@neo4j-ndl/react/icons';
 
 /**
@@ -15,12 +15,8 @@ export const NeoLoadSharedDashboardModal = ({ shareDetails, onResetShareDetails,
 
   return (
     <div>
-      <Dialog
-        size='large'
-        open={shareDetails !== undefined && shareDetails.skipConfirmation === false}
-        aria-labelledby='form-dialog-title'
-      >
-        <Dialog.Header id='form-dialog-title'>
+      <Dialog size='large' isOpen={shareDetails !== undefined && shareDetails.skipConfirmation === false}>
+        <Dialog.Header>
           <AdjustmentsVerticalIconOutline
             className='icon-base icon-inline text-r'
             style={{ display: 'inline', marginRight: '5px', marginBottom: '5px' }}
@@ -51,26 +47,24 @@ export const NeoLoadSharedDashboardModal = ({ shareDetails, onResetShareDetails,
           )}
         </Dialog.Content>
         <Dialog.Actions>
-          <Button
+          <OutlinedButton
             onClick={() => {
               handleClose();
             }}
-            fill='outlined'
             style={{ float: 'right' }}
           >
             <BackspaceIconOutline className='btn-icon-base-l' />
             Cancel
-          </Button>
-          <Button
+          </OutlinedButton>
+          <FilledButton
             onClick={() => {
               onConfirmLoadSharedDashboard();
             }}
             style={{ float: 'right', marginRight: '5px' }}
-            color='success'
           >
             Continue
             <PlayIconSolid className='btn-icon-base-r' />
-          </Button>
+          </FilledButton>
         </Dialog.Actions>
       </Dialog>
     </div>

@@ -94,9 +94,12 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return body as T;
 }
 
+// Start-up requests give up rather than leave the app on its loading spinner if the server never answers.
+const STARTUP_TIMEOUT_MS = 20_000;
+
 export const api = {
-  me: () => request<Me>('/api/me'),
-  config: () => request<BackendConfig>('/api/config'),
+  me: () => request<Me>('/api/me', { signal: AbortSignal.timeout(STARTUP_TIMEOUT_MS) }),
+  config: () => request<BackendConfig>('/api/config', { signal: AbortSignal.timeout(STARTUP_TIMEOUT_MS) }),
   listDashboards: async () => (await request<{ dashboards: DashboardSummary[] }>('/api/dashboards')).dashboards,
   getDashboard: (uuid: string) => request<StoredDashboard>(`/api/dashboards/${encodeURIComponent(uuid)}`),
   saveDashboard: (uuid: string, dashboard: any) =>

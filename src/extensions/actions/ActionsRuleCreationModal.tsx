@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { XMarkIconOutline, PlusIconOutline, SparklesIconOutline } from '@neo4j-ndl/react/icons';
 import { getPageNumbersAndNamesList } from '../advancedcharts/Utils';
-import { IconButton, Button, Dialog, Dropdown, TextInput } from '@neo4j-ndl/react';
+import { IconButton, Dialog, TextInput, FilledButton, Select } from '@neo4j-ndl/react';
 import { Autocomplete, TextField } from '@mui/material';
 
 // The set of conditional checks that are included in the rule specification.
@@ -289,12 +289,12 @@ export const NeoCustomReportActionsModal = ({
           </div>
           <TextInput
             className={textInputClass}
-            aria-label='Choose variable'
-            fluid
+            isFluid
             style={{ fontWeight: 700 }}
             placeholder=''
             value={rule.customizationValue}
             onChange={(e) => updateRuleField(index, 'customizationValue', e.target.value)}
+            htmlAttributes={{ 'aria-label': 'Choose variable' }}
           ></TextInput>
         </div>
       );
@@ -368,12 +368,11 @@ export const NeoCustomReportActionsModal = ({
       {customReportActionsModalOpen ? (
         <Dialog
           className='dialog-xl'
-          open={customReportActionsModalOpen == true}
+          isOpen={customReportActionsModalOpen == true}
           onClose={handleClose}
           style={{ overflow: 'inherit', overflowY: 'inherit' }}
-          aria-labelledby='form-dialog-title'
         >
-          <Dialog.Header id='form-dialog-title'>
+          <Dialog.Header>
             <SparklesIconOutline className='icon-base icon-inline text-r' aria-label={'Adjust'} />
             Report Actions
           </Dialog.Header>
@@ -406,8 +405,9 @@ export const NeoCustomReportActionsModal = ({
 
                         <td style={td2Styling(type)}>
                           <div style={{ border: '2px dashed grey' }} className='n-p-1'>
-                            <Dropdown
+                            <Select
                               type='select'
+                              ariaLabel='Field'
                               className={td2DropdownClassname(type)}
                               style={{
                                 minWidth: '140px',
@@ -424,7 +424,7 @@ export const NeoCustomReportActionsModal = ({
                                   })),
                                 value: { label: ruleTrigger ? ruleTrigger.label : '', value: rule.condition },
                               }}
-                            ></Dropdown>
+                            ></Select>
                             {td2Autocomplete(type, index, rule)}
                           </div>
                         </td>
@@ -441,11 +441,12 @@ export const NeoCustomReportActionsModal = ({
 
                         <td style={td4Styling(type)}>
                           <div style={{ border: '2px dashed grey' }} className='n-p-1'>
-                            <Dropdown
+                            <Select
                               type='select'
+                              ariaLabel='Action'
                               className={td4DropdownClassname}
                               style={{ minWidth: 130, display: 'inline-block' }}
-                              fluid
+                              isFluid
                               selectProps={{
                                 onChange: (newValue) => updateRuleField(index, 'customization', newValue.value),
                                 options:
@@ -456,7 +457,7 @@ export const NeoCustomReportActionsModal = ({
                                   })),
                                 value: { label: ruleType ? ruleType.label : '', value: rule.customization },
                               }}
-                            ></Dropdown>
+                            ></Select>
                             {getActionHelper(rule, index, rules[index].customization)}
                           </div>
                         </td>
@@ -495,10 +496,10 @@ export const NeoCustomReportActionsModal = ({
 
                         <td width='5%'>
                           <IconButton
-                            aria-label='remove rule'
+                            description='Remove rule'
                             size='medium'
                             style={{ marginLeft: 10 }}
-                            floating
+                            isFloating
                             onClick={() => {
                               setRules([...rules.slice(0, index), ...rules.slice(index + 1)]);
                             }}
@@ -515,9 +516,9 @@ export const NeoCustomReportActionsModal = ({
                   <td colSpan={7}>
                     <div className='n-text-center n-mt-1'>
                       <IconButton
-                        aria-label='add'
+                        description='Add'
                         size='medium'
-                        floating
+                        isFloating
                         onClick={() => {
                           const newRule = getDefaultRule(type);
                           setRules(rules.concat(newRule));
@@ -532,16 +533,16 @@ export const NeoCustomReportActionsModal = ({
             </div>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button
+            <FilledButton
               onClick={() => {
                 handleClose();
               }}
               size='large'
-              floating
+              isFloating
             >
               Save
               <SparklesIconOutline className='btn-icon-lg-r' />
-            </Button>
+            </FilledButton>
           </Dialog.Actions>
         </Dialog>
       ) : (

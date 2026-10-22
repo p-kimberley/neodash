@@ -6,17 +6,17 @@ import { Dialog, TextLink } from '@neo4j-ndl/react';
  */
 export const NeoReportHelpModal = ({ open, handleClose }) => {
   return (
-    <Dialog size='large' open={open} onClose={handleClose} aria-labelledby='form-dialog-title'>
-      <Dialog.Header id='form-dialog-title'>About Reports</Dialog.Header>
+    <Dialog size='large' isOpen={open} onClose={handleClose}>
+      <Dialog.Header>About Reports</Dialog.Header>
       <Dialog.Content>
         {' '}
         A report is the smallest building block of your dashboard. Each report runs a single Cypher query that loads
         data from your database. By changing the report type, different visualizations can be created for the data. See
         the{' '}
         <TextLink
-          externalLink
           href='https://github.com/neo4j-contrib/neodash/tree/master/docs/modules/ROOT/pages/user-guide/reports/index.adoc'
           target='_blank'
+          type='external'
         >
           Documentation
         </TextLink>

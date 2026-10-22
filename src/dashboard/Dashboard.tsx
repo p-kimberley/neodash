@@ -16,13 +16,15 @@ const Dashboard = ({ standaloneSettings, sidebarOpen, closeSidebar }) => {
     if (!sidebarOpen) {
       return undefined;
     }
+    // Capture phase: a focused button's tooltip would otherwise take the Escape. An open menu or
+    // dialog (e.g. a dashboard's actions) closes first instead.
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && !document.querySelector('[role="menu"], [role="dialog"]')) {
         closeSidebar();
       }
     };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    window.addEventListener('keydown', onKeyDown, true);
+    return () => window.removeEventListener('keydown', onKeyDown, true);
   }, [sidebarOpen]);
 
   const store = useStore();

@@ -1,7 +1,7 @@
 import React from 'react';
 import * as maplibregl from 'maplibre-gl';
 import Supercluster from 'supercluster';
-import { Button, Typography } from '@neo4j-ndl/react';
+import { Typography, FilledButton } from '@neo4j-ndl/react';
 import { getRule } from '../../../extensions/advancedcharts/Utils';
 import { extensionEnabled } from '../../../utils/ReportUtils';
 import { openReactPopup, toLngLat } from '../maplibre/MapView';
@@ -15,7 +15,7 @@ const PIN_SIZES = { large: 34, medium: 26, small: 20 };
 /** Properties popup for a node, with the "set parameter" click actions from the actions extension. */
 const NodePopup = ({ node, actionsRules, setGlobalParameter }) => (
   <div className='nd-map-popup-content'>
-    <Typography variant='h4'>
+    <Typography variant='title-2'>
       <b>{node.labels.length > 0 ? node.labels.join(' ') : '(No labels)'}</b>
     </Typography>
     <table>
@@ -35,13 +35,12 @@ const NodePopup = ({ node, actionsRules, setGlobalParameter }) => (
                 <td className='nd-map-popup-key'>{k}:</td>
                 <td>
                   {execRule ? (
-                    <Button
+                    <FilledButton
                       style={{ width: '100%' }}
-                      color='primary'
                       onClick={() => setGlobalParameter(`neodash_${rule[0].customizationValue}`, value)}
                     >
                       {value}
-                    </Button>
+                    </FilledButton>
                   ) : (
                     value
                   )}

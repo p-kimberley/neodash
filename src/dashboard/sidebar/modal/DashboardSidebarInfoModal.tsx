@@ -22,8 +22,8 @@ export const NeoDashboardSidebarInfoModal = ({ open, dashboard, handleClose }) =
     : [];
 
   return (
-    <Dialog size='large' open={open} onClose={handleClose} aria-labelledby='form-dialog-title'>
-      <Dialog.Header id='form-dialog-title'>About '{dashboard && dashboard.title}'</Dialog.Header>
+    <Dialog size='large' isOpen={open} onClose={handleClose}>
+      <Dialog.Header>About '{dashboard && dashboard.title}'</Dialog.Header>
       <Dialog.Content>
         <div style={{ height: '300px' }}>
           <DataGrid

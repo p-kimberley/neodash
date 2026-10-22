@@ -5,7 +5,7 @@ import { Button } from '@mui/material';
 import { TextField, Typography } from '@mui/material';
 
 import { PlusIconOutline, XMarkIconOutline, PlayIconOutline } from '@neo4j-ndl/react/icons';
-import { IconButton } from '@neo4j-ndl/react';
+import { IconButton, CleanIconButton } from '@neo4j-ndl/react';
 import { LabelTypeAutocomplete } from './autocomplete/LabelTypeAutocomplete';
 import { DeletePropertyButton } from './button/modal/DeletePropertyButton';
 import {
@@ -97,17 +97,17 @@ export const GraphChartEditModal = (props: GraphChartEditorVisualizationProps) =
       <DialogTitle id='form-dialog-title'>
         {props.action == EditAction.Create ? 'Create' : 'Edit'} a{' '}
         {props.type == EditType.Node ? 'Node' : 'Relationship'}
-        <IconButton
+        <CleanIconButton
+          description='Close'
           onClick={() => {
             props.interactivity.setContextMenuOpen(false);
             props.setDialogOpen(false);
             setProperties([{ name: '', value: '' }]);
           }}
           style={{ marginLeft: '40px', padding: '3px', float: 'right' }}
-          clean
         >
           <XMarkIconOutline />
-        </IconButton>
+        </CleanIconButton>
       </DialogTitle>
 
       <DialogContent style={{ minWidth: '300px' }}>
@@ -187,9 +187,9 @@ export const GraphChartEditModal = (props: GraphChartEditorVisualizationProps) =
                 <td style={{ minWidth: '450px' }} colSpan={4}>
                   <Typography variant='h3' color='primary' style={{ textAlign: 'center', marginBottom: '5px' }}>
                     <IconButton
+                      description='Add'
                       key={'btnAddProp'}
                       size='small'
-                      aria-label='add'
                       style={{ background: 'white', color: 'black' }}
                       onClick={() => {
                         const newProperty = { name: '', value: '' };

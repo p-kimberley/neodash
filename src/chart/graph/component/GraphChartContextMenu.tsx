@@ -2,7 +2,7 @@ import * as React from 'react';
 import MenuItem from '@mui/material/MenuItem';
 import { GraphChartVisualizationProps } from '../GraphChartVisualization';
 import { Card, CardHeader } from '@mui/material';
-import { IconButton } from '@neo4j-ndl/react';
+import { CleanIconButton } from '@neo4j-ndl/react';
 import { MagnifyingGlassCircleIconOutline, PencilIconOutline, XMarkIconOutline } from '@neo4j-ndl/react/icons';
 import { NestedMenuItem, IconMenuItem } from 'mui-nested-menu';
 import { RenderNode, RenderNodeChip, RenderRelationshipChip } from '../../../report/ReportRecordProcessing';
@@ -36,7 +36,7 @@ export const GraphChartContextMenu = (props: GraphChartVisualizationProps) => {
 
   const menu = (
     <div
-      className='n-absolute n-z-60'
+      className='n-absolute n-z-modal'
       style={{
         top: props.interactivity.clickPosition.y,
         left: props.interactivity.clickPosition.x,
@@ -47,9 +47,9 @@ export const GraphChartContextMenu = (props: GraphChartVisualizationProps) => {
           className='-n-mx-1'
           style={{ color: 'var(--nd-text)' }}
           action={
-            <IconButton aria-label='close' className='n-p-1 n-ml-5 n-mt-1' onClick={handleClose} clean>
+            <CleanIconButton description='Close' className='n-p-1 n-ml-5 n-mt-1' onClick={handleClose}>
               <XMarkIconOutline />
-            </IconButton>
+            </CleanIconButton>
           }
           titleTypographyProps={{ variant: 'h6' }}
           title={

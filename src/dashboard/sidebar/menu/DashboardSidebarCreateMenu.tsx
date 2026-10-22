@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, MenuItem, MenuItems } from '@neo4j-ndl/react';
+import { Menu } from '@neo4j-ndl/react';
 
 /**
  * Configures setting the current Neo4j database connection for the dashboard.
@@ -12,24 +12,11 @@ export const NeoDashboardSidebarCreateMenu = ({
   handleClose,
 }) => {
   return (
-    <Menu
-      anchorOrigin={{
-        horizontal: 'left',
-        vertical: 'bottom',
-      }}
-      transformOrigin={{
-        horizontal: 'left',
-        vertical: 'top',
-      }}
-      anchorEl={anchorEl}
-      open={open}
-      onClose={handleClose}
-      size='small'
-    >
-      <MenuItems>
-        <MenuItem onClick={handleNewClicked} title='New' />
-        <MenuItem onClick={handleImportClicked} title='Import' />
-      </MenuItems>
+    <Menu anchorRef={{ current: anchorEl }} isOpen={open} onClose={handleClose} placement='bottom-start-top-start'>
+      <Menu.Items>
+        <Menu.Item onClick={handleNewClicked} title='New' />
+        <Menu.Item onClick={handleImportClicked} title='Import' />
+      </Menu.Items>
     </Menu>
   );
 };

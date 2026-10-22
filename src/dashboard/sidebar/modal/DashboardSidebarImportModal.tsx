@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { PlayIconSolid, DocumentPlusIconOutline } from '@neo4j-ndl/react/icons';
-import { Button, Dialog } from '@neo4j-ndl/react';
+import { Dialog, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
 import TextareaAutosize from '@mui/material/TextareaAutosize';
 
 export const NeoDashboardSidebarImportModal = ({ open, onImport, handleClose }) => {
@@ -21,8 +21,8 @@ export const NeoDashboardSidebarImportModal = ({ open, onImport, handleClose }) 
   };
 
   return (
-    <Dialog size='large' open={open} onClose={handleClose} aria-labelledby='form-dialog-title'>
-      <Dialog.Header id='form-dialog-title'>Import Dashboard</Dialog.Header>
+    <Dialog size='large' isOpen={open} onClose={handleClose}>
+      <Dialog.Header>Import Dashboard</Dialog.Header>
       <Dialog.Content>
         Import your dashboard from a JSON file, or copy-paste the save file here.
         <br />
@@ -38,33 +38,31 @@ export const NeoDashboardSidebarImportModal = ({ open, onImport, handleClose }) 
         placeholder='Paste a dashboard JSON file here...'
       />
       <Dialog.Actions>
-        <Button
+        <OutlinedButton
           onClick={() => {
             loadFromFile.current.click();
           }}
-          fill='outlined'
-          color='neutral'
           style={{ marginLeft: '10px' }}
-          floating
+          isFloating
+          variant='neutral'
         >
           <input value='' type='file' ref={loadFromFile} onChange={onSelectFileClick} hidden />
           Select From File
           <DocumentPlusIconOutline className='btn-icon-base-r' />
-        </Button>
-        <Button
+        </OutlinedButton>
+        <FilledButton
           onClick={() => {
             onImport(text);
             setText('');
             handleClose();
           }}
-          color={text.length > 0 ? 'success' : 'neutral'}
-          disabled={text.length == 0}
+          isDisabled={text.length == 0}
           style={{ float: 'right', marginRight: '10px' }}
-          floating
+          isFloating
         >
           Import
           <PlayIconSolid className='btn-icon-base-r' />
-        </Button>
+        </FilledButton>
       </Dialog.Actions>
     </Dialog>
   );

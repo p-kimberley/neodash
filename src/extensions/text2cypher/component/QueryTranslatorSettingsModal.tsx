@@ -44,8 +44,8 @@ const QueryTranslatorSettingsModal = ({
 
   if (!editDialogIsOpen) {
     return (
-      <Dialog size='large' open={open} onClose={handleCloseWithoutSave} aria-labelledby='form-dialog-title'>
-        <Dialog.Header id='form-dialog-title'>Text2Cypher Configuration</Dialog.Header>
+      <Dialog size='large' isOpen={open} onClose={handleCloseWithoutSave}>
+        <Dialog.Header>Text2Cypher Configuration</Dialog.Header>
         <Dialog.Content>
           This extensions lets you create reports with natural language. Your queries (in English) are translated to
           Cypher by a LLM provider of your choice.

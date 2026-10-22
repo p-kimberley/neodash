@@ -3,7 +3,6 @@ import NeoSetting from '../component/field/Setting';
 import { DASHBOARD_SETTINGS } from '../config/DashboardConfig';
 import { Dialog, IconButton } from '@neo4j-ndl/react';
 import { Cog6ToothIconOutline } from '@neo4j-ndl/react/icons';
-import Tooltip from '@mui/material/Tooltip/Tooltip';
 
 export const NeoSettingsModal = ({ dashboardSettings, updateDashboardSetting }) => {
   const [open, setOpen] = React.useState(false);
@@ -43,14 +42,12 @@ export const NeoSettingsModal = ({ dashboardSettings, updateDashboardSetting }) 
 
   return (
     <>
-      <Tooltip title='Settings' aria-label='settings' disableInteractive>
-        <IconButton className='n-mx-1' onClick={handleClickOpen} aria-label='Settings'>
-          <Cog6ToothIconOutline />
-        </IconButton>
-      </Tooltip>
+      <IconButton description='Settings' className='n-mx-1' onClick={handleClickOpen}>
+        <Cog6ToothIconOutline />
+      </IconButton>
 
-      <Dialog size='large' open={open} onClose={handleClose} aria-labelledby='form-dialog-title'>
-        <Dialog.Header id='form-dialog-title'>
+      <Dialog size='large' isOpen={open} onClose={handleClose}>
+        <Dialog.Header>
           <Cog6ToothIconOutline className='icon-base icon-inline text-r' />
           Dashboard Settings
         </Dialog.Header>

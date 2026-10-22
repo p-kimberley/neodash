@@ -8,7 +8,7 @@ const LAYER = 'nd-links';
 
 const RelPopup = ({ rel }) => (
   <div className='nd-map-popup-content'>
-    <Typography variant='h4'>
+    <Typography variant='title-2'>
       <b>{rel.type}</b>
     </Typography>
     <table>
