@@ -8,4 +8,4 @@ To use it, pick a key and use the actions in `src/sessionStorage/SessionStorageA
 - `deleteAllKeysInSessionStorageWithPrefix(prefix)` removes every key starting with a prefix, e.g. to clear all of one extension's data.
 - `getSessionStorageValue(state, key)` and `getSessionStorageValuesWithPrefix(state, prefix)` in `SessionStorageSelectors.ts` read them back.
 
-For example, Build with AI keeps each report's earlier descriptions under a per-report key with a common prefix (`getSessionStorageHistoryKey` in `src/text2cypher/state/QueryTranslatorSelector.ts`), and its "Forget earlier questions" button clears them by that prefix.
+For example, Build with AI keeps each report's earlier descriptions under a per-report key with a common prefix (`getSessionStorageHistoryKey` in `src/text2cypher/state/QueryTranslatorSelector.ts`) (`deleteAllKeysInSessionStorageWithPrefix` clears keys by such a prefix).

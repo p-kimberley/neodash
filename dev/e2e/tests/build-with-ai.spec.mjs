@@ -62,46 +62,15 @@ test('build with AI: a question in English becomes a checked query that runs', a
   await expectNoErrors(page, errors);
 });
 
-test('build with AI: the dashboard button shows the configured model', async ({ page }) => {
-  await page.goto('/');
-  const config = await (await page.request.get('/api/config')).json();
-  test.skip(!config.ai?.enabled, 'the backend has no language model configured');
-  const dash = await getDashboard(page, SALES);
-  const uuid = `dddd0000-0000-4000-8000-0000000t2b${test.info().project.name === 'dark' ? 'dd' : 'ee'}`.slice(0, 36);
-  await putDashboard(page, uuid, {
-    ...dash,
-    title: 'e2e build with ai settings',
-    extensions: {},
-  });
-  try {
-    await openPage(page, uuid);
-    await page.getByRole('button', { name: 'Build with AI', exact: true }).click();
-    const dialog = page.getByRole('dialog');
-    await expect(dialog).toContainText(config.ai.model);
-    // No API keys or providers are asked for in the browser any more.
-    await expect(dialog.getByRole('textbox')).toHaveCount(0);
-  } finally {
-    await deleteDashboard(page, uuid);
-  }
-});
-
 test('build with AI is part of the app, not an extension', async ({ page }) => {
   await page.goto('/');
   const config = await (await page.request.get('/api/config')).json();
   test.skip(!config.ai?.enabled, 'the backend has no language model configured');
   await openPage(page, SALES);
-  await expect(page.getByRole('button', { name: 'Build with AI', exact: true })).toBeVisible();
+  // No dashboard-level button: Build with AI is reached from reports (empty ones, and Change with AI).
+  await expect(page.getByRole('button', { name: 'Build with AI', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Extensions', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByText('Advanced Visualizations', { exact: true })).toBeVisible();
   await expect(dialog.getByText(/Text2Cypher|Build with AI/)).toHaveCount(0);
-});
-
-test.describe('viewer', () => {
-  test.use({ storageState: './.auth/viewer.json' });
-
-  test('viewers get no Build with AI button', async ({ page }) => {
-    await openPage(page, SALES);
-    await expect(page.getByRole('button', { name: 'Build with AI', exact: true })).toHaveCount(0);
-  });
 });

@@ -1,10 +1,9 @@
 import {
-  deleteAllKeysInSessionStorageWithPrefix,
   deleteSessionStorageValue,
   SESSION_STORAGE_PREFIX,
   setSessionStorageValue,
 } from '../../sessionStorage/SessionStorageActions';
-import { getSessionStorageHistoryKey, QUERY_TRANSLATOR_HISTORY_PREFIX } from './QueryTranslatorSelector';
+import { getSessionStorageHistoryKey } from './QueryTranslatorSelector';
 
 export const QUERY_TRANSLATOR_ACTION_PREFIX = 'DASHBOARD/EXTENSIONS/QUERY_TRANSLATOR/';
 export const QUERY_TRANSLATOR_SESSION_STORAGE_ACTION_PREFIX = `DASHBOARD/EXTENSIONS/QUERY_TRANSLATOR/${SESSION_STORAGE_PREFIX}/`;
@@ -70,5 +69,3 @@ export const updateMessageHistory = (cardHistory: any[], pagenumber: number, car
 
 export const deleteMessageHistory = (pagenumber: number, cardId: string) =>
   deleteSessionStorageValue(getSessionStorageHistoryKey(pagenumber, cardId));
-
-export const deleteAllMessageHistory = () => deleteAllKeysInSessionStorageWithPrefix(QUERY_TRANSLATOR_HISTORY_PREFIX);

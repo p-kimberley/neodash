@@ -7,9 +7,6 @@ import { queryTranslationThunk } from '../state/QueryTranslatorThunks';
 /** Whether the server offers Build with AI (a language model is configured and switched on). */
 export const text2cypherAvailable = () => Boolean(session.config?.ai?.enabled);
 
-/** The model the server uses for Build with AI, if any. */
-export const text2cypherModel = () => session.config?.ai?.model;
-
 /**
  * This function translates a query using the specified driver and dispatches actions accordingly.
  * It checks for the last message associated with the given pagenumber and ID from the QUERY_TRANSLATOR_EXTENSION_NAME extension.

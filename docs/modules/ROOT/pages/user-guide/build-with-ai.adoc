@@ -64,10 +64,8 @@ Without the chart, set `AI_BASE_URL`, `AI_MODEL` and, if needed, `AI_API_KEY_FIL
 
 Only editors can translate questions, because the query is then run like any query an editor writes.
 
-== Better answers with example questions
+== Better answers
 
-Example questions, with the queries that answer them, are sent to the model with every question asked in the dashboard. Examples that use your own labels, relationship types and properties make its queries noticeably more accurate.
+Descriptions that name the node labels, relationship types and properties to use get better results, for example "Which *Customer* nodes *PLACED* more than 10 *Order* nodes?".
 
-To add them, click the *Build with AI* button in the dashboard header (editors see it when the server has a model; it also shows which model is used), then *Example questions*. They are saved with the dashboard.
-
-Questions that name the node labels, relationship types and properties to use also help, for example "Which *Customer* nodes *PLACED* more than 10 *Order* nodes?".
+Dashboards saved with example questions (questions with the queries that answer them, which earlier versions let you edit) still send them to the model with every question; they help it use your own labels and properties.

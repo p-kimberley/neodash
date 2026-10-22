@@ -11,8 +11,6 @@ import { CheckIconOutline, PencilSquareIconOutline } from '@neo4j-ndl/react/icon
 import NeoSettingsModal from '../../settings/SettingsModal';
 import NeoExtensionsModal from '../../extensions/ExtensionsModal';
 import { EXTENSIONS_DRAWER_BUTTONS } from '../../extensions/ExtensionConfig';
-import QueryTranslatorButton from '../../text2cypher/component/QueryTranslatorButton';
-import { text2cypherAvailable } from '../../text2cypher/util/Util';
 import NeoExportModal from '../../modal/ExportModal';
 import { setDraft } from '../../application/ApplicationActions';
 
@@ -134,7 +132,6 @@ export const NeoDashboardTitle = ({
       {/* If the app is not running in standalone mode (i.e. in edit mode) always show dashboard settings. */}
       {!standaloneSettings.standalone ? (
         <div className='flex flex-row flex-wrap items-center gap-2'>
-          {editable && text2cypherAvailable() ? <QueryTranslatorButton /> : <></>}
           {editable ? renderExtensionsButtons() : <></>}
           <NeoSettingsModal dashboardSettings={dashboardSettings} updateDashboardSetting={updateDashboardSetting} />
           {editable ? <NeoExportModal /> : <></>}
