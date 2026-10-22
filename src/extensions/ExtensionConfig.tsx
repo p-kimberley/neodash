@@ -1,9 +1,3 @@
-import { QUERY_TRANSLATOR_ACTION_PREFIX } from './text2cypher/state/QueryTranslatorActions';
-import { queryTranslatorReducer } from './text2cypher/state/QueryTranslatorReducer';
-import NeoOverrideCardQueryEditor from './text2cypher/component/OverrideCardQueryEditor';
-import { translateQuery } from './text2cypher/util/Util';
-import { TEXT2CYPHER_LOADING_ICON } from './text2cypher/component/LoadingIcon';
-import QueryTranslatorButton from './text2cypher/component/QueryTranslatorButton';
 import { docsUrl } from '../utils/docs';
 
 // TODO: continue documenting interface
@@ -56,22 +50,6 @@ export const EXTENSIONS: Record<string, Extension> = {
     description:
       'Report actions let dashboard builders add extra interactivity into dashboards. For example, setting parameter values when a cell in a table or a node in a graph is clicked.',
     link: docsUrl('user-guide/extensions/report-actions'),
-  },
-  'query-translator': {
-    name: 'query-translator',
-    label: 'Text2Cypher: Natural Language Queries',
-    author: 'Neo4j Professional Services',
-    image: 'translator.png',
-    enabled: true,
-    reducerPrefix: QUERY_TRANSLATOR_ACTION_PREFIX,
-    reducerObject: queryTranslatorReducer,
-    cardSettingsComponent: NeoOverrideCardQueryEditor,
-    prepopulateReportFunction: translateQuery,
-    customLoadingIcon: TEXT2CYPHER_LOADING_ICON,
-    settingsMenuButton: QueryTranslatorButton,
-    description:
-      "Write a report's query as a question in English: a language model set up for this server turns it into Cypher, using the database schema and the report's type. NeoDash checks each query against the database before using it.",
-    link: docsUrl('user-guide/extensions/natural-language-queries'),
   },
   forms: {
     name: 'forms',

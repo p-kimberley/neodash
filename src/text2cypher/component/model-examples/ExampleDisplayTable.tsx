@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { createColumnHelper, getCoreRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
 import { CleanIconButton, DataGrid } from '@neo4j-ndl/react';
 import { PencilSquareIconOutline, TrashIconOutline } from '@neo4j-ndl/react/icons';
-import ShowMoreText from '../../../../component/text/ShowMoreText';
+import ShowMoreText from '../../../component/text/ShowMoreText';
 import { getModelExamples } from '../../state/QueryTranslatorSelector';
 import { deleteModelExample } from '../../state/QueryTranslatorActions';
 

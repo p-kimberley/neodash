@@ -1,6 +1,6 @@
-import { createNotification } from '../../../application/ApplicationActions';
-import { session } from '../../../api/client';
-import { toggleCardSettingsThunk } from '../../../card/CardThunks';
+import { createNotification } from '../../application/ApplicationActions';
+import { session } from '../../api/client';
+import { toggleCardSettingsThunk } from '../../card/CardThunks';
 import { QUERY_TRANSLATOR_EXTENSION_NAME } from '../state/QueryTranslatorSelector';
 import { queryTranslationThunk } from '../state/QueryTranslatorThunks';
 
@@ -25,7 +25,7 @@ export const text2cypherModel = () => session.config?.text2cypher?.model;
  * @param setResult Functions to set the results back to the calling component
  */
 export function translateQuery(driver, dispatch, pagenumber, id, reportType, extensions, setResult) {
-  const messages = extensions[QUERY_TRANSLATOR_EXTENSION_NAME].lastMessages;
+  const messages = extensions?.[QUERY_TRANSLATOR_EXTENSION_NAME]?.lastMessages;
   let lastMessage = messages && messages[pagenumber] && messages[pagenumber][id] ? messages[pagenumber][id] : false;
 
   if (lastMessage) {

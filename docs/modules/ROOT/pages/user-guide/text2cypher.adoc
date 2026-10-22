@@ -2,6 +2,8 @@
 
 Write a report's query as a question in English, and let a language model turn it into Cypher, using your database schema and the type of report.
 
+Text2Cypher is part of NeoDash (not an extension): it is on for every dashboard when the server has a language model configured, and absent when it hasn't.
+
 == How it works
 
 The language model is set up for the NeoDash server by an administrator: any model served through an OpenAI-compatible API, such as https://docs.vllm.ai[vLLM] in your cluster. Browsers never connect to it, and no API key is entered in NeoDash itself.
@@ -28,11 +30,10 @@ text2cypher:
     existingSecret: llm-api-key   # optional; key "api-key"
 ----
 
-Without the chart, set `TEXT2CYPHER_BASE_URL`, `TEXT2CYPHER_MODEL` and, if needed, `TEXT2CYPHER_API_KEY_FILE` on the server. With a network policy, allow the pods to reach the model. Models trained on code and Cypher give the best results.
+Without the chart, set `TEXT2CYPHER_BASE_URL`, `TEXT2CYPHER_MODEL` and, if needed, `TEXT2CYPHER_API_KEY_FILE` on the server. Both the address and the model name are needed; the server won't start with only one of them. With a network policy, allow the pods to reach the model. Models trained on code and Cypher give the best results.
 
 == Using it
 
-. Turn on the *Text2Cypher* extension in the dashboard's *Extensions* (only possible when the server has a model). Its button in the dashboard header shows which model is used.
 . Open a report's settings, and switch its query editor from *Cypher* to *English*.
 . Write your question, then click *Translate*. After a few seconds the query appears in the Cypher editor, where you can check and change it before running the report.
 
@@ -44,6 +45,6 @@ image::englisheditor.png[Example of the English editor in NeoDash]
 
 Example questions, with the queries that answer them, are sent to the model with every question asked in the dashboard. Examples that use your own labels, relationship types and properties make its queries noticeably more accurate.
 
-To add them, click the Text2Cypher button in the dashboard header, then *Example questions*. They are saved with the dashboard.
+To add them, click the Text2Cypher button in the dashboard header (editors see it when the server has a model; it also shows which model is used), then *Example questions*. They are saved with the dashboard.
 
 Writing questions that name the node labels, relationship types and properties to use also helps, for example "Which *Customer* nodes *PLACED* more than 10 *Order* nodes?".

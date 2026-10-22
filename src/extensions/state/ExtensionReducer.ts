@@ -1,4 +1,7 @@
 import { EXTENSIONS_REDUCERS } from '../ExtensionConfig';
+import { QUERY_TRANSLATOR_ACTION_PREFIX } from '../../text2cypher/state/QueryTranslatorActions';
+import { queryTranslatorReducer } from '../../text2cypher/state/QueryTranslatorReducer';
+import { QUERY_TRANSLATOR_EXTENSION_NAME } from '../../text2cypher/state/QueryTranslatorSelector';
 import { SET_EXTENSION_REDUCER_ENABLED } from './ExtensionActions';
 
 export const INITIAL_EXTENSIONS_STATE = {
@@ -11,6 +14,15 @@ export const extensionsReducer = (state = INITIAL_EXTENSIONS_STATE, action: { ty
 
   if (!action.type.startsWith('DASHBOARD/EXTENSIONS')) {
     return state;
+  }
+
+  // Text2Cypher is part of the app, not an extension, so its state (questions and examples) is always
+  // kept. It stays under the dashboard's extensions, where dashboards saved earlier have it.
+  if (type.startsWith(QUERY_TRANSLATOR_ACTION_PREFIX)) {
+    return {
+      ...state,
+      [QUERY_TRANSLATOR_EXTENSION_NAME]: queryTranslatorReducer(state[QUERY_TRANSLATOR_EXTENSION_NAME], action),
+    };
   }
 
   // Checking if we are receiving an action from an enabled extension

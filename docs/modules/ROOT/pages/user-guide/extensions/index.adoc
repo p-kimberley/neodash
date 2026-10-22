@@ -20,9 +20,10 @@ The extensions in NeoDash are:
 - link:advanced-visualizations[Advanced Visualizations]
 - link:rule-based-styling[Rule-based Styling]
 - link:report-actions[Report Actions]
-- link:natural-language-queries[Text2Cypher - Natural Language Queries] (only when the server has a
-language model set up)
 - link:forms[Forms]
+
+Text2Cypher, which earlier versions offered as an extension, is now part of NeoDash itself: see
+xref:user-guide/text2cypher.adoc[Text2Cypher - Natural Language Queries].
 
 All of them are part of NeoDash; none needs a separate license. To learn how to build your own
 extensions, check out the link:../../developer-guide[Developer Guide].

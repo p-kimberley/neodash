@@ -1,12 +1,12 @@
 import React, { useState, useContext } from 'react';
 import { connect } from 'react-redux';
 import { OutlinedButton, FilledButton, TextArea } from '@neo4j-ndl/react';
-import { Dialog } from '../../../../component/dialog/Dialog';
+import { Dialog } from '../../../component/dialog/Dialog';
 import { addModelExample, updateModelExample } from '../../state/QueryTranslatorActions';
-import { Neo4jContext, Neo4jContextState } from '../../../../api/Neo4jContext';
-import { getDatabase } from '../../../../settings/SettingsSelectors';
+import { Neo4jContext, Neo4jContextState } from '../../../api/Neo4jContext';
+import { getDatabase } from '../../../settings/SettingsSelectors';
 import { checkModelExampleAndSubmit } from './utils';
-import NeoCodeEditorComponent from '../../../../component/editor/CodeEditorComponent';
+import NeoCodeEditorComponent from '../../../component/editor/CodeEditorComponent';
 
 const ExampleEditorModal = ({
   index,

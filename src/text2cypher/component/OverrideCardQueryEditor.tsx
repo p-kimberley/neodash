@@ -3,21 +3,21 @@ import { connect } from 'react-redux';
 import { Switch, OutlinedButton } from '@neo4j-ndl/react';
 import NeoCodeEditorComponent, {
   DEFAULT_CARD_SETTINGS_HELPER_TEXT_STYLE,
-} from '../../../component/editor/CodeEditorComponent';
-import { getReportTypes } from '../../ExtensionUtils';
+} from '../../component/editor/CodeEditorComponent';
+import { getReportTypes } from '../../extensions/ExtensionUtils';
 import { queryTranslationThunk } from '../state/QueryTranslatorThunks';
-import { Neo4jContext, Neo4jContextState } from '../../../api/Neo4jContext';
+import { Neo4jContext, Neo4jContextState } from '../../api/Neo4jContext';
 import debounce from 'lodash/debounce';
 import { updateLastMessage } from '../state/QueryTranslatorActions';
-import { createNotification } from '../../../application/ApplicationActions';
+import { createNotification } from '../../application/ApplicationActions';
 import { getLastMessage, QUERY_TRANSLATOR_EXTENSION_NAME } from '../state/QueryTranslatorSelector';
 import { TEXT2CYPHER_LOADING_ICON } from './LoadingIcon';
 import {
   deleteSessionStoragePrepopulationReportFunction,
   setSessionStoragePrepopulationReportFunction,
-} from '../../state/ExtensionActions';
-import { getPrepopulateReportExtension } from '../../state/ExtensionSelectors';
-import { docsUrl } from '../../../utils/docs';
+} from '../../extensions/state/ExtensionActions';
+import { getPrepopulateReportExtension } from '../../extensions/state/ExtensionSelectors';
+import { docsUrl } from '../../utils/docs';
 import { text2cypherAvailable } from '../util/Util';
 
 // TODO: right now if we change the database in the cardSelector, it should forgot the card history
@@ -200,7 +200,7 @@ export const NeoOverrideCardQueryEditor = ({
                 <a
                   target='_blank'
                   style={{ textDecoration: 'underline' }}
-                  href={docsUrl('user-guide/extensions/natural-language-queries')}
+                  href={docsUrl('user-guide/text2cypher')}
                 >
                   documentation
                 </a>

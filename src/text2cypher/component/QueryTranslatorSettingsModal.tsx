@@ -1,11 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { FilledButton, OutlinedButton } from '@neo4j-ndl/react';
-import { Dialog } from '../../../component/dialog/Dialog';
+import { Dialog } from '../../component/dialog/Dialog';
 import { PencilSquareIconOutline } from '@neo4j-ndl/react/icons';
 import { deleteAllMessageHistory } from '../state/QueryTranslatorActions';
 import { QUERY_TRANSLATOR_HISTORY_PREFIX } from '../state/QueryTranslatorSelector';
-import { getSessionStorageValuesWithPrefix } from '../../../sessionStorage/SessionStorageSelectors';
+import { getSessionStorageValuesWithPrefix } from '../../sessionStorage/SessionStorageSelectors';
 import QueryTranslatorSettingsModelExamples from './model-examples/QueryTranslatorSettingsModelExamples';
 import { text2cypherAvailable, text2cypherModel } from '../util/Util';
 

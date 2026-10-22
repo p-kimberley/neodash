@@ -1,6 +1,6 @@
-import { updateReportQueryThunk } from '../../../card/CardThunks';
-import { getDatabase } from '../../../settings/SettingsSelectors';
-import { api } from '../../../api/client';
+import { updateReportQueryThunk } from '../../card/CardThunks';
+import { getDatabase } from '../../settings/SettingsSelectors';
+import { api } from '../../api/client';
 import { updateLastMessage, updateMessageHistory } from './QueryTranslatorActions';
 import { getHistoryPerCard, getModelExamples } from './QueryTranslatorSelector';
 

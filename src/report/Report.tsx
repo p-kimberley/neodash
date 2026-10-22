@@ -15,11 +15,26 @@ import { Cog6ToothIconOutline, ExclamationTriangleIconSolid } from '@neo4j-ndl/r
 import { connect } from 'react-redux';
 import { setPageNumberThunk } from '../settings/SettingsThunks';
 import { EXTENSIONS } from '../extensions/ExtensionConfig';
+import { translateQuery } from '../text2cypher/util/Util';
+import { TEXT2CYPHER_LOADING_ICON } from '../text2cypher/component/LoadingIcon';
+import { QUERY_TRANSLATOR_EXTENSION_NAME } from '../text2cypher/state/QueryTranslatorSelector';
 import { getPageNumber } from '../settings/SettingsSelectors';
 import { getPrepopulateReportExtension } from '../extensions/state/ExtensionSelectors';
 import { deleteSessionStoragePrepopulationReportFunction } from '../extensions/state/ExtensionActions';
 import { updateFieldsThunk } from '../card/CardThunks';
 import { getDashboardTheme } from '../dashboard/DashboardSelectors';
+
+/**
+ * What can fill in a report's query before it runs: extensions, and Text2Cypher (part of the app), which
+ * translates a question that was typed but not yet translated.
+ */
+const PREPOPULATORS: Record<string, { prepopulateReportFunction?: any; customLoadingIcon?: React.JSX.Element }> = {
+  ...EXTENSIONS,
+  [QUERY_TRANSLATOR_EXTENSION_NAME]: {
+    prepopulateReportFunction: translateQuery,
+    customLoadingIcon: TEXT2CYPHER_LOADING_ICON,
+  },
+};
 
 /** Settings of the table shown by "View as table": compact rows, with a CSV download. */
 const TABLE_VIEW_SETTINGS = { compact: true, allowDownload: true };
@@ -164,9 +179,10 @@ export const NeoReport = ({
     //  ... Await for the prepopulating function to complete before running the (normal) query logic.
     // Else just run the normal query.
     // Finally, remove the prepopulating function from session storage.
-    if (prepopulateExtensionName) {
-      setLoadingIcon(EXTENSIONS[prepopulateExtensionName].customLoadingIcon);
-      EXTENSIONS[prepopulateExtensionName].prepopulateReportFunction(
+    const prepopulator = prepopulateExtensionName ? PREPOPULATORS[prepopulateExtensionName] : undefined;
+    if (prepopulator?.prepopulateReportFunction) {
+      setLoadingIcon(prepopulator.customLoadingIcon ?? REPORT_LOADING_ICON);
+      prepopulator.prepopulateReportFunction(
         driver,
         getCustomDispatcher(),
         pagenumber,

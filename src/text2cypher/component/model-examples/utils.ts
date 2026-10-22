@@ -1,4 +1,4 @@
-import { validateQuery } from '../../../../utils/ReportUtils';
+import { validateQuery } from '../../../utils/ReportUtils';
 
 export async function checkModelExampleAndSubmit(
   question,

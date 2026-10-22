@@ -1,4 +1,4 @@
-import { getSessionStorageValue } from '../../../sessionStorage/SessionStorageSelectors';
+import { getSessionStorageValue } from '../../sessionStorage/SessionStorageSelectors';
 
 export const QUERY_TRANSLATOR_EXTENSION_NAME = 'query-translator';
 export const QUERY_TRANSLATOR_HISTORY_PREFIX = `${QUERY_TRANSLATOR_EXTENSION_NAME}_history__`;

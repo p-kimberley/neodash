@@ -14,8 +14,6 @@ import {
   trackErrors,
 } from './helpers.mjs';
 
-const QUERY_TRANSLATOR_REDUCER = 'DASHBOARD/EXTENSIONS/QUERY_TRANSLATOR/';
-
 test('text2cypher: a question becomes a checked query that runs', async ({ page }) => {
   const errors = trackErrors(page);
   await page.goto('/');
@@ -28,12 +26,9 @@ test('text2cypher: a question becomes a checked query that runs', async ({ page 
   await putDashboard(page, uuid, {
     ...dash,
     title: 'e2e text2cypher',
+    // Text2Cypher is part of the app: no extension needs turning on.
     pages: [{ title: 'Ask', reports: [{ ...report, x: 0, y: 0, width: 12, height: 5 }] }],
-    extensions: {
-      ...(dash.extensions || {}),
-      'query-translator': { active: true, lastMessages: {}, examples: [] },
-      activeReducers: [...((dash.extensions || {}).activeReducers || []), QUERY_TRANSLATOR_REDUCER],
-    },
+    extensions: {},
   });
   try {
     await openPage(page, uuid);
@@ -66,7 +61,7 @@ test('text2cypher: the dashboard button shows the configured model', async ({ pa
   await putDashboard(page, uuid, {
     ...dash,
     title: 'e2e text2cypher settings',
-    extensions: { ...(dash.extensions || {}), 'query-translator': { active: true, lastMessages: {}, examples: [] } },
+    extensions: {},
   });
   try {
     await openPage(page, uuid);
@@ -78,4 +73,25 @@ test('text2cypher: the dashboard button shows the configured model', async ({ pa
   } finally {
     await deleteDashboard(page, uuid);
   }
+});
+
+test('text2cypher is part of the app, not an extension', async ({ page }) => {
+  await page.goto('/');
+  const config = await (await page.request.get('/api/config')).json();
+  test.skip(!config.text2cypher?.enabled, 'the backend has no language model configured');
+  await openPage(page, SALES);
+  await expect(page.getByRole('button', { name: 'Text2Cypher', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Extensions', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByText('Advanced Visualizations', { exact: true })).toBeVisible();
+  await expect(dialog.getByText(/Text2Cypher/)).toHaveCount(0);
+});
+
+test.describe('viewer', () => {
+  test.use({ storageState: './.auth/viewer.json' });
+
+  test('viewers get no Text2Cypher button', async ({ page }) => {
+    await openPage(page, SALES);
+    await expect(page.getByRole('button', { name: 'Text2Cypher', exact: true })).toHaveCount(0);
+  });
 });

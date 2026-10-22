@@ -8,6 +8,8 @@ import { getReportTypes } from '../../extensions/ExtensionUtils';
 import { SelectField } from '../../component/field/SelectField';
 import { EXTENSIONS_CARD_SETTINGS_COMPONENT } from '../../extensions/ExtensionConfig';
 import { objMerge } from '../../utils/ObjectManipulation';
+import NeoText2CypherQueryEditor from '../../text2cypher/component/OverrideCardQueryEditor';
+import { text2cypherAvailable } from '../../text2cypher/util/Util';
 
 const NeoCardSettingsContent = ({
   pagenumber,
@@ -153,7 +155,23 @@ const NeoCardSettingsContent = ({
           }}
         />
       ) : (
-        <div>{hasExtensionComponents() ? renderExtensionsComponents() : defaultQueryBoxComponent}</div>
+        <div>
+          {/* With a language model on the server, the query can also be written as a question (Text2Cypher). */}
+          {text2cypherAvailable() ? (
+            <NeoText2CypherQueryEditor
+              pagenumber={pagenumber}
+              reportId={reportId}
+              reportType={type}
+              extensions={extensions}
+              cypherQuery={queryText}
+              updateCypherQuery={updateCypherQuery}
+            />
+          ) : hasExtensionComponents() ? (
+            renderExtensionsComponents()
+          ) : (
+            defaultQueryBoxComponent
+          )}
+        </div>
       )}
     </div>
   );

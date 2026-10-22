@@ -11,13 +11,6 @@ import { PuzzlePieceIconSolid } from '@neo4j-ndl/react/icons';
 import { Section, SectionContent } from '../modal/ModalUtils';
 import { Tip } from '../component/text/Tip';
 import { docsUrl } from '../utils/docs';
-import { text2cypherAvailable } from './text2cypher/util/Util';
-
-/** Extensions that depend on the server: Text2Cypher needs a language model configured there. */
-const withAvailability = (e) =>
-  e.name === 'query-translator' && !text2cypherAvailable()
-    ? { ...e, enabled: false, unavailableReason: 'Needs a language model, which is not configured on this server.' }
-    : { ...e, unavailableReason: undefined };
 
 const NeoExtensionsModal = ({
   extensions,
@@ -63,7 +56,7 @@ const NeoExtensionsModal = ({
               </Section>
 
               {Object.values(EXTENSIONS)
-                .map(withAvailability)
+                .map((e) => ({ ...e, unavailableReason: undefined }))
                 .map((e, key) => {
                   return (
                     <Section key={key}>

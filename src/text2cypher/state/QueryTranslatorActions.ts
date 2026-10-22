@@ -3,7 +3,7 @@ import {
   deleteSessionStorageValue,
   SESSION_STORAGE_PREFIX,
   setSessionStorageValue,
-} from '../../../sessionStorage/SessionStorageActions';
+} from '../../sessionStorage/SessionStorageActions';
 import { getSessionStorageHistoryKey, QUERY_TRANSLATOR_HISTORY_PREFIX } from './QueryTranslatorSelector';
 
 export const QUERY_TRANSLATOR_ACTION_PREFIX = 'DASHBOARD/EXTENSIONS/QUERY_TRANSLATOR/';
