@@ -50,7 +50,7 @@ the pie slices in order of size.
 |Show Values in slices |on/off |on |If enabled, shows the
 values inside the pie slices.
 
-|Skip label if corresponding arc's angle is lower than provided value |Number |10 |Leaves out the value labels of slices smaller than this angle (degrees).
+|Skip label if corresponding arc's angle is lower than provided value |Number |15 |Leaves out the value labels of slices smaller than this angle (degrees).
 
 |Labels font Size |Number |13 |The size of the font for the labels inside and next to the pie.
 
@@ -59,7 +59,7 @@ category names next to the pie slices.
 
 |Enable interactivity |on/off |on |If disabled, the chart shows no tooltips and ignores the mouse.
 
-|Color Scheme |List |set2 |The color scheme to use for the slices. Colors
+|Color Scheme |List |default |The color scheme to use for the slices. The default scheme has separate, contrast-checked colors for light and dark mode (reports saved with the old default, set2, use it too). Colors
 are assigned automatically (consecutively) to the different categories
 returned by the Cypher query.
 
@@ -80,7 +80,7 @@ slice.
 
 |Skip label if corresponding slice's angle is lower than provided value |Number |1 |Leaves out the category names of slices smaller than this angle (degrees).
 
-|Slice Corner Radius |Number |1 |Rounds the corners of the slices (px).
+|Slice Corner Radius |Number |4 |Rounds the corners of the slices (px).
 
 |Margin Left (px) |Number |50 |The margin in pixels on the left side of
 the visualization.
@@ -88,10 +88,10 @@ the visualization.
 |Margin Right (px) |Number |50 |The margin in pixels on the right side
 of the visualization.
 
-|Margin Top (px) |Number |50 |The margin in pixels on the top side of
+|Margin Top (px) |Number |24 |The margin in pixels on the top side of
 the visualization.
 
-|Margin Bottom (px) |Number |50 |The margin in pixels on the bottom side
+|Margin Bottom (px) |Number |24 |The margin in pixels on the bottom side
 of the visualization.
 
 |Override no data message |Text |Query returned no data. |Override the message displayed to the user when their query returns no data.

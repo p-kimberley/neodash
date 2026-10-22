@@ -3,16 +3,14 @@ import * as echarts from 'echarts/core';
 import { PieChart } from 'echarts/charts';
 import { LegendComponent, TooltipComponent } from 'echarts/components';
 import { NoDrawableDataErrorMessage } from '../../component/editor/CodeViewerComponent';
-import { getD3ColorsByScheme } from '../../config/ColorConfig';
 import { evaluateRulesOnDict, useStyleRules } from '../../extensions/styling/StyleRuleEvaluator';
 import { ChartProps } from '../Chart';
 import { convertRecordObjectToString, recordToNative } from '../ChartUtils';
 import { extensionEnabled } from '../../utils/ReportUtils';
 import { EChart } from '../echarts/EChart';
-import { darker, labelOnColor, tooltipRow, withoutInteraction } from '../echarts/helpers';
+import { darker, hasCustomMargins, labelOnColor, tooltipRow, withoutInteraction } from '../echarts/helpers';
+import { schemeColors, useChartMode } from '../echarts/theme';
 import { palettes } from '../../theme/palette';
-import { useSelector } from 'react-redux';
-import { getDashboardTheme } from '../../dashboard/DashboardSelectors';
 
 echarts.use([PieChart, LegendComponent, TooltipComponent]);
 
@@ -52,7 +50,7 @@ const NeoPieChart = (props: ChartProps) => {
     settings.styleRules,
     props.getGlobalParameter
   );
-  const mode = useSelector(getDashboardTheme) === 'dark' ? 'dark' : 'light';
+  const mode = useChartMode();
 
   if (!selection || records == null || records.length == 0 || records[0].keys == null) {
     return <NoDrawableDataErrorMessage />;
@@ -61,24 +59,28 @@ const NeoPieChart = (props: ChartProps) => {
   const legendHeight = 20;
   const marginRight = settings.marginRight ? settings.marginRight : 50;
   const marginLeft = settings.marginLeft ? settings.marginLeft : 50;
-  const marginTop = settings.marginTop ? settings.marginTop : 50;
-  const marginBottom = settings.marginBottom ? settings.marginBottom : 50;
+  // Unset, the pie keeps 50px at the sides for its labels but sits closer to the top and bottom.
+  const marginTop = settings.marginTop ? settings.marginTop : hasCustomMargins(settings) ? 50 : 24;
+  const marginBottom = settings.marginBottom ? settings.marginBottom : hasCustomMargins(settings) ? 50 : 24;
   const sortByValue = settings.sortByValue ? settings.sortByValue : false;
   const enableArcLabels = settings.enableArcLabels !== undefined ? settings.enableArcLabels : true;
   const enableArcLinkLabels = settings.enableArcLinkLabels !== undefined ? settings.enableArcLinkLabels : true;
   const innerRadius = settings.innerRadius ? settings.innerRadius : 0;
   const padAngle = settings.padAngle ? settings.padAngle : 0;
+  // Unset, slices are parted by a 2px gap in the card's colour; a set border width draws a darker edge.
   const borderWidth = settings.borderWidth ? settings.borderWidth : 0;
   const activeOuterRadiusOffset = settings.activeOuterRadiusOffset ? settings.activeOuterRadiusOffset : 8;
   const arcLinkLabelsOffset = settings.arcLinkLabelsOffset ? settings.arcLinkLabelsOffset : 15;
   const arcLinkLabelsSkipAngle = settings.arcLinkLabelsSkipAngle ? settings.arcLinkLabelsSkipAngle : 1;
-  const cornerRadius = settings.cornerRadius ? settings.cornerRadius : 1;
-  const arcLabelsSkipAngle = settings.arcLabelsSkipAngle ? settings.arcLabelsSkipAngle : 10;
+  const cornerRadius = settings.cornerRadius ? settings.cornerRadius : 4;
+  // Unset, percentages show on slices wide enough to hold them.
+  const arcLabelsSkipAngle = settings.arcLabelsSkipAngle ? settings.arcLabelsSkipAngle : 15;
   const arcLabelsFontSize = settings.arcLabelsFontSize ? settings.arcLabelsFontSize : 13;
   const legend = settings.legend ? settings.legend : false;
-  const colorScheme = settings.colors ? settings.colors : 'set2';
+  const colorScheme = settings.colors;
   const interactive = settings.interactive !== undefined ? settings.interactive : true;
-  const chartColorsByScheme = getD3ColorsByScheme(colorScheme);
+  const chartColorsByScheme = schemeColors(colorScheme, mode);
+  const c = palettes[mode];
 
   let slices = buildSlices(records, selection);
   if (slices.length == 0) {
@@ -125,27 +127,27 @@ const NeoPieChart = (props: ChartProps) => {
       formatter: (p) => tooltipRow(p.color, p.name, p.value),
     },
     legend: legend
-      ? { show: true, orient: 'horizontal', bottom: 4, icon: 'circle', itemWidth: 14, itemHeight: 14 }
+      ? { show: true, type: 'scroll', orient: 'horizontal', bottom: 4 }
       : { show: false },
     series: [
       // The slices, with percentage labels inside.
       {
         ...base,
         name: 'slices',
-        itemStyle: { borderRadius: cornerRadius, borderWidth },
+        itemStyle: { borderRadius: cornerRadius, borderWidth: borderWidth || 2 },
         emphasis: { scale: true, scaleSize: activeOuterRadiusOffset },
         label: { show: false },
         labelLine: { show: false },
         data: colored.map((slice) => ({
           name: slice.id,
           value: slice.value,
-          itemStyle: { color: slice.color, borderColor: darker(slice.color, 0.2) },
+          itemStyle: { color: slice.color, borderColor: borderWidth ? darker(slice.color, 0.2) : c.surface },
           label: {
             show: enableArcLabels && angleOf(slice.value) >= arcLabelsSkipAngle,
             position: 'inside',
             color: labelOnColor(slice.color),
             fontSize: arcLabelsFontSize,
-            formatter: () => `${((angleOf(slice.value) * 100) / 360).toFixed(2)}%`,
+            formatter: () => `${Number(((angleOf(slice.value) * 100) / 360).toFixed(1))}%`,
           },
         })),
       },
@@ -159,10 +161,12 @@ const NeoPieChart = (props: ChartProps) => {
               tooltip: { show: false },
               itemStyle: { color: 'transparent' },
               emphasis: { disabled: true },
-              // Spread labels of small neighbouring slices apart, and keep them inside the card.
+              // Spread labels of small neighbouring slices apart; any that still collide are left to the
+              // tooltip (and the table view) rather than drawn over each other.
               avoidLabelOverlap: true,
-              labelLayout: { hideOverlap: false, moveOverlap: 'shiftY' },
-              labelLine: { length: arcLinkLabelsOffset, length2: 16 },
+              minShowLabelAngle: arcLinkLabelsSkipAngle,
+              labelLayout: { hideOverlap: true },
+              labelLine: { length: arcLinkLabelsOffset, length2: 12, smooth: 0.2 },
               data: colored.map((slice) => ({
                 name: slice.id,
                 value: slice.value,
@@ -171,10 +175,13 @@ const NeoPieChart = (props: ChartProps) => {
                   position: 'outside',
                   alignTo: 'labelLine',
                   bleedMargin: 4,
-                  color: palettes[mode].chartText,
+                  minMargin: 4,
+                  // Names are never cut short (a fitted width would truncate them in narrow cards).
+                  overflow: 'none',
+                  color: c.textSecondary,
                   formatter: '{b}',
                 },
-                labelLine: { show: angleOf(slice.value) >= arcLinkLabelsSkipAngle, lineStyle: { color: slice.color } },
+                labelLine: { show: angleOf(slice.value) >= arcLinkLabelsSkipAngle, lineStyle: { color: c.chartAxis } },
               })),
             },
           ]

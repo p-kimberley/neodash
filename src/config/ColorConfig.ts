@@ -13,8 +13,11 @@ import {
   schemeBrBG,
   schemeRdYlGn,
 } from 'd3-scale-chromatic';
+import { CHART_CATEGORICAL } from '../theme/palette';
 
 export const categoricalColorSchemes = {
+  // The default scheme (charts use its dark-mode steps in dark mode; see chart/echarts/theme.ts).
+  default: CHART_CATEGORICAL.light,
   neodash: [
     '#588c7e',
     '#f2e394',

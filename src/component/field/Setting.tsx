@@ -133,7 +133,9 @@ const NeoSetting = ({
           />
         </div>
       );
-    case SELECTION_TYPES.LIST:
+    case SELECTION_TYPES.LIST: {
+      // Charts draw the old default colour scheme ("set2") with the default one, so show it as such.
+      const shown = label === 'Color Scheme' && value === 'set2' ? 'default' : value;
       return (
         <div key={label} style={{ width: '100%', paddingRight: '28px' }}>
           <NeoField
@@ -142,8 +144,8 @@ const NeoSetting = ({
             disabled={disabled}
             helperText={helperText}
             key={label}
-            valueLabel={generateValueLabel(value)}
-            value={generateValue(value)}
+            valueLabel={generateValueLabel(shown)}
+            value={generateValue(shown)}
             defaultValueLabel={generateValueLabel(defaultValue)}
             defaultValue={generateValue(defaultValue)}
             style={style}
@@ -153,6 +155,7 @@ const NeoSetting = ({
           />
         </div>
       );
+    }
     case SELECTION_TYPES.COLOR:
       return (
         <div key={label} style={{ width: '100%', paddingRight: '28px' }}>

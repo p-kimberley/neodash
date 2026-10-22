@@ -2,13 +2,11 @@ import React, { useEffect, useState } from 'react';
 import * as echarts from 'echarts/core';
 import { SankeyChart } from 'echarts/charts';
 import { LegendComponent, TooltipComponent } from 'echarts/components';
-import { useSelector } from 'react-redux';
 import { EChart } from '../../../../chart/echarts/EChart';
 import { darker, escapeHtml, toNumber } from '../../../../chart/echarts/helpers';
-import { schemeColors } from '../../../../chart/echarts/theme';
+import { resolveScheme, schemeColors, useChartMode } from '../../../../chart/echarts/theme';
 import { ordinalColors } from '../hierarchy/Hierarchy';
 import { palettes } from '../../../../theme/palette';
-import { getDashboardTheme } from '../../../../dashboard/DashboardSelectors';
 import { ChartProps } from '../../../../chart/Chart';
 import { valueIsArray, valueIsNode, valueIsPath, valueIsRelationship } from '../../../../chart/ChartUtils';
 import { categoricalColorSchemes } from '../../../../config/ColorConfig';
@@ -37,7 +35,7 @@ const NeoSankeyChart = (props: ChartProps) => {
   const nodeBorderWidth = settings.nodeBorderWidth ? settings.nodeBorderWidth : 0;
 
   const legend = settings.legend !== undefined ? settings.legend : false;
-  const colorScheme = settings.colors ? settings.colors : 'set2';
+  const colorScheme = resolveScheme(settings.colors);
   const labelProperty = settings.labelProperty ? settings.labelProperty : 'value';
   const layout = settings.layout ? settings.layout : 'horizontal';
   const labelPosition = settings.labelPosition ? settings.labelPosition : 'inside';
@@ -55,7 +53,7 @@ const NeoSankeyChart = (props: ChartProps) => {
   const update = (state, mutations) => Object.assign({}, state, mutations);
 
   const [data, setData] = useState({ nodes: [], links: [] });
-  const mode = useSelector(getDashboardTheme) === 'dark' ? 'dark' : 'light';
+  const mode = useChartMode();
 
   useEffect(() => {
     buildVisualizationDictionaryFromRecords(props.records);
@@ -188,7 +186,7 @@ const NeoSankeyChart = (props: ChartProps) => {
 
   // Nodes coloured by the scheme in order of appearance (as nivo's ordinal colours were); links take
   // a gradient between their ends.
-  const colorOf = ordinalColors(schemeColors(colorScheme));
+  const colorOf = ordinalColors(schemeColors(colorScheme, mode));
   // Each node's column (longest path from a source), so labels in the last column can sit on its
   // inner side, as nivo's "inside" labels did, instead of running off the edge.
   const depth: Record<string, number> = {};
@@ -252,13 +250,15 @@ const NeoSankeyChart = (props: ChartProps) => {
         nodeGap: nodeSpacing,
         draggable: false,
         silent: !interactive,
-        emphasis: { focus: 'adjacency' },
+        emphasis: { focus: 'adjacency', lineStyle: { opacity: 0.6 } },
         label: {
           position: labelPosition === 'outside' ? (horizontal ? 'left' : 'top') : horizontal ? 'right' : 'bottom',
           rotate: labelOrientation === 'vertical' ? 90 : 0,
-          color: palettes[mode].chartText,
+          color: palettes[mode].textSecondary,
         },
-        lineStyle: { color: 'gradient', opacity: 0.5, curveness: 0.5 },
+        // Flows are a light wash between their ends' colours, so the nodes stay the strongest marks;
+        // hovering a node or flow brings out its connections.
+        lineStyle: { color: 'gradient', opacity: 0.3, curveness: 0.5 },
         data: nodeData,
         links: data.links.map((link) => ({
           source: `${link.source}`,

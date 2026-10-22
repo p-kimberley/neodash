@@ -34,7 +34,7 @@ image::gauge.png[Gauge Chart]
 
 |Arc padding |Text |0.02 |The gap between the colored arc segments.
 
-|Comma-separated arc colors |Text |#5BE12C, #F5CD19, #EA4228 |The HEX color values to assign to each arc.
+|Comma-separated arc colors |Text |#0ca30c, #fab219, #d03b3b |The HEX color values to assign to each arc.
 
 |Color of the text |Text |black |The color of the number on the gauge.
 

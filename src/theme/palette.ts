@@ -69,3 +69,26 @@ export const palettes: Record<Mode, Palette> = {
 
 export const FONT_SANS = "'Nunito Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 export const FONT_MONO = "'Fira Code', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace";
+
+/**
+ * Chart series colours (the "default" colour scheme): eight hues in a fixed order, stepped separately
+ * for each appearance. The order keeps neighbouring series apart for colour-blind readers, and every
+ * colour stays saturated enough to read as a hue. Checked against the chart surfaces above: all pass
+ * the lightness band, chroma floor and colour-blind separation for adjacent series in both modes, and
+ * clear 3:1 on the dark surface; aqua, yellow and magenta are below 3:1 on white, which is why charts
+ * offer "View as table". Use them in order and don't edit single values without re-checking the set.
+ */
+export const CHART_CATEGORICAL: Record<Mode, string[]> = {
+  //     blue       orange     aqua       yellow     magenta    green      violet     red
+  light: ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#6250d6', '#e34948'],
+  dark: ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#008300', '#9085e9', '#e66767'],
+};
+
+/** One hue (blue), light to dark, for magnitudes (e.g. choropleth maps); dark mode runs dark to light. */
+export const CHART_SEQUENTIAL: Record<Mode, string[]> = {
+  light: ['#cde2fb', '#9ec5f4', '#6da7ec', '#3987e5', '#256abf', '#184f95', '#0d366b'],
+  dark: ['#104281', '#1c5cab', '#2a78d6', '#5598e7', '#86b6ef', '#b7d3f6', '#cde2fb'],
+};
+
+/** Good / warning / critical, for gauges; the same in both appearances. */
+export const CHART_STATUS = { good: '#0ca30c', warning: '#fab219', critical: '#d03b3b' };

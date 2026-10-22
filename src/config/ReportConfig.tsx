@@ -325,8 +325,8 @@ const _REPORT_TYPES = {
       colors: {
         label: 'Color Scheme',
         type: SELECTION_TYPES.LIST,
-        values: ['nivo', 'category10', 'accent', 'dark2', 'paired', 'pastel1', 'pastel2', 'set1', 'set2', 'set3'],
-        default: 'set2',
+        values: ['default', 'nivo', 'category10', 'accent', 'dark2', 'paired', 'pastel1', 'pastel2', 'set1', 'set3'],
+        default: 'default',
       },
       barValues: {
         label: 'Show Values On Bars',
@@ -364,7 +364,7 @@ const _REPORT_TYPES = {
       labelRotation: {
         label: 'Label Rotation (degrees)',
         type: SELECTION_TYPES.NUMBER,
-        default: 45,
+        default: 'auto',
       },
       marginLeft: {
         label: 'Margin Left',
@@ -481,7 +481,7 @@ const _REPORT_TYPES = {
       arcLabelsSkipAngle: {
         label: "Skip label if corresponding arc's angle is lower than provided value",
         type: SELECTION_TYPES.NUMBER,
-        default: 10,
+        default: 15,
       },
       arcLabelsFontSize: {
         label: 'Labels font Size',
@@ -503,8 +503,8 @@ const _REPORT_TYPES = {
       colors: {
         label: 'Color Scheme',
         type: SELECTION_TYPES.LIST,
-        values: ['nivo', 'category10', 'accent', 'dark2', 'paired', 'pastel1', 'pastel2', 'set1', 'set2', 'set3'],
-        default: 'set2',
+        values: ['default', 'nivo', 'category10', 'accent', 'dark2', 'paired', 'pastel1', 'pastel2', 'set1', 'set3'],
+        default: 'default',
       },
       innerRadius: {
         label: 'Pie Inner Radius (between 0 and 1)',
@@ -539,7 +539,7 @@ const _REPORT_TYPES = {
       cornerRadius: {
         label: 'Slice Corner Radius',
         type: SELECTION_TYPES.NUMBER,
-        default: 1,
+        default: 4,
       },
       marginLeft: {
         label: 'Margin Left (px)',
@@ -554,12 +554,12 @@ const _REPORT_TYPES = {
       marginTop: {
         label: 'Margin Top (px)',
         type: SELECTION_TYPES.NUMBER,
-        default: 50,
+        default: 24,
       },
       marginBottom: {
         label: 'Margin Bottom (px)',
         type: SELECTION_TYPES.NUMBER,
-        default: 50,
+        default: 24,
       },
     },
   },
@@ -596,8 +596,8 @@ const _REPORT_TYPES = {
       colors: {
         label: 'Color Scheme',
         type: SELECTION_TYPES.LIST,
-        values: ['nivo', 'category10', 'accent', 'dark2', 'paired', 'pastel1', 'pastel2', 'set1', 'set2', 'set3'],
-        default: 'set2',
+        values: ['default', 'nivo', 'category10', 'accent', 'dark2', 'paired', 'pastel1', 'pastel2', 'set1', 'set3'],
+        default: 'default',
       },
       xScale: {
         label: 'X Scale',
@@ -671,7 +671,7 @@ const _REPORT_TYPES = {
       pointSize: {
         label: 'Point Radius (px)',
         type: SELECTION_TYPES.NUMBER,
-        default: 10,
+        default: 0,
       },
       lineWidth: {
         label: 'Line Width (px)',

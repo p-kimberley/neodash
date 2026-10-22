@@ -8,7 +8,7 @@ import { ChartProps } from '../../../../chart/Chart';
 import { NoDrawableDataErrorMessage } from '../../../../component/editor/CodeViewerComponent';
 import { EChart } from '../../../../chart/echarts/EChart';
 import { toNumber } from '../../../../chart/echarts/helpers';
-import { palettes } from '../../../../theme/palette';
+import { CHART_STATUS, palettes } from '../../../../theme/palette';
 import { getDashboardTheme } from '../../../../dashboard/DashboardSelectors';
 
 echarts.use([GaugeChart, PieChart]);
@@ -49,9 +49,10 @@ const NeoGaugeChart = (props: ChartProps) => {
   const nrOfLevels = settings.nrOfLevels ? settings.nrOfLevels : 3;
   const arcsLength = settings.arcsLength ? settings.arcsLength : '0.15, 0.55, 0.3';
   const arcPadding = settings.arcPadding ? Number(settings.arcPadding) : 0.02;
-  const colors = settings.colors ? settings.colors : '#5BE12C, #F5CD19, #EA4228';
+  // Unset: good, warning and critical (the status colours used across the app).
+  const colors = settings.colors ? settings.colors : `${CHART_STATUS.good}, ${CHART_STATUS.warning}, ${CHART_STATUS.critical}`;
   // Unset, the text follows the appearance (the old default, black, disappeared in dark mode).
-  const textColor = settings.textColor ? settings.textColor : palettes[mode].chartText;
+  const textColor = settings.textColor ? settings.textColor : palettes[mode].text;
   const animDelay = settings.animDelay ? settings.animDelay : 0;
   const animateDuration = settings.animateDuration ? settings.animateDuration : 2000;
   const marginRight = settings.marginRight ? settings.marginRight : 24;
@@ -130,7 +131,7 @@ const NeoGaugeChart = (props: ChartProps) => {
           formatter: () => formatPercent(score),
           color: textColor,
           fontSize: Math.max(12, innerWidth / 11),
-          fontWeight: 'normal',
+          fontWeight: 600,
         },
         data: [{ value: score }],
       },

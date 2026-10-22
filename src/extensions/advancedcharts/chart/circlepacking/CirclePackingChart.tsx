@@ -7,7 +7,8 @@ import { ChartProps } from '../../../../chart/Chart';
 import { NoDrawableDataErrorMessage } from '../../../../component/editor/CodeViewerComponent';
 import { EChart } from '../../../../chart/echarts/EChart';
 import { darker, labelOnColor, tooltipRow, withoutInteraction } from '../../../../chart/echarts/helpers';
-import { schemeColors } from '../../../../chart/echarts/theme';
+import { schemeColors, useChartMode } from '../../../../chart/echarts/theme';
+import { palettes } from '../../../../theme/palette';
 import { buildHierarchy, HierarchyNode, totalOf, useDrillDown } from '../hierarchy/Hierarchy';
 
 echarts.use([CustomChart, TooltipComponent]);
@@ -21,6 +22,7 @@ const NeoCirclePackingChart = (props: ChartProps) => {
   const { records, selection } = props;
   const root = buildHierarchy(records, selection);
   const { current, drillInto, resetButton } = useDrillDown(root);
+  const mode = useChartMode();
 
   if (records == null || records.length == 0 || records[0].keys == null) {
     return <>No data, re-run the report.</>;
@@ -38,9 +40,10 @@ const NeoCirclePackingChart = (props: ChartProps) => {
   const borderWidth = settings.borderWidth ? settings.borderWidth : 0;
   const legend = settings.legend ? settings.legend : false;
   const showLabels = settings.showLabels !== undefined ? settings.showLabels : true;
-  const colorScheme = settings.colors ? settings.colors : 'nivo';
+  const colorScheme = settings.colors;
   const interactive = settings.interactive !== undefined ? settings.interactive : true;
-  const scheme = schemeColors(colorScheme);
+  const scheme = schemeColors(colorScheme, mode);
+  const c = palettes[mode];
   const bottom = legend ? legendHeight + marginBottom : marginBottom;
 
   // Nodes in a fixed order; the pack layout is computed for the chart's size when it renders.
@@ -70,12 +73,17 @@ const NeoCirclePackingChart = (props: ChartProps) => {
           const height = api.getHeight() - marginTop - bottom;
           layout(Math.max(1, width), Math.max(1, height));
           const node = nodes[params.dataIndex] as any;
-          const color = scheme[node.depth % scheme.length];
+          // The outer circle is a neutral backdrop; the levels inside take the scheme's colours in order.
+          const color = node.depth === 0 ? c.surfaceVariant : scheme[(node.depth - 1) % scheme.length];
           const isLeaf = !node.children;
           return {
             type: 'circle',
             shape: { cx: node.x + marginLeft, cy: node.y + marginTop, r: node.r },
-            style: { fill: color, stroke: darker(color, 0.4), lineWidth: borderWidth },
+            style: {
+              fill: color,
+              stroke: node.depth === 0 ? c.border : darker(color, 0.4),
+              lineWidth: node.depth === 0 ? 1 : borderWidth,
+            },
             emphasis: { style: { stroke: darker(color, 1), lineWidth: Math.max(2, borderWidth) } },
             textContent:
               showLabels && isLeaf && node.r > 12

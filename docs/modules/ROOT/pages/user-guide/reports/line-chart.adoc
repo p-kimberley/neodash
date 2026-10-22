@@ -49,7 +49,7 @@ image::line2.png[Multi Line Chart]
 |Show Legend |on/off |off |If enabled, shows a legend at the top right
 of the visualization.
 
-|Color Scheme |List |set2 |The color scheme to use for the lines.
+|Color Scheme |List |default |The color scheme to use for the lines. The default scheme has separate, contrast-checked colors for light and dark mode (reports saved with the old default, set2, use it too).
 Colors are assigned automatically to the different fields selected in
 the report footer.
 
@@ -95,7 +95,7 @@ cardinal (through each point) and step (step-based interpolation).
 |Show Grid |on/off |on |If enabled, shows a grid in the line chart that
 intersects at the axis ticks.
 
-|Point Radius (px) |number |10 |The size of a point on each line.
+|Point Radius (px) |number |0 |The size of a point on each line. Unset (0), points show only under the pointer.
 
 |Line Width (px) |number |2 |The width (in pixels) of each line in the
 chart.

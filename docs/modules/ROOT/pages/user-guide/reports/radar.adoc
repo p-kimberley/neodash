@@ -39,7 +39,7 @@ image::radar.png[Radar Chart]
 
 |Enable transitions |on/off |on |If enabled, the chart animates when it is drawn or changes.
 
-|Color Scheme |List |set2 |The color scheme to use for the radar. Each polygon will have a color from the list.
+|Color Scheme |List |default |The color scheme to use for the radar. The default scheme has separate, contrast-checked colors for light and dark mode (reports saved with the old default, set2, use it too). Each polygon will have a color from the list.
 
 |Margin Left (px) |Number |24 |The margin in pixels on the left side of the visualization.
 

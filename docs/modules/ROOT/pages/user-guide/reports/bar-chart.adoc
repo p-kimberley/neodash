@@ -61,7 +61,7 @@ grouped, they are placed alongside each other.
 |Layout |List |vertical |Whether to use a vertical or horizontal bar
 chart layout.
 
-|Color Scheme |List |set2 |The color scheme to use for the category groups.
+|Color Scheme |List |default |The color scheme to use for the category groups. The default scheme has separate, contrast-checked colors for light and dark mode (reports saved with the old default, set2, use it too).
 Colors are assigned automatically (consecutively) to the different
 groups returned by the Cypher query.
 
@@ -75,8 +75,8 @@ inside the respective bar.
 |Custom label position |off/top/bottom |off | Allow user to place label out of the bar. This will override any other
 label configuration.
 
-|Label Rotation (degrees) |number |45 |the angle at which the bar labels
-are rotated.
+|Label Rotation (degrees) |number |auto |the angle at which the bar labels
+are rotated. Unset, labels stay level while they fit and tilt when they don't.
 
 |Margin Left |number |50 |The margin in pixels on the left side of
 the visualization.

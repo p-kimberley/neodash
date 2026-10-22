@@ -18,6 +18,11 @@ The *⋮* menu at the top right of a report holds its actions:
 Every report also has a maximise button next to it, which shows the report
 over the whole window; Escape or a click outside it restores it.
 
+Charts (bar, line and the axis charts) fit themselves to their card: axis labels are kept inside
+it however long they are, and axis numbers are shortened (1.2K, 8M; tooltips show them in full).
+Setting any of a chart's *Margin* settings switches it to fixed margins instead, as in earlier
+versions; margins left unset then take their listed defaults.
+
 image::report.gif[Report]
 
 The settings window additionally allows you to change the type of

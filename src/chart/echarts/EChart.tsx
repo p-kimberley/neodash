@@ -17,16 +17,21 @@ export type EChartsOption = echarts.EChartsCoreOption;
 export const EChart = ({
   option,
   onClick,
+  onWidth,
   style,
 }: {
   option: EChartsOption;
   onClick?: (params: any) => void;
+  /** Told the chart's width when it is first drawn and whenever it changes (for width-aware layout). */
+  onWidth?: (width: number) => void;
   style?: React.CSSProperties;
 }) => {
   const container = useRef<HTMLDivElement>(null);
   const chart = useRef<echarts.ECharts | undefined>(undefined);
   const clickHandler = useRef(onClick);
   clickHandler.current = onClick;
+  const widthHandler = useRef(onWidth);
+  widthHandler.current = onWidth;
   const mode = useSelector(getDashboardTheme) === 'dark' ? 'dark' : 'light';
 
   // (Re)create the chart when the appearance changes; ECharts themes apply at creation.
@@ -37,10 +42,23 @@ export const EChart = ({
     const instance = echarts.init(container.current, echartsThemeName(mode), { renderer: 'canvas' });
     chart.current = instance;
     instance.on('click', (params) => clickHandler.current && clickHandler.current(params));
+    // Resizing (and reporting the width) waits for the next frame, outside the observer's callback, so
+    // a chart that changes its layout for the new width can't start a resize loop.
     let frame = 0;
+    let lastWidth = -1;
     const observer = new ResizeObserver(() => {
       cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => !instance.isDisposed() && instance.resize());
+      frame = requestAnimationFrame(() => {
+        if (instance.isDisposed()) {
+          return;
+        }
+        instance.resize();
+        const width = instance.getWidth();
+        if (width !== lastWidth) {
+          lastWidth = width;
+          widthHandler.current && widthHandler.current(width);
+        }
+      });
     });
     observer.observe(container.current);
     return () => {

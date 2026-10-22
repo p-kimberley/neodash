@@ -1,5 +1,4 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import * as echarts from 'echarts/core';
 import { LineChart } from 'echarts/charts';
 import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components';
@@ -11,10 +10,9 @@ import { ChartProps } from '../Chart';
 import { recordToNative } from '../ChartUtils';
 import { extensionEnabled } from '../../utils/ReportUtils';
 import { EChart } from '../echarts/EChart';
-import { schemeColors } from '../echarts/theme';
-import { escapeHtml, gridFromMargins, toNumber, tooltipRow } from '../echarts/helpers';
+import { schemeColors, useChartMode } from '../echarts/theme';
+import { chartGrid, compactNumber, escapeHtml, toNumber, tooltipRow } from '../echarts/helpers';
 import { palettes } from '../../theme/palette';
-import { getDashboardTheme } from '../../dashboard/DashboardSelectors';
 
 echarts.use([LineChart, GridComponent, LegendComponent, TooltipComponent]);
 
@@ -70,7 +68,7 @@ const NeoLineChart = (props: ChartProps) => {
     settings.styleRules,
     props.getGlobalParameter
   );
-  const mode = useSelector(getDashboardTheme) === 'dark' ? 'dark' : 'light';
+  const mode = useChartMode();
   const colors = palettes[mode];
 
   if (records == null || records.length == 0 || records[0].keys == null) {
@@ -80,7 +78,7 @@ const NeoLineChart = (props: ChartProps) => {
     return <div style={{ margin: '15px' }}>No y-axis selected. To view the report, select a value below. </div>;
   }
 
-  const colorScheme = settings.colors ? settings.colors : 'set2';
+  const colorScheme = settings.colors;
   const xScale = settings.xScale ? settings.xScale : 'linear';
   const yScale = settings.yScale ? settings.yScale : 'linear';
   const xScaleLogBase = settings.xScaleLogBase ? settings.xScaleLogBase : 10;
@@ -96,8 +94,11 @@ const NeoLineChart = (props: ChartProps) => {
   const marginLeft = settings.marginLeft ? settings.marginLeft : 36;
   const marginTop = settings.marginTop ? settings.marginTop : 24;
   const marginBottom = settings.marginBottom ? settings.marginBottom : 40;
-  const lineWidth = settings.type == 'scatter' ? 0 : settings.lineWidth || 2;
-  const pointSize = settings.pointSize ? settings.pointSize : 10;
+  const scatter = settings.type == 'scatter';
+  const lineWidth = scatter ? 0 : settings.lineWidth || 2;
+  // Unset, lines show their points only under the pointer (a dot on every point is noise); a set
+  // size, and scatter plots, show them all.
+  const pointSize = settings.pointSize ? settings.pointSize : scatter ? 8 : 0;
   const showGrid = settings.showGrid != undefined ? settings.showGrid : true;
   const xTickValues = settings.xTickValues != undefined ? settings.xTickValues : undefined;
   const xTickTimeValues = settings.xTickTimeValues != undefined ? settings.xTickTimeValues : 'every 1 years';
@@ -141,7 +142,7 @@ const NeoLineChart = (props: ChartProps) => {
   }
 
   // Colours: the scheme by series, or, when style rules exist, the first rule matching any point.
-  const scheme = schemeColors(colorScheme);
+  const scheme = schemeColors(colorScheme, mode);
   const lineColor = (s, i) => {
     if (styleRules.length < 1) {
       return scheme[i % scheme.length];
@@ -184,27 +185,32 @@ const NeoLineChart = (props: ChartProps) => {
       ...curveStyle(curve),
       showSymbol: pointSize > 0,
       symbol: 'circle',
-      symbolSize: pointSize,
-      // Points are hollow-looking (surface fill, coloured ring), as nivo's white points were.
-      itemStyle: { color: colors.surface, borderColor: color, borderWidth: 2 },
-      lineStyle: { color, width: lineWidth, opacity: lineWidth > 0 ? 1 : 0 },
-      emphasis: { focus: 'series' },
+      symbolSize: Math.max(pointSize, 8),
+      // Points are filled with the line's colour, with a ring in the card's colour so they stand out
+      // where lines cross.
+      itemStyle: { color, borderColor: colors.surface, borderWidth: 2 },
+      lineStyle: { color, width: lineWidth, opacity: lineWidth > 0 ? 1 : 0, cap: 'round', join: 'round' },
+      // A single line gets a faint wash of its colour down to the axis.
+      areaStyle: series.length === 1 && lineWidth > 0 ? { color, opacity: 0.08 } : undefined,
+      // No fading of the other lines on hover: the tooltip compares all of them at the pointer.
+      emphasis: { focus: 'none', scale: 1.25 },
       data: s.data.map((p) => [xValue(p.x), p.y]),
       color,
     };
   });
 
   const option = {
-    grid: gridFromMargins({ top: marginTop, right: marginRight, bottom: marginBottom, left: marginLeft }),
+    grid: chartGrid(
+      settings,
+      { top: marginTop, right: marginRight, bottom: marginBottom, left: marginLeft },
+      legend ? { top: 24 } : {}
+    ),
     xAxis: isTimeChart
       ? {
           type: 'time',
-          name: 'Time',
-          nameLocation: 'middle',
-          nameGap: 30,
           minInterval: tickInterval,
           maxInterval: tickInterval,
-          splitLine: { show: showGrid },
+          splitLine: { show: false },
           axisLabel: { rotate: -xTickRotationAngle, formatter: (v) => formatX(v), hideOverlap: true },
         }
       : {
@@ -214,8 +220,12 @@ const NeoLineChart = (props: ChartProps) => {
           max: bound(maxXValue),
           splitNumber: xTickValues,
           boundaryGap: xScale === 'point' ? false : undefined,
-          splitLine: { show: showGrid },
-          axisLabel: { rotate: -xTickRotationAngle, formatter: numberFormatter ? (v) => formatX(v) : undefined },
+          splitLine: { show: false },
+          axisLine: { show: true },
+          axisLabel: {
+            rotate: -xTickRotationAngle,
+            formatter: numberFormatter ? (v) => formatX(v) : xScale === 'point' ? undefined : compactNumber,
+          },
         },
     yAxis: {
       type: yScale === 'log' ? 'log' : 'value',
@@ -223,21 +233,30 @@ const NeoLineChart = (props: ChartProps) => {
       min: bound(minYValue),
       max: bound(maxYValue),
       splitLine: { show: showGrid },
-      axisLabel: { rotate: -yTickRotationAngle },
+      axisLabel: { rotate: -yTickRotationAngle, formatter: compactNumber },
     },
-    tooltip: {
-      trigger: 'item',
-      formatter: (p) =>
-        `${escapeHtml(formatX(p.value[0]))}<br/>${tooltipRow(lineSeries[p.seriesIndex].color, p.seriesName, p.value[1])}`,
-    },
+    // Lines: a vertical guide follows the pointer and the tooltip lists every line at that point.
+    // Scatter plots: the point under the pointer.
+    tooltip: scatter
+      ? {
+          trigger: 'item',
+          formatter: (p) =>
+            `${escapeHtml(formatX(p.value[0]))}<br/>${tooltipRow(lineSeries[p.seriesIndex].color, p.seriesName, p.value[1])}`,
+        }
+      : {
+          trigger: 'axis',
+          axisPointer: { type: 'line' },
+          formatter: (items) =>
+            `${escapeHtml(formatX(items[0]?.value[0]))}<br/>${items
+              .map((p) => tooltipRow(lineSeries[p.seriesIndex].color, p.seriesName, p.value[1]))
+              .join('<br/>')}`,
+        },
     legend: legend
       ? {
           show: true,
+          type: 'scroll',
           top: 0,
           right: 10,
-          icon: 'circle',
-          itemWidth: 8,
-          itemHeight: 8,
           // Long series names are cut off at the "Legend Label Width".
           textStyle: { width: legendWidth, overflow: 'truncate' },
           // The legend shows the line colours (the points themselves are hollow).

@@ -33,7 +33,7 @@ image::sankey.png[Sankey Chart]
 
 |Sankey layout |List |horizontal |The direction of the flows: horizontal or vertical.
 
-|Color Scheme |List |set2 |The color scheme to use for the nodes. Colors are assigned automatically (consecutively) to the different nodes returned by the Cypher query.
+|Color Scheme |List |default |The color scheme to use for the nodes. The default scheme has separate, contrast-checked colors for light and dark mode (reports saved with the old default, set2, use it too). Colors are assigned automatically (consecutively) to the different nodes returned by the Cypher query.
 
 |Control sankey label position |List |inside |Whether the labels are drawn inside or outside the chart.
 

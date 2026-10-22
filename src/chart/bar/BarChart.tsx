@@ -3,9 +3,10 @@ import * as echarts from 'echarts/core';
 import { BarChart } from 'echarts/charts';
 import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components';
 import { EChart } from '../echarts/EChart';
-import { gridFromMargins, labelOnColor, tooltipRow } from '../echarts/helpers';
+import { chartGrid, compactNumber, hasCustomMargins, escapeHtml, labelOnColor, tooltipRow } from '../echarts/helpers';
+import { isDefaultScheme, schemeColors, useChartMode } from '../echarts/theme';
+import { palettes } from '../../theme/palette';
 import { NoDrawableDataErrorMessage } from '../../component/editor/CodeViewerComponent';
-import { getD3ColorsByScheme } from '../../config/ColorConfig';
 import { evaluateRulesOnDict, useStyleRules } from '../../extensions/styling/StyleRuleEvaluator';
 import { ChartProps } from '../Chart';
 import { convertRecordObjectToString, recordToNative } from '../ChartUtils';
@@ -28,7 +29,8 @@ const NeoBarChart = (props: ChartProps) => {
   const marginTop = settings.marginTop ? settings.marginTop : 24;
   const marginBottom = settings.marginBottom ? settings.marginBottom : 30;
   const legend = settings.legend ? settings.legend : false;
-  const labelRotation = settings.labelRotation != undefined ? settings.labelRotation : 45;
+  // Unset, category labels are tilted only when they don't fit side by side (see below).
+  const labelRotationSetting = settings.labelRotation != undefined ? settings.labelRotation : undefined;
   const barWidth = settings.barWidth ? settings.barWidth : 10;
   const padding = settings.padding ? settings.padding : 0.25;
   const innerPadding = settings.innerPadding ? settings.innerPadding : 0;
@@ -51,7 +53,9 @@ const NeoBarChart = (props: ChartProps) => {
 
   // TODO: we should make all these defaults be loaded from the config file.
   const layout = settings.layout ? settings.layout : 'vertical';
-  const colorScheme = settings.colors ? settings.colors : 'set2';
+  const colorScheme = settings.colors;
+  const mode = useChartMode();
+  const [chartWidth, setChartWidth] = React.useState(0);
   const groupMode = settings.groupMode ? settings.groupMode : 'stacked';
   const valueScale = settings.valueScale ? settings.valueScale : 'linear';
   const minValue = settings.minValue ? settings.minValue : 'auto';
@@ -170,12 +174,15 @@ const NeoBarChart = (props: ChartProps) => {
     };
   };
 
-  const chartColorsByScheme = getD3ColorsByScheme(colorScheme);
+  const chartColorsByScheme = schemeColors(colorScheme, mode);
+  const surface = palettes[mode].surface;
   // Compute bar color based on rules - overrides default color scheme completely.
   const getBarColor = (bar) => {
-    // With several series (grouped / stacked bars), colour by series so bars match the legend;
-    // a single series keeps one colour per bar.
-    let colorIndex = keys.length > 1 ? Math.max(0, keys.indexOf(bar.id)) : (bar.index ?? 0);
+    // With several series (grouped / stacked bars), colour by series so bars match the legend. A single
+    // series is one colour with the default scheme (bar length already tells the bars apart); a chosen
+    // scheme keeps one colour per bar, as before.
+    let colorIndex =
+      keys.length > 1 ? Math.max(0, keys.indexOf(bar.id)) : isDefaultScheme(colorScheme) ? 0 : (bar.index ?? 0);
     if (colorIndex >= chartColorsByScheme.length) {
       colorIndex %= chartColorsByScheme.length;
     }
@@ -245,42 +252,65 @@ const NeoBarChart = (props: ChartProps) => {
 
   // ECharts option. Vertical bars put categories on the x axis; horizontal ones on the y axis.
   const horizontal = layout === 'horizontal';
+  const stacked = groupMode == 'stacked';
   const categories = data.map((row) => row.index);
+  // Unset, vertical bars' category labels stay level while they fit their slot, and tilt when they don't.
+  const longestLabel = Math.max(0, ...categories.map((c) => `${c}`.length));
+  const slotWidth = ((chartWidth || 600) - 80) / Math.max(1, categories.length);
+  const labelRotation = labelRotationSetting ?? (longestLabel * 6.5 + 8 > slotWidth ? 30 : 0);
   const option = (() => {
     const labelPosition =
       { off: 'inside', top: horizontal ? 'right' : 'top', bottom: horizontal ? 'insideLeft' : 'insideBottom' }[
         positionLabel
       ] ?? 'inside';
-    const series = keys.map((key, keyIndex) => ({
-      type: 'bar',
-      name: key,
-      // The series colour (for the legend); bars may still be coloured individually below.
-      itemStyle: { color: chartColorsByScheme[keyIndex % chartColorsByScheme.length] },
-      stack: groupMode == 'stacked' ? 'total' : undefined,
-      barCategoryGap: `${Math.round(padding * 100)}%`,
-      // nivo's innerPadding was pixels between the bars of a group; ECharts' gap is a percentage.
-      barGap: innerPadding ? `${Math.min(100, innerPadding * 10)}%` : '0%',
-      data: data.map((row, i) => {
-        const color = getBarColor({ id: key, index: i, indexValue: row.index, value: row[key] });
-        return {
-          value: row[key],
-          itemStyle: { color },
-          label: {
-            show: enableLabel,
-            position: labelPosition,
-            color: positionLabel === 'off' ? labelOnColor(color) : color,
-            fontSize: positionLabel === 'off' ? 12 : 10,
-          },
-        };
-      }),
-      labelLayout: { hideOverlap: Boolean(labelSkipWidth || labelSkipHeight) },
-    }));
+    // Bars end in a 4px rounded cap at their value end (stacks: only the outermost segment), and touching
+    // bars or segments are parted by a 2px gap in the card's colour.
+    const endRadius = horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0];
+    const series = keys.map((key, keyIndex) => {
+      const rounded = !stacked || keyIndex === keys.length - 1;
+      const itemStyle = { borderRadius: rounded ? endRadius : 0, borderColor: surface, borderWidth: 1 };
+      return {
+        type: 'bar',
+        name: key,
+        // The series colour (for the legend); bars may still be coloured individually below.
+        itemStyle: { ...itemStyle, color: chartColorsByScheme[keyIndex % chartColorsByScheme.length] },
+        stack: stacked ? 'total' : undefined,
+        barCategoryGap: `${Math.round(padding * 100)}%`,
+        // nivo's innerPadding was pixels between the bars of a group; ECharts' gap is a percentage.
+        barGap: innerPadding ? `${Math.min(100, innerPadding * 10)}%` : '0%',
+        barMaxWidth: 24,
+        emphasis: { focus: keys.length > 1 ? 'series' : 'none' },
+        data: data.map((row, i) => {
+          const color = getBarColor({ id: key, index: i, indexValue: row.index, value: row[key] });
+          return {
+            value: row[key],
+            itemStyle: { ...itemStyle, color },
+            label: {
+              show: enableLabel,
+              position: labelPosition,
+              // Inside a bar: white or ink, whichever reads on it; outside: secondary text.
+              color: labelPosition.startsWith('inside') ? labelOnColor(color) : palettes[mode].textSecondary,
+              fontSize: 11,
+              formatter: (p) => compactNumber(p.value),
+            },
+          };
+        }),
+        labelLayout: { hideOverlap: Boolean(labelSkipWidth || labelSkipHeight) },
+      };
+    });
     const categoryAxis = {
       type: 'category',
       data: categories,
-      axisTick: { alignWithLabel: true },
       // nivo's tick rotation is clockwise; ECharts' is anticlockwise.
-      axisLabel: horizontal ? { show: displayYAxis } : { rotate: -labelRotation, hideOverlap: true },
+      axisLabel: horizontal
+        ? { show: displayYAxis, width: 140, overflow: 'truncate' }
+        : {
+            // Every category gets its label: level ones are cut to their slot, tilted ones to 120px.
+            rotate: -labelRotation,
+            interval: 0,
+            width: labelRotation ? 120 : Math.max(32, slotWidth - 8),
+            overflow: 'truncate',
+          },
       axisLine: { show: horizontal ? displayYAxis : true },
     };
     const valueAxis = {
@@ -288,22 +318,49 @@ const NeoBarChart = (props: ChartProps) => {
       min: minValue === 'auto' ? undefined : minValue,
       max: maxValue === 'auto' ? undefined : maxValue,
       splitLine: { show: displayYGridLines },
-      axisLabel: horizontal ? { rotate: -labelRotation } : { show: displayYAxis },
+      axisLabel: horizontal
+        ? { rotate: labelRotationSetting ? -labelRotationSetting : 0, formatter: compactNumber }
+        : { show: displayYAxis, formatter: compactNumber },
     };
-    const m = margin();
+    const verticalLegend = legend && legendPosition === 'Vertical';
+    const horizontalLegend = legend && legendPosition === 'Horizontal';
+    const legacy = margin();
+    const grid = chartGrid(
+      settings,
+      { top: legacy.top, right: marginRight, bottom: legacy.bottom, left: legacy.left },
+      verticalLegend ? { right: legendWidth } : horizontalLegend && !hasCustomMargins(settings) ? { bottom: 28 } : {}
+    );
     return {
       animation: false,
-      grid: gridFromMargins(m),
+      grid,
       xAxis: horizontal ? valueAxis : categoryAxis,
       yAxis: horizontal ? categoryAxis : valueAxis,
-      tooltip: {
-        trigger: 'item',
-        formatter: (p) => `${p.name}<br/>${tooltipRow(p.color, p.seriesName, p.value)}`,
-      },
+      // Several series: hovering a category shows all its bars; one series: the bar itself.
+      tooltip:
+        keys.length > 1
+          ? {
+              trigger: 'axis',
+              axisPointer: { type: 'shadow' },
+              formatter: (items) =>
+                `${escapeHtml(items[0]?.name)}<br/>${items
+                  .map((p) => tooltipRow(p.color, p.seriesName, p.value))
+                  .join('<br/>')}`,
+            }
+          : {
+              trigger: 'item',
+              formatter: (p) => `${escapeHtml(p.name)}<br/>${tooltipRow(p.color, p.seriesName, p.value)}`,
+            },
       legend: legend
-        ? legendPosition === 'Horizontal'
-          ? { show: true, orient: 'horizontal', bottom: 4, itemWidth: 20, itemHeight: 12, itemGap: 8 }
-          : { show: true, orient: 'vertical', right: 10, bottom: m.bottom, itemWidth: 15, itemHeight: 12, itemGap: 6 }
+        ? horizontalLegend
+          ? { show: true, type: 'scroll', orient: 'horizontal', bottom: 4, left: 'center' }
+          : {
+              show: true,
+              type: 'scroll',
+              orient: 'vertical',
+              right: 8,
+              top: 'middle',
+              textStyle: { width: legendWidth - 30, overflow: 'truncate' },
+            }
         : { show: false },
       series,
     };
@@ -318,7 +375,7 @@ const NeoBarChart = (props: ChartProps) => {
   return (
     <div style={barChartStyle}>
       <div style={scrollableWrapperStyle}>
-        <EChart option={option} onClick={onClick} />
+        <EChart option={option} onClick={onClick} onWidth={setChartWidth} />
       </div>
     </div>
   );

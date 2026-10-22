@@ -33,7 +33,7 @@ image::treemap.png[Treemap Chart]
 
 |Enable interactivity |on/off |on |If disabled, the chart shows no tooltips and ignores the mouse, including clicks that zoom into a rectangle.
 
-|Color Scheme |List |set2 |The color scheme to use for the rectangle. Colors
+|Color Scheme |List |default |The color scheme to use for the rectangle. The default scheme has separate, contrast-checked colors for light and dark mode (reports saved with the old default, set2, use it too). Colors
 are assigned automatically for each of the sub-hierarchies.
 
 |Rectangle border width (px) |number |0 |The width of the border of each

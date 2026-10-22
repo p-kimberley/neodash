@@ -1,5 +1,4 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import * as echarts from 'echarts/core';
 import { RadarChart } from 'echarts/charts';
 import { LegendComponent, RadarComponent, TooltipComponent } from 'echarts/components';
@@ -7,9 +6,8 @@ import { ChartProps } from '../../../../chart/Chart';
 import { NoDrawableDataErrorMessage } from '../../../../component/editor/CodeViewerComponent';
 import { EChart } from '../../../../chart/echarts/EChart';
 import { escapeHtml, toNumber, tooltipRow } from '../../../../chart/echarts/helpers';
-import { schemeColors } from '../../../../chart/echarts/theme';
+import { schemeColors, useChartMode } from '../../../../chart/echarts/theme';
 import { palettes } from '../../../../theme/palette';
-import { getDashboardTheme } from '../../../../dashboard/DashboardSelectors';
 
 /** The "Motion Configuration" presets (named after the earlier chart library's springs), as animations. */
 const MOTION = {
@@ -28,7 +26,7 @@ echarts.use([RadarChart, RadarComponent, LegendComponent, TooltipComponent]);
  * Settings keep their nivo-era names and defaults.
  */
 const NeoRadarChart = (props: ChartProps) => {
-  const mode = useSelector(getDashboardTheme) === 'dark' ? 'dark' : 'light';
+  const mode = useChartMode();
   if (
     !props.selection ||
     props.selection.values == undefined ||
@@ -52,7 +50,7 @@ const NeoRadarChart = (props: ChartProps) => {
   const animate = settings.animate !== undefined ? settings.animate : true;
   const motion = MOTION[settings.motionConfig] ?? MOTION.gentle;
   const legend = settings.legend !== undefined ? settings.legend : false;
-  const colorScheme = settings.colors ? settings.colors : 'set2';
+  const colorScheme = settings.colors;
   const keys: string[] = selection.values;
 
   let valid = true;
@@ -70,7 +68,7 @@ const NeoRadarChart = (props: ChartProps) => {
     return <NoDrawableDataErrorMessage />;
   }
 
-  const scheme = schemeColors(colorScheme);
+  const scheme = schemeColors(colorScheme, mode);
   const max = Math.max(0, ...rows.flatMap((row) => row.values));
   const surface = palettes[mode].surface;
 
@@ -90,7 +88,7 @@ const NeoRadarChart = (props: ChartProps) => {
         }
       : { show: false },
     legend: legend
-      ? { show: true, orient: 'vertical', left: 0, top: 0, icon: 'circle', itemWidth: 12, itemHeight: 12 }
+      ? { show: true, type: 'scroll', orient: 'vertical', left: 8, top: 8 }
       : { show: false },
     radar: {
       center: ['50%', `${50 + (marginTop + (legend ? legendHeight : 0) - marginBottom) / 2 / 3}%`],
@@ -108,15 +106,16 @@ const NeoRadarChart = (props: ChartProps) => {
         silent: !interactive,
         symbol: 'circle',
         symbolSize: dotSize,
-        itemStyle: { color: surface, borderColor: color, borderWidth: dotBorderWidth },
-        lineStyle: { color, width: 2 },
-        areaStyle: { color, opacity: 0.25 },
-        emphasis: { areaStyle: { opacity: 0.4 } },
+        // Dots in the series colour with a ring in the card's colour; a faint wash fills the shape.
+        itemStyle: { color, borderColor: surface, borderWidth: dotBorderWidth },
+        lineStyle: { color, width: 2, join: 'round' },
+        areaStyle: { color, opacity: 0.12 },
+        emphasis: { focus: keys.length > 1 ? 'series' : 'none', areaStyle: { opacity: 0.3 } },
         data: [{ name: key, value: rows.map((row) => row.values[k]) }],
       };
     }),
   };
-  // Legend icons in the series colours (the dots themselves use the background colour).
+  // Legend icons in the series colours.
   if (legend) {
     (option.legend as any).data = keys.map((key, k) => ({
       name: key,

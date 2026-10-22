@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import * as echarts from 'echarts/core';
 import { MapChart } from 'echarts/charts';
 import { TooltipComponent, VisualMapComponent } from 'echarts/components';
@@ -9,10 +8,9 @@ import { recordToNative } from '../../../../chart/ChartUtils';
 import { NoDrawableDataErrorMessage } from '../../../../component/editor/CodeViewerComponent';
 import { fetchMapData } from '../../../../config/MapConfig';
 import { EChart } from '../../../../chart/echarts/EChart';
-import { escapeHtml } from '../../../../chart/echarts/helpers';
-import { schemeColors } from '../../../../chart/echarts/theme';
+import { escapeHtml, hasCustomMargins } from '../../../../chart/echarts/helpers';
+import { isDefaultScheme, schemeColors, sequentialColors, useChartMode } from '../../../../chart/echarts/theme';
 import { palettes } from '../../../../theme/palette';
-import { getDashboardTheme } from '../../../../dashboard/DashboardSelectors';
 
 echarts.use([MapChart, TooltipComponent, VisualMapComponent]);
 
@@ -50,7 +48,7 @@ const loadWorld = () => {
  */
 const NeoChoroplethMapChart = (props: ChartProps) => {
   const { records, selection } = props;
-  const mode = useSelector(getDashboardTheme) === 'dark' ? 'dark' : 'light';
+  const mode = useChartMode();
   const [geo, setGeo] = useState<{ features: any[] } | undefined>(undefined);
   useEffect(() => {
     let active = true;
@@ -72,7 +70,7 @@ const NeoChoroplethMapChart = (props: ChartProps) => {
   const interactive = settings.interactive !== undefined ? settings.interactive : true;
   const borderWidth = settings.borderWidth ? settings.borderWidth : 0;
   const legend = settings.legend !== undefined ? settings.legend : true;
-  const colorScheme = settings.colors ? settings.colors : 'nivo';
+  const colorScheme = settings.colors;
   const projectionScale = settings.projectionScale ? settings.projectionScale : 100;
   const projectionTranslationX = settings.projectionTranslationX ? settings.projectionTranslationX : 0.5;
   const projectionTranslationY = settings.projectionTranslationY ? settings.projectionTranslationY : 0.5;
@@ -112,7 +110,13 @@ const NeoChoroplethMapChart = (props: ChartProps) => {
     }
   });
 
-  const colors = colorScheme === 'nivo' ? NIVO_CHOROPLETH : schemeColors(colorScheme);
+  // The default: one hue, light to dark (dark to light in dark mode), so darker means more on white.
+  const colors =
+    colorScheme === 'nivo'
+      ? NIVO_CHOROPLETH
+      : isDefaultScheme(colorScheme)
+        ? sequentialColors(mode)
+        : schemeColors(colorScheme, mode);
   const max = Math.max(...data.map((d) => d.value));
   const c = palettes[mode];
 
@@ -133,10 +137,12 @@ const NeoChoroplethMapChart = (props: ChartProps) => {
       max: max || 1,
       splitNumber: colors.length,
       inRange: { color: colors },
-      left: 20,
-      bottom: 20,
-      itemWidth: 18,
-      itemHeight: 14,
+      left: 12,
+      bottom: 12,
+      itemWidth: 14,
+      itemHeight: 12,
+      itemGap: 6,
+      itemSymbol: 'roundRect',
       formatter: (low, high) => `${formatValue(low)} - ${formatValue(high)}`,
       textStyle: { color: c.chartText },
     },
@@ -148,7 +154,8 @@ const NeoChoroplethMapChart = (props: ChartProps) => {
         projection: mercator,
         roam: false,
         silent: !interactive,
-        left: marginLeft,
+        // Unset margins leave room for the legend at the left, so it doesn't cover the map.
+        left: legend && !hasCustomMargins(settings) ? marginLeft + 120 : marginLeft,
         right: marginRight,
         top: marginTop,
         bottom: marginBottom,

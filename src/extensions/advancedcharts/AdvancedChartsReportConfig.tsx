@@ -217,7 +217,7 @@ export const _ADVANCED_REPORT_TYPES = {
       colors: {
         label: 'Comma-separated arc colors',
         type: SELECTION_TYPES.TEXT,
-        default: '#5BE12C, #F5CD19, #EA4228',
+        default: '#0ca30c, #fab219, #d03b3b',
       },
       textColor: {
         label: 'Color of the text',
@@ -303,8 +303,8 @@ export const _ADVANCED_REPORT_TYPES = {
       colors: {
         label: 'Color Scheme',
         type: SELECTION_TYPES.LIST,
-        values: ['nivo', 'category10', 'accent', 'dark2', 'paired', 'pastel1', 'pastel2', 'set1', 'set2', 'set3'],
-        default: 'set2',
+        values: ['default', 'nivo', 'category10', 'accent', 'dark2', 'paired', 'pastel1', 'pastel2', 'set1', 'set3'],
+        default: 'default',
       },
       borderWidth: {
         label: 'Arc border width (px)',
@@ -390,8 +390,8 @@ export const _ADVANCED_REPORT_TYPES = {
       colors: {
         label: 'Color Scheme',
         type: SELECTION_TYPES.LIST,
-        values: ['nivo', 'category10', 'accent', 'dark2', 'paired', 'pastel1', 'pastel2', 'set1', 'set2', 'set3'],
-        default: 'set2',
+        values: ['default', 'nivo', 'category10', 'accent', 'dark2', 'paired', 'pastel1', 'pastel2', 'set1', 'set3'],
+        default: 'default',
       },
       showLabels: {
         label: 'Show Circle Labels',
@@ -467,8 +467,8 @@ export const _ADVANCED_REPORT_TYPES = {
       colors: {
         label: 'Color Scheme',
         type: SELECTION_TYPES.LIST,
-        values: ['nivo', 'category10', 'accent', 'dark2', 'paired', 'pastel1', 'pastel2', 'set1', 'set2', 'set3'],
-        default: 'set2',
+        values: ['default', 'nivo', 'category10', 'accent', 'dark2', 'paired', 'pastel1', 'pastel2', 'set1', 'set3'],
+        default: 'default',
       },
       borderWidth: {
         label: 'Rectangle border width (px)',
@@ -542,8 +542,8 @@ export const _ADVANCED_REPORT_TYPES = {
       colors: {
         label: 'Color Scheme',
         type: SELECTION_TYPES.LIST,
-        values: ['nivo', 'category10', 'accent', 'dark2', 'paired', 'pastel1', 'pastel2', 'set1', 'set2', 'set3'],
-        default: 'set2',
+        values: ['default', 'nivo', 'category10', 'accent', 'dark2', 'paired', 'pastel1', 'pastel2', 'set1', 'set3'],
+        default: 'default',
       },
       labelPosition: {
         label: 'Control sankey label position',
@@ -653,8 +653,8 @@ export const _ADVANCED_REPORT_TYPES = {
       colors: {
         label: 'Color Scheme',
         type: SELECTION_TYPES.LIST,
-        values: ['nivo', 'BrBG', 'RdYlGn', 'YlOrRd', 'greens'],
-        default: 'nivo',
+        values: ['default', 'nivo', 'BrBG', 'RdYlGn', 'YlOrRd', 'greens'],
+        default: 'default',
       },
       borderWidth: {
         label: 'Polygon Border Width (px)',
@@ -754,8 +754,8 @@ export const _ADVANCED_REPORT_TYPES = {
       colors: {
         label: 'Color Scheme',
         type: SELECTION_TYPES.LIST,
-        values: ['nivo', 'category10', 'accent', 'dark2', 'paired', 'pastel1', 'pastel2', 'set1', 'set2', 'set3'],
-        default: 'set2',
+        values: ['default', 'nivo', 'category10', 'accent', 'dark2', 'paired', 'pastel1', 'pastel2', 'set1', 'set3'],
+        default: 'default',
       },
       marginLeft: {
         label: 'Margin Left (px)',

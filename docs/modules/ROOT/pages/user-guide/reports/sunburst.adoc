@@ -36,7 +36,7 @@ inside the sunburst arcs.
 
 |Enable interactivity |on/off |on |If disabled, the chart shows no tooltips and ignores the mouse, including clicks that zoom into a slice.
 
-|Color Scheme |List |set2 |The color scheme to use for the arcs. Colors are
+|Color Scheme |List |default |The color scheme to use for the arcs. The default scheme has separate, contrast-checked colors for light and dark mode (reports saved with the old default, set2, use it too). Colors are
 assigned automatically for each of the sub-hierarchies.
 
 |Arc border width (px) |number |0 |The width of the border of each arc.

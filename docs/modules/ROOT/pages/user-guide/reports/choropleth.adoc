@@ -40,7 +40,7 @@ image::choropleth.png[Choropleth Chart]
 
 |Show Legend |on/off |on |If enabled, shows a color legend.
 
-|Color Scheme |List |nivo |The color scheme to use for the choropleth. Country colors
+|Color Scheme |List |default |The color scheme to use for the choropleth. The default is one hue, light (few) to dark (many), reversed in dark mode. Country colors
 vary from the lowest to the highest value.
 
 |Polygon Border Width (px) |Number |0 |The width of the border of each
