@@ -14,6 +14,7 @@ import { PlayCircleIconSolid } from '@neo4j-ndl/react/icons';
 import { canViewAsTable, extensionEnabled } from '../../utils/ReportUtils';
 import { objMerge } from '../../utils/ObjectManipulation';
 import { REPORT_TYPES } from '../../config/ReportConfig';
+import { EmptyReport, isUnconfigured } from './EmptyReport';
 
 const NeoCardView = ({
   id,
@@ -108,7 +109,9 @@ const NeoCardView = ({
   };
 
   const reportTypes = getReportTypes(extensions);
-  const tableView = viewAsTable && canViewAsTable(type, reportTypes);
+  // A report that isn't set up yet shows how to set it up instead of running.
+  const unconfigured = isUnconfigured({ type, query, settings });
+  const tableView = viewAsTable && !unconfigured && canViewAsTable(type, reportTypes);
 
   // @ts-ignore
   const reportHeader = (
@@ -125,7 +128,7 @@ const NeoCardView = ({
       onDownloadImage={onDownloadImage}
       onToggleCardExpand={onToggleCardExpand}
       expanded={expanded}
-      canViewAsTable={active && canViewAsTable(type, reportTypes)}
+      canViewAsTable={active && !unconfigured && canViewAsTable(type, reportTypes)}
       viewAsTable={tableView}
       onToggleViewAsTable={onToggleViewAsTable}
       onRemovePressed={onRemovePressed}
@@ -156,6 +159,7 @@ const NeoCardView = ({
   // The table view has no use for the chart's field selectors.
   const withoutFooter =
     tableView ||
+    unconfigured ||
     (reportTypeHasNoFooter
       ? reportTypes[type].withoutFooter
       : (reportTypes[type] && !reportTypes[type].selection) || (settings && settings.hideSelections));
@@ -199,7 +203,9 @@ const NeoCardView = ({
   };
   const reportContent = (
     <div ref={ref} className='nd-card-content' style={cardContentStyle}>
-      {active ? (
+      {unconfigured ? (
+        <EmptyReport editable={editable} onConfigure={onToggleCardSettings} />
+      ) : active ? (
         <NeoReportWrapper
           id={id}
           query={query}
@@ -267,7 +273,7 @@ const NeoCardView = ({
         ) : (
           <NeoCodeViewerComponent value={'Invalid report type. Are you missing an extension?'} />
         )}
-        {reportTypes[type] && !tableView ? reportFooter : <></>}
+        {reportTypes[type] && !tableView && !unconfigured ? reportFooter : <></>}
       </ReportItemContainer>
     </div>
   );

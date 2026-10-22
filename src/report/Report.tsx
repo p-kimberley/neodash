@@ -268,11 +268,11 @@ export const NeoReport = ({
   } else if (status == QueryStatus.NO_QUERY) {
     return (
       <div className={'n-text-neutral-text-default'} style={{ padding: 15 }}>
-        No query specified. <br /> Use the &nbsp;
+        No query specified. Open{' '}
         <ReadOnlyTag size='small' leadingVisual={<Cog6ToothIconOutline />}>
-          Report Settings
+          Settings
         </ReadOnlyTag>{' '}
-        button to get started.
+        from the report's ⋮ menu to get started.
       </div>
     );
   } else if (status == QueryStatus.RUNNING) {

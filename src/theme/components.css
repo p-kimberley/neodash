@@ -323,6 +323,64 @@ body {
   border-color: var(--nd-text-muted) !important;
 }
 
+/* A report that isn't set up yet: buttons to set it up (editors), or a short note (viewers). */
+.nd-empty-report {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 12px;
+  overflow: auto;
+}
+
+.nd-empty-report-note {
+  color: var(--theme-color-neutral-text-weaker);
+  font-size: 14px;
+}
+
+.nd-empty-report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.nd-empty-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 128px;
+  min-height: 88px;
+  padding: 12px;
+  border: 1px solid var(--theme-color-neutral-border-strong);
+  border-radius: var(--app-radius);
+  background: transparent;
+  color: var(--theme-color-neutral-text-default);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.nd-empty-action:hover,
+.nd-empty-action:focus-visible {
+  border-color: var(--theme-color-primary-border-strong);
+  background: color-mix(in srgb, var(--theme-color-primary-bg-weak) 45%, transparent);
+  color: var(--theme-color-primary-text);
+  outline: none;
+}
+
+.nd-empty-action-icon {
+  width: 24px;
+  height: 24px;
+}
+
 /* ---------- Chart controls (field selectors under a chart) ---------- */
 
 /* One row of field selectors, scrolled sideways when they don't fit: the report leaves room for one
