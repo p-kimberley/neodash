@@ -10,6 +10,7 @@ import { EXTENSIONS_CARD_SETTINGS_COMPONENT } from '../../extensions/ExtensionCo
 import { objMerge } from '../../utils/ObjectManipulation';
 import NeoText2CypherQueryEditor from '../../text2cypher/component/OverrideCardQueryEditor';
 import { text2cypherAvailable } from '../../text2cypher/util/Util';
+import { AskAiBox } from '../../ai/AskAiBox';
 
 const NeoCardSettingsContent = ({
   pagenumber,
@@ -156,7 +157,9 @@ const NeoCardSettingsContent = ({
         />
       ) : (
         <div>
-          {/* With a language model on the server, the query can also be written from a description (Build with AI). */}
+          {/* With a language model on the server: Ask AI changes the whole report, and the query can also
+              be written in English (query help only). */}
+          {text2cypherAvailable() ? <AskAiBox reportId={reportId} /> : <></>}
           {text2cypherAvailable() ? (
             <NeoText2CypherQueryEditor
               pagenumber={pagenumber}

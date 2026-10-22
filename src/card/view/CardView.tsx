@@ -189,6 +189,17 @@ const NeoCardView = ({
     setSelectorChange(true);
   }, [query, type, database, JSON.stringify(settingsSelector)]);
 
+  // A query or type changed while the report is showing (Build with AI, or its Undo) runs it again;
+  // changes made in the settings run when the settings close, as before.
+  const shownQuery = React.useRef({ query, type });
+  useEffect(() => {
+    const before = shownQuery.current;
+    shownQuery.current = { query, type };
+    if (!settingsOpen && (before.query !== query || before.type !== type)) {
+      setLastRunTimestamp(Date.now());
+    }
+  }, [query, type]);
+
   const cardContentStyle = {
     paddingBottom: '0px',
     paddingLeft: '0px',

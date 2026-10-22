@@ -512,6 +512,18 @@ body {
   color: var(--theme-color-neutral-text-weaker);
 }
 
+.nd-ask-ai {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.nd-ask-ai > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
 .nd-empty-action-ai .nd-empty-action-icon {
   color: var(--theme-color-primary-icon);
 }

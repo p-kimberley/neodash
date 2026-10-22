@@ -31,10 +31,21 @@ const QueryTranslatorSettingsModal = ({ open, setOpen, messageHistory, clearHist
     <Dialog size='large' isOpen={open} onClose={close}>
       <Dialog.Header>Build with AI</Dialog.Header>
       <Dialog.Content>
-        <p>
-          Write a report's query as a question in English: in its settings, switch the query editor from Cypher to
-          English, then click Translate. A language model that runs for this server writes the query.
-        </p>
+        <p>A language model that runs for this server helps build reports:</p>
+        <ul className='n-list-disc n-ml-6'>
+          <li>
+            <b>Build with AI</b> in an empty report builds the whole report from a description, or from one of its
+            suggestions.
+          </li>
+          <li>
+            <b>Ask AI</b> in a report's settings changes the report as you describe (type, query, fields, settings).
+          </li>
+          <li>
+            For help with the query only, switch a report's query editor from Cypher to <b>English</b> and click
+            Translate.
+          </li>
+        </ul>
+        <p>Everything it builds is checked against the database first, and nothing is saved until you save.</p>
         <br />
         {available ? (
           <>

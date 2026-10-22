@@ -90,3 +90,48 @@ test('without a language model there is only Configure', async ({ page }) => {
     await deleteDashboard(page, uuid);
   }
 });
+
+test('Ask AI in report settings changes the whole report; Undo restores it', async ({ page }) => {
+  const errors = trackErrors(page);
+  await page.goto('/');
+  const config = await (await page.request.get('/api/config')).json();
+  test.skip(!config.ai?.enabled, 'the backend has no language model configured');
+  const dash = await getDashboard(page, SALES);
+  const table = {
+    ...dash.pages[0].reports[0],
+    id: 'a2000000-0000-4000-8000-000000000001',
+    title: 'Customers',
+    type: 'table',
+    query: 'MATCH (c:Customer) RETURN c.name AS name LIMIT 5',
+    settings: {},
+    selection: {},
+    fields: [],
+    x: 0,
+    y: 0,
+    width: 12,
+    height: 5,
+  };
+  const uuid = `dddd0000-0000-4000-8000-0000000ak4${test.info().project.name === 'dark' ? 'd' : 'e'}`.slice(0, 36);
+  await putDashboard(page, uuid, { ...dash, title: 'e2e ask ai', pages: [{ title: 'Ask', reports: [table] }] });
+  try {
+    await openPage(page, uuid);
+    const report = page.locator('.nd-report-card').first();
+    await expect(report.getByRole('columnheader', { name: 'name' })).toBeVisible();
+    await report.getByRole('button', { name: 'Report actions' }).click();
+    await page.getByRole('menuitem', { name: 'Settings' }).click();
+    const ask = report.getByLabel('Ask AI');
+    await ask.fill('top products as horizontal bars with a legend');
+    await ask.press('Enter');
+    await expect(page.getByText(/Changed the report/)).toBeVisible({ timeout: 30_000 });
+    await expect(report.locator('.cm-content').first()).toContainText(':CONTAINS]->(p:Product)');
+    await report.getByRole('button', { name: 'Run' }).click();
+    await expect(report.locator('canvas').first()).toBeVisible({ timeout: 30_000 });
+    // The title stays (it was set); Undo brings back the table.
+    await expect(report.locator('input[aria-label="Report title"]')).toHaveValue('Customers');
+    await page.getByRole('button', { name: 'Undo' }).click();
+    await expect(report.getByRole('columnheader', { name: 'name' })).toBeVisible({ timeout: 30_000 });
+  } finally {
+    await deleteDashboard(page, uuid);
+  }
+  await expectNoErrors(page, errors);
+});

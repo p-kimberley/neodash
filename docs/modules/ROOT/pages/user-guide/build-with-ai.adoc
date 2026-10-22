@@ -1,10 +1,34 @@
 = Build with AI
 
-Let a language model help you build reports, using your database schema and the type of report. If you only want help with queries, write a report's query as a question in English and have it translated to Cypher; you set up the rest of the report yourself.
+Let a language model help you build reports, from your database's schema and your dashboard:
+
+* *Build with AI* in an empty report builds the whole report (type, title, query, fields and settings) from a description, or from one of up to three suggestions.
+* *Ask AI* in a report's settings changes the report as you describe.
+* If you only want help with queries, write a report's query as a question in English and have it translated to Cypher; you set up the rest of the report yourself.
 
 Build with AI is part of NeoDash: it is available in every dashboard when the server has a language model configured, and absent when it hasn't.
 
-== How it works
+== Building a report
+
+A new report (or any report without a query) shows two buttons: *Configure*, which opens its settings, and *Build with AI*.
+
+. Click *Build with AI*. Up to three suggestions appear, based on your data and the dashboard (its title, pages, parameters and other reports, which they avoid repeating).
+. Click a suggestion to build it, or describe the report you want, for example "revenue per month as a line" or "top 10 products as horizontal bars with a legend", and click *Build* (or press Ctrl+Enter). The suggestions follow your description as you type.
+. The report is built and runs. It is not saved until you save the dashboard, and the message that confirms it has *Undo*.
+
+To change a report later, open its settings and type into *Ask AI* at the top, for example "make it a stacked bar chart by region" or "show a legend", then press Enter or *Apply*. Run the report to see it; *Undo* puts it back.
+
+== What is checked
+
+Nothing the model writes is used until it has been checked. The NeoDash server checks:
+
+* that it describes a report type the dashboard has, with every field the type needs, and only settings that type has, with allowed values;
+* the query, with `EXPLAIN` (which never runs or changes anything): it must be valid Cypher, must only read, and must use labels, relationship types and properties that exist;
+* a short trial run of the query, which only reads, stops after a few seconds and at most 25 rows: it should return rows (a report that still returns none after the model has been told is kept, with a note), and the columns for the report's fields must exist and hold the right kind of value (numbers for a bar chart's values, dates or numbers for a line chart's x axis, and so on).
+
+Each problem goes back to the model with what is allowed (the report types, the settings' values, the columns the query returns, or the closest existing label, as in "did you mean `Customer`?"), and it tries again, up to four times by default. A report that is still wrong is not applied; you see what was wrong instead. Settings that are still wrong at the end are left out.
+
+== How it works (writing a query in English)
 
 The language model is set up for the NeoDash server by an administrator: any model served through an OpenAI-compatible API, such as https://docs.vllm.ai[vLLM] in your cluster. Browsers never connect to it, and no API key is entered in NeoDash itself.
 
@@ -15,7 +39,7 @@ When an editor translates a question, the NeoDash server:
 . checks the model's query against the database with `EXPLAIN`, which never runs or changes anything; if the check fails, it gives the model the error and lets it try again;
 . returns the checked query, which replaces the report's query.
 
-Query results are never sent to the model. Questions and the queries they produce are recorded in the audit log.
+Query results are never sent to the model. Questions, descriptions and the queries they produce are recorded in the audit log.
 
 == Setting it up (administrators)
 
