@@ -3,7 +3,7 @@ import { extractNodePropertiesFromRecords, mergeNodePropsFieldsLists } from '../
 import { valueIsArray, valueIsNode, valueIsRelationship, valueIsPath, toNumber } from '../../ChartUtils';
 import { GraphChartVisualizationProps } from '../GraphChartVisualization';
 import { assignCurvatureToLink } from './RelUtils';
-import { isNode } from 'neo4j-driver-core/lib/graph-types.js';
+import { isNode } from 'neo4j-driver-core';
 
 const update = (state, mutations) => Object.assign({}, state, mutations);
 

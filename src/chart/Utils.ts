@@ -1,4 +1,4 @@
-import { QueryResult, Record as Neo4jRecord } from 'neo4j-driver';
+import { QueryResult, Record as Neo4jRecord } from 'neo4j-driver-core';
 export function recordToNative(input: any): any {
   if (!input && input !== false) {
     return null;

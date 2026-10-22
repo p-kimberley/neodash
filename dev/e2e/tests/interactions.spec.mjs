@@ -133,6 +133,10 @@ test('parameters: date picker sets its parameter', async ({ page }) => {
   await page.keyboard.press('Tab');
   // Dates are kept in the URL as typed JSON.
   await expect.poll(() => decodeURIComponent(page.url())).toContain('"year":2025,"month":3,"day":14');
+  // ...and read back from it as a date when the link is opened again.
+  await page.reload();
+  const input = card(page, 'Date picker').locator('.MuiPickersInputBase-root input').first();
+  await expect(input).toHaveValue('2025-03-14', { timeout: 20000 });
   await expectNoErrors(page, errors);
 });
 

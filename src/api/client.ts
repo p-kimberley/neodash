@@ -1,8 +1,9 @@
 // Client for the NeoDash backend (see server/README.md). The browser never talks to Neo4j directly:
 // queries, dashboard storage and sign-in all go through these calls.
 
-import neo4j from 'neo4j-driver';
+import { Record as Neo4jRecord } from 'neo4j-driver-core';
 import { decode, encodeParameters } from '../../server/src/codec';
+import { neo4jValues } from './neo4jValues';
 
 export type Role = 'viewer' | 'editor';
 
@@ -111,7 +112,7 @@ export const api = {
     request<{ uuid: string }>(`/api/dashboards/${encodeURIComponent(uuid)}`, { method: 'DELETE' }),
   logout: () => request<{ logoutUrl: string }>('/auth/logout', { method: 'POST', body: '{}' }),
 
-  /** Runs a query and returns neo4j-driver Records, so existing chart code works unchanged. */
+  /** Runs a query and returns Neo4j driver Records, so existing chart code works unchanged. */
   async query(req: QueryRequest) {
     const response = await request<QueryResponse>('/api/query', {
       method: 'POST',
@@ -119,9 +120,9 @@ export const api = {
     });
     const records = response.records.map(
       (row) =>
-        new neo4j.types.Record(
+        new Neo4jRecord(
           response.keys,
-          row.map((v) => decode(v, neo4j as any))
+          row.map((v) => decode(v, neo4jValues))
         )
     );
     return { keys: response.keys, records, truncated: response.truncated, durationMs: response.durationMs };

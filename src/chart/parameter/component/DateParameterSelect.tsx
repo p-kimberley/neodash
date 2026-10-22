@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { ParameterSelectProps } from './ParameterSelect';
 import NeoDatePicker from '../../../component/field/DateField';
 import dayjs from 'dayjs';
-import { Date as Neo4jDate } from 'neo4j-driver-core/lib/temporal-types.js';
+import { Date as Neo4jDate } from 'neo4j-driver-core';
 import { isCastableToNeo4jDate, isEmptyObject } from '../../ChartUtils';
 
 function castPropsToBoltDate(dict) {

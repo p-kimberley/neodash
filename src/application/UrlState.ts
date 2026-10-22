@@ -8,8 +8,8 @@
 // String parameter values appear as-is (matching NeoDash's existing ?neodash_x=value deep links);
 // other values (numbers, dates, lists) are written as json:<typed JSON> so they round-trip exactly.
 
-import neo4j from 'neo4j-driver';
 import { decode, encode } from '../../server/src/codec';
+import { neo4jValues } from '../api/neo4jValues';
 import { loadDashboardFromNeo4jThunk, loadDashboardThunk } from '../dashboard/DashboardThunks';
 import { setPageNumberThunk, updateGlobalParametersThunk } from '../settings/SettingsThunks';
 import { setDraft, setHomeOpen } from './ApplicationActions';
@@ -30,7 +30,7 @@ function parseValue(raw: string): unknown {
     return raw;
   }
   try {
-    return decode(JSON.parse(raw.slice(5)), neo4j as any);
+    return decode(JSON.parse(raw.slice(5)), neo4jValues);
   } catch {
     return raw;
   }
