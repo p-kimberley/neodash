@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { connect } from 'react-redux';
-import { Dialog, OutlinedButton, FilledButton, TextArea } from '@neo4j-ndl/react';
+import { OutlinedButton, FilledButton, TextArea } from '@neo4j-ndl/react';
+import { Dialog } from '../../../../component/dialog/Dialog';
 import { addModelExample, updateModelExample } from '../../state/QueryTranslatorActions';
 import { Neo4jContext, Neo4jContextState } from '../../../../api/Neo4jContext';
 import { getDatabase } from '../../../../settings/SettingsSelectors';

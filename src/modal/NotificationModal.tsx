@@ -9,7 +9,7 @@ import {
   getNotificationTitle,
 } from '../application/ApplicationSelectors';
 import { clearNotification, setConnectionModalOpen } from '../application/ApplicationActions';
-import { Dialog } from '@neo4j-ndl/react';
+import { Dialog } from '../component/dialog/Dialog';
 
 /**
  * A modal to save a dashboard as a JSON text string.

@@ -33,20 +33,18 @@ const NeoCardSettingsHeader = ({
   return (
     <div className='nd-card-bar'>
       <div className='nd-card-bar-lead'>
-        <div style={{ marginTop: '-8px', paddingBottom: '1px' }}>
-          <CleanIconButton description='Move report' size='medium' className='n-relative -n-left-3 drag-handle'>
-            <DragIcon aria-label={'Move Report'} />
-          </CleanIconButton>
-          <CleanIconButton description='Help' onClick={onReportHelpButtonPressed} size='medium'>
-            <QuestionMarkCircleIconOutline aria-label={'Help'} />
-          </CleanIconButton>
-          <CleanIconButton description='Delete' variant='danger' onClick={onRemovePressed} size='medium'>
-            <TrashIconOutline aria-label={'Delete'} />
-          </CleanIconButton>
-          <CleanIconButton description='Clone' style={{ color: 'green' }} onClick={onClonePressed} size='medium'>
-            <DocumentDuplicateIconOutline aria-label={'Clone'} />
-          </CleanIconButton>
-        </div>
+        <CleanIconButton description='Move report' size='medium' className='drag-handle'>
+          <DragIcon aria-label={'Move Report'} />
+        </CleanIconButton>
+        <CleanIconButton description='Help' onClick={onReportHelpButtonPressed} size='medium'>
+          <QuestionMarkCircleIconOutline aria-label={'Help'} />
+        </CleanIconButton>
+        <CleanIconButton description='Delete' variant='danger' onClick={onRemovePressed} size='medium'>
+          <TrashIconOutline aria-label={'Delete'} />
+        </CleanIconButton>
+        <CleanIconButton description='Clone' style={{ color: 'green' }} onClick={onClonePressed} size='medium'>
+          <DocumentDuplicateIconOutline aria-label={'Clone'} />
+        </CleanIconButton>
       </div>
       <div className='nd-card-bar-title' />
       <div className='nd-card-bar-actions'>

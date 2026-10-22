@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { PlayIconSolid, DocumentPlusIconOutline } from '@neo4j-ndl/react/icons';
-import { Dialog, FilledButton, OutlinedButton, TextArea } from '@neo4j-ndl/react';
+import { FilledButton, OutlinedButton, TextArea } from '@neo4j-ndl/react';
+import { Dialog } from '../../../component/dialog/Dialog';
 
 export const NeoDashboardSidebarImportModal = ({ open, onImport, handleClose }) => {
   const [text, setText] = React.useState('');

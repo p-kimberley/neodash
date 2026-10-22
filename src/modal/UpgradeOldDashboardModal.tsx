@@ -1,5 +1,6 @@
 import React from 'react';
-import { Dialog, FilledButton, TextArea } from '@neo4j-ndl/react';
+import { FilledButton, TextArea } from '@neo4j-ndl/react';
+import { Dialog } from '../component/dialog/Dialog';
 import { TrashIconOutline, PlayIconSolid } from '@neo4j-ndl/react/icons';
 import { createUUID } from '../utils/uuid';
 

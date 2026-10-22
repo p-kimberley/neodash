@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { SuggestInput } from '../../component/field/SuggestInput';
 import NeoColorPicker from '../../component/field/ColorPicker';
-import { IconButton, Dialog, TextInput, FilledButton } from '@neo4j-ndl/react';
+import { IconButton, TextInput, FilledButton } from '@neo4j-ndl/react';
+import { Dialog } from '../../component/dialog/Dialog';
 import { AdjustmentsHorizontalIconOutline, XMarkIconOutline, PlusIconOutline } from '@neo4j-ndl/react/icons';
 import { SelectField } from '../../component/field/SelectField';
 

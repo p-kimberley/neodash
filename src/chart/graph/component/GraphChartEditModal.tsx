@@ -1,7 +1,8 @@
 import { GraphChartVisualizationProps } from '../GraphChartVisualization';
 import React, { useEffect } from 'react';
 import { PlusIconOutline, PlayIconOutline } from '@neo4j-ndl/react/icons';
-import { Dialog, FilledButton, IconButton, TextInput } from '@neo4j-ndl/react';
+import { FilledButton, IconButton, TextInput } from '@neo4j-ndl/react';
+import { Dialog } from '../../../component/dialog/Dialog';
 import { LabelTypeAutocomplete } from './autocomplete/LabelTypeAutocomplete';
 import { DeletePropertyButton } from './button/modal/DeletePropertyButton';
 import {

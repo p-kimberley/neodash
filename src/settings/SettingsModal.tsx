@@ -1,7 +1,8 @@
 import React from 'react';
 import NeoSetting from '../component/field/Setting';
 import { DASHBOARD_SETTINGS } from '../config/DashboardConfig';
-import { Dialog, IconButton } from '@neo4j-ndl/react';
+import { IconButton } from '@neo4j-ndl/react';
+import { Dialog } from '../component/dialog/Dialog';
 import { Cog6ToothIconOutline } from '@neo4j-ndl/react/icons';
 
 export const NeoSettingsModal = ({ dashboardSettings, updateDashboardSetting }) => {

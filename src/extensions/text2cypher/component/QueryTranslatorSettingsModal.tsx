@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Dialog, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
+import { FilledButton, OutlinedButton } from '@neo4j-ndl/react';
+import { Dialog } from '../../../component/dialog/Dialog';
 import { PencilSquareIconOutline } from '@neo4j-ndl/react/icons';
 import { deleteAllMessageHistory } from '../state/QueryTranslatorActions';
 import { QUERY_TRANSLATOR_HISTORY_PREFIX } from '../state/QueryTranslatorSelector';

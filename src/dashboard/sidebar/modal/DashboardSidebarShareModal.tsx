@@ -1,5 +1,6 @@
 import React from 'react';
-import { Checkbox, Dialog, TextLink } from '@neo4j-ndl/react';
+import { Checkbox, TextLink } from '@neo4j-ndl/react';
+import { Dialog } from '../../../component/dialog/Dialog';
 
 /**
  * Shows a link to a saved dashboard on this NeoDash deployment. Links never carry credentials:

@@ -1,7 +1,8 @@
 // TODO: this file (in a way) belongs to chart/parameter/ParameterSelectionChart. It would make sense to move it there
 
 import React from 'react';
-import { Dialog, FilledButton } from '@neo4j-ndl/react';
+import { FilledButton } from '@neo4j-ndl/react';
+import { Dialog } from '../../../component/dialog/Dialog';
 import ParameterSelectCardSettings from '../../../chart/parameter/ParameterSelectCardSettings';
 import NeoCardSettingsFooter from '../../../card/settings/CardSettingsFooter';
 import { objMerge } from '../../../utils/ObjectManipulation';

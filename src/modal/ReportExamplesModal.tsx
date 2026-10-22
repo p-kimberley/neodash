@@ -1,7 +1,7 @@
 import React from 'react';
 import NeoCodeEditorComponent from '../component/editor/CodeEditorComponent';
 import NeoReport from '../report/Report';
-import { Dialog } from '@neo4j-ndl/react';
+import { Dialog } from '../component/dialog/Dialog';
 import { ChartBarIconSolid } from '@neo4j-ndl/react/icons';
 import { Section, SectionTitle, SectionContent } from '../modal/ModalUtils';
 import { useStore } from 'react-redux';

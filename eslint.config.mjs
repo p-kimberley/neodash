@@ -207,6 +207,25 @@ export default tseslint.config(
     },
   },
   {
+    // Dialogs close on a backdrop click through the app's wrapper; NDL's own Dialog ignores those.
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/component/dialog/Dialog.tsx'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@neo4j-ndl/react',
+              importNames: ['Dialog'],
+              message: "Use Dialog from 'component/dialog/Dialog', which also closes on a backdrop click.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // Vendored, transpiled Frappe Gantt (see its README): not cleaned up line by line.
     files: ['src/extensions/advancedcharts/chart/gantt/frappe/lib/**'],
     rules: { '@typescript-eslint/no-unused-vars': 'off' },

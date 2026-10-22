@@ -5,7 +5,8 @@ import ReactMarkdown from 'react-markdown';
 import gfm from 'remark-gfm';
 import { replaceDashboardParameters } from '../../chart/ChartUtils';
 
-import { CleanIconButton, Dialog } from '@neo4j-ndl/react';
+import { CleanIconButton } from '@neo4j-ndl/react';
+import { Dialog } from '../../component/dialog/Dialog';
 import {
   DragIcon,
   Cog6ToothIconOutline,
@@ -61,46 +62,35 @@ const NeoCardViewHeader = ({
   }, [title]);
 
   const cardTitle = (
-    <table className='nd-card-header' style={{ width: '100%' }}>
-      <tbody>
-        <tr>
-          {editable ? (
-            <td>
-              <CleanIconButton
-                description='Move report'
-                className='n-mb-3 n-relative -n-left-3 drag-handle'
-                size='medium'
-                onClick={() => {}}
-              >
-                <DragIcon />
-              </CleanIconButton>
-            </td>
-          ) : (
-            <></>
-          )}
-          <td style={{ width: '100%' }}>
-            {/* The title, editable in place (dashboard parameters in it are filled in while not editing). */}
-            <input
-              className='nd-card-title'
-              aria-label='Report title'
-              onFocus={() => {
-                setEditing(true);
-              }}
-              onBlur={() => {
-                setEditing(false);
-              }}
-              disabled={!editable}
-              placeholder='Report name...'
-              value={editing ? text : parsedText !== ' ' ? parsedText : ''}
-              onChange={(event) => {
-                setText(event.target.value);
-                debouncedTitleUpdate(event.target.value);
-              }}
-            />
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div className='nd-card-header'>
+      {editable ? (
+        <CleanIconButton description='Move report' className='drag-handle' size='medium' onClick={() => {}}>
+          <DragIcon />
+        </CleanIconButton>
+      ) : (
+        <></>
+      )}
+      <div className='nd-card-header-title'>
+        {/* The title, editable in place (dashboard parameters in it are filled in while not editing). */}
+        <input
+          className='nd-card-title'
+          aria-label='Report title'
+          onFocus={() => {
+            setEditing(true);
+          }}
+          onBlur={() => {
+            setEditing(false);
+          }}
+          disabled={!editable}
+          placeholder='Report name...'
+          value={editing ? text : parsedText !== ' ' ? parsedText : ''}
+          onChange={(event) => {
+            setText(event.target.value);
+            debouncedTitleUpdate(event.target.value);
+          }}
+        />
+      </div>
+    </div>
   );
 
   const descriptionEnabled = description && description.length > 0;

@@ -244,8 +244,8 @@ body {
   display: block;
   width: 100%;
   margin: 0;
-  /* The same text position as the previous (Material UI, small) input. */
-  padding: 1px 0 4px;
+  /* Text centred in the field (with the 2px underline below it). */
+  padding: 3px 0 1px;
   border: 0;
   border-bottom: 2px solid transparent;
   border-radius: 0;
@@ -930,7 +930,9 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 8px 8px 6px 14px;
+  /* The close button's glyph sits 16px from the edge, like the title's text (its 8px inner space
+     is part of that). */
+  padding: 8px 8px 8px 16px;
   border-bottom: 1px solid var(--nd-border);
 }
 
@@ -946,7 +948,8 @@ body {
 .nd-graph-info-body {
   max-height: min(50vh, 420px);
   overflow: auto;
-  padding: 4px 6px 8px;
+  /* Lined up with the title. */
+  padding: 8px 16px 12px;
 }
 
 /* The search box has its own clear button; hide the browser's. */
@@ -1128,13 +1131,19 @@ body {
 }
 
 /* A report card's header: drag handle (or settings buttons), title, and the action buttons. */
+/* A card's top row (both faces): drag handle, title or settings buttons, then the report's buttons,
+   all centred on one line. The icon buttons' glyphs line up with the card's 16px padding (their
+   8px inner space sits outside it). */
+/* The same height on both faces, so the drag handle and buttons don't move when they flip. */
 .nd-card-bar {
   display: flex;
   align-items: center;
+  height: 72px;
   padding: 16px;
 }
 .nd-card-bar-lead {
   display: flex;
+  align-items: center;
   flex: 0 0 auto;
   margin-right: 16px;
 }
@@ -1143,9 +1152,24 @@ body {
   min-width: 0;
 }
 .nd-card-bar-actions {
+  display: flex;
+  align-items: center;
   flex: 0 0 auto;
-  align-self: flex-start;
-  margin: -4px -8px -4px 0;
+  margin-right: -8px;
+}
+.nd-card-bar .drag-handle {
+  flex: none;
+  margin-left: -12px;
+}
+
+.nd-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nd-card-header-title {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* The settings face's query editor and fields. */

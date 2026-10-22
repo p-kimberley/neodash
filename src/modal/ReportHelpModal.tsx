@@ -1,5 +1,6 @@
 import React from 'react';
-import { Dialog, TextLink } from '@neo4j-ndl/react';
+import { TextLink } from '@neo4j-ndl/react';
+import { Dialog } from '../component/dialog/Dialog';
 import { docsUrl } from '../utils/docs';
 
 /**

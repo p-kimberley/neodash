@@ -1,6 +1,7 @@
 import React from 'react';
 import { DocumentArrowDownIconOutline } from '@neo4j-ndl/react/icons';
-import { Dialog, OutlinedButton, TextArea } from '@neo4j-ndl/react';
+import { OutlinedButton, TextArea } from '@neo4j-ndl/react';
+import { Dialog } from '../../../component/dialog/Dialog';
 import { valueIsArray, valueIsObject } from '../../../chart/ChartUtils';
 
 /**

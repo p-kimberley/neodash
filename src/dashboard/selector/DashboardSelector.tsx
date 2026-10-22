@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { connect } from 'react-redux';
-import { Dialog, LoadingSpinner, TextInput, Typography, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
+import { LoadingSpinner, TextInput, Typography, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
+import { Dialog } from '../../component/dialog/Dialog';
 import { ClockIconOutline, MagnifyingGlassIconOutline, PlusIconOutline } from '@neo4j-ndl/react/icons';
 import { api, DashboardSummary, isEditor } from '../../api/client';
 import { applyUrlStateThunk } from '../../application/UrlState';

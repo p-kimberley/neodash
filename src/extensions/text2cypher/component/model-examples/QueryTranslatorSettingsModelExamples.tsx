@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { getModelExamples } from '../../state/QueryTranslatorSelector';
-import { Dialog, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
+import { FilledButton, OutlinedButton } from '@neo4j-ndl/react';
+import { Dialog } from '../../../../component/dialog/Dialog';
 import ExampleEditorModal from './ExampleEditorModal';
 import ExampleDisplayTable from './ExampleDisplayTable';
 

@@ -23,7 +23,7 @@ import { loadDatabaseListFromNeo4jThunk } from '../dashboard/DashboardThunks';
 import { Neo4jContext, Neo4jContextState } from '../api/Neo4jContext';
 import { getDashboardExtensions } from '../dashboard/DashboardSelectors';
 import { downloadComponentAsImage } from '../chart/ChartUtils';
-import { Dialog } from '@neo4j-ndl/react';
+import { Dialog } from '../component/dialog/Dialog';
 import { createNotificationThunk } from '../page/PageThunks';
 
 const NeoCard = ({

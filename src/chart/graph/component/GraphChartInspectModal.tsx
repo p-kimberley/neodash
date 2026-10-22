@@ -1,7 +1,7 @@
 import React from 'react';
 import { GraphChartVisualizationProps } from '../GraphChartVisualization';
 import { getEntityHeader } from '../util/NodeUtils';
-import { Dialog } from '@neo4j-ndl/react';
+import { Dialog } from '../../../component/dialog/Dialog';
 import GraphEntityInspectionTable from './GraphEntityInspectionTable';
 
 /**

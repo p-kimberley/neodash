@@ -1,5 +1,6 @@
 import React from 'react';
-import { Dialog, OutlinedButton, FilledButton } from '@neo4j-ndl/react';
+import { OutlinedButton, FilledButton } from '@neo4j-ndl/react';
+import { Dialog } from '../../../component/dialog/Dialog';
 import { BackspaceIconOutline, ExclamationTriangleIconOutline } from '@neo4j-ndl/react/icons';
 
 /**

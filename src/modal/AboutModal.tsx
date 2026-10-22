@@ -1,5 +1,6 @@
 import React from 'react';
-import { Dialog, TextLink, OutlinedButton } from '@neo4j-ndl/react';
+import { TextLink, OutlinedButton } from '@neo4j-ndl/react';
+import { Dialog } from '../component/dialog/Dialog';
 import { BookOpenIconOutline, BeakerIconOutline } from '@neo4j-ndl/react/icons';
 import { Section, SectionTitle, SectionContent } from './ModalUtils';
 

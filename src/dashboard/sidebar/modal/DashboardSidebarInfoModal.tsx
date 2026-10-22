@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog } from '@neo4j-ndl/react';
+import { Dialog } from '../../../component/dialog/Dialog';
 
 /**
  * Shows a dashboard's details: ID, title, last modified, author and version.

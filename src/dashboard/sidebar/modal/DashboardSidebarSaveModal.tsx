@@ -1,6 +1,7 @@
 import React from 'react';
 import { DatabasePlusIcon, BackspaceIconOutline } from '@neo4j-ndl/react/icons';
-import { Dialog, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
+import { FilledButton, OutlinedButton } from '@neo4j-ndl/react';
+import { Dialog } from '../../../component/dialog/Dialog';
 
 /**
  * Configures setting the current Neo4j database connection for the dashboard.

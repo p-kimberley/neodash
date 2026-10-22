@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { XMarkIconOutline, PlusIconOutline, SparklesIconOutline } from '@neo4j-ndl/react/icons';
 import { getPageNumbersAndNamesList } from '../advancedcharts/Utils';
-import { IconButton, Dialog, TextInput, FilledButton } from '@neo4j-ndl/react';
+import { IconButton, TextInput, FilledButton } from '@neo4j-ndl/react';
+import { Dialog } from '../../component/dialog/Dialog';
 import { SuggestInput } from '../../component/field/SuggestInput';
 import { SelectField } from '../../component/field/SelectField';
 
