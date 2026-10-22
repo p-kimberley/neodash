@@ -1,6 +1,15 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Dialog, TextInput, CleanIconButton, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
-import { Menu, MenuItem, Chip } from '@mui/material';
+import {
+  Dialog,
+  TextInput,
+  CleanIconButton,
+  FilledButton,
+  OutlinedButton,
+  Menu,
+  DismissibleTag,
+  ReadOnlyTag,
+  TextLink,
+} from '@neo4j-ndl/react';
 import { Neo4jContext, Neo4jContextState } from '../../../api/Neo4jContext';
 import { PlusCircleIconOutline } from '@neo4j-ndl/react/icons';
 import { QueryStatus, runCypherQuery } from '../../../report/ReportQueryRunner';
@@ -152,62 +161,58 @@ export const NeoDashboardSidebarAccessModal = ({ open, database, dashboard, hand
         In this modal, you can select the labels that you want to add to the current dashboard node.
         <br />
         For more information, please refer to the{' '}
-        <a
-          href={docsUrl('user-guide/access-control')}
-          target='_blank'
-          rel='noopener noreferrer'
-          style={{ color: 'blue', textDecoration: 'underline' }}
-        >
+        <TextLink href={docsUrl('user-guide/access-control')} target='_blank' type='external'>
           documentation
-        </a>
+        </TextLink>
         .
-      </Dialog.Content>
-      <div>
-        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu}>
-          {/* Fetch labels dynamically from Neo4j and map to menu items */}
-          {neo4jLabels
-            .filter((e) => !selectedLabels.includes(e))
-            .map((label) => (
-              <MenuItem key={label} onClick={() => handleLabelSelect(label)}>
-                {label}
-              </MenuItem>
-            ))}
-          <MenuItem>
-            <TextInput
-              value={newLabel}
-              onChange={(e) => setNewLabel(e.target.value)}
-              errorText={feedback}
-              placeholder='Create New label'
-              htmlAttributes={{
-                onKeyDown: (e: KeyboardEvent) => {
-                  handleAddNewLabel(e);
-                  e.stopPropagation();
-                },
-                autoComplete: 'off',
-              }}
-            />
-          </MenuItem>
-        </Menu>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', marginTop: '10px' }}>
-          {selectedLabels.map((label) => (
-            <Chip
-              key={label}
-              label={label}
-              variant='outlined'
-              onDelete={label === INITIAL_LABEL ? undefined : () => handleDeleteLabel(label)}
-              style={{ marginRight: '5px', marginBottom: '5px' }}
-            />
-          ))}
-          <CleanIconButton
-            description='Add label'
-            size='large'
-            style={{ marginBottom: '5px' }}
-            onClick={handleOpenMenu}
-          >
-            <PlusCircleIconOutline style={{ color: 'var(--theme-color-primary-icon)' }} />
-          </CleanIconButton>
+        <div>
+          <Menu anchorRef={{ current: anchorEl }} isOpen={Boolean(anchorEl)} onClose={handleCloseMenu}>
+            <Menu.Items>
+              {/* Labels in the database that the dashboard doesn't have yet. */}
+              {neo4jLabels
+                .filter((e) => !selectedLabels.includes(e))
+                .map((label) => (
+                  <Menu.Item key={label} title={label} onClick={() => handleLabelSelect(label)} />
+                ))}
+            </Menu.Items>
+          </Menu>
+          <div className='n-flex n-flex-wrap n-items-center n-gap-token-8' style={{ marginTop: '10px' }}>
+            {selectedLabels.map((label) =>
+              label === INITIAL_LABEL ? (
+                <ReadOnlyTag key={label} size='small'>
+                  {label}
+                </ReadOnlyTag>
+              ) : (
+                <DismissibleTag key={label} size='small' onRemove={() => handleDeleteLabel(label)}>
+                  {label}
+                </DismissibleTag>
+              )
+            )}
+            <CleanIconButton
+              description='Add label'
+              size='large'
+              style={{ marginBottom: '5px' }}
+              onClick={handleOpenMenu}
+            >
+              <PlusCircleIconOutline style={{ color: 'var(--theme-color-primary-icon)' }} />
+            </CleanIconButton>
+          </div>
+          <TextInput
+            label='New label'
+            value={newLabel}
+            onChange={(e) => setNewLabel(e.target.value)}
+            errorText={feedback}
+            placeholder='Type a label and press Enter'
+            htmlAttributes={{
+              onKeyDown: (e: React.KeyboardEvent) => {
+                handleAddNewLabel(e);
+                e.stopPropagation();
+              },
+              autoComplete: 'off',
+            }}
+          />
         </div>
-      </div>
+      </Dialog.Content>
       <Dialog.Actions>
         <OutlinedButton onClick={handleClose} style={{ float: 'right' }} isFloating>
           Cancel

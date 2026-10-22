@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import debounce from 'lodash/debounce';
 import { useCallback } from 'react';
-import { FormGroup } from '@mui/material';
 import NeoSetting from '../../component/field/Setting';
 import {
   NeoCustomReportStyleModal,
@@ -156,14 +155,14 @@ const NeoCardSettingsFooter = ({
         <tbody>
           <tr>
             <td>
-              <FormGroup className='n-my-2'>
+              <div className='n-my-2'>
                 <Switch
                   label='Advanced settings'
                   isChecked={reportSettingsOpen}
                   onChange={onToggleReportSettings}
                   className='n-ml-2'
                 />
-              </FormGroup>
+              </div>
             </td>
             <td>
               {RULE_BASED_REPORT_CUSTOMIZATIONS[type] && extensions.styling && extensions.styling.active ? (

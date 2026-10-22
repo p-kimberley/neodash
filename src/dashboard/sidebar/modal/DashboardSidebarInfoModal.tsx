@@ -1,23 +1,17 @@
 import React from 'react';
 import { Dialog } from '@neo4j-ndl/react';
-import { DataGrid } from '@mui/x-data-grid';
 
 /**
- * Configures setting the current Neo4j database connection for the dashboard.
+ * Shows a dashboard's details: ID, title, last modified, author and version.
  */
 export const NeoDashboardSidebarInfoModal = ({ open, dashboard, handleClose }) => {
-  const columns = [
-    { field: 'field', headerName: 'Field', width: 150 },
-    { field: 'value', headerName: 'Value', width: 600 },
-  ];
-
   const rows = dashboard
     ? [
-        { id: 0, field: 'ID', value: dashboard.uuid },
-        { id: 1, field: 'Title', value: dashboard.title },
-        { id: 2, field: 'Last Modified', value: dashboard.date },
-        { id: 3, field: 'Author', value: dashboard.author },
-        { id: 4, field: 'Version', value: dashboard.version },
+        ['ID', dashboard.uuid],
+        ['Title', dashboard.title],
+        ['Last Modified', dashboard.date],
+        ['Author', dashboard.author],
+        ['Version', dashboard.version],
       ]
     : [];
 
@@ -25,20 +19,16 @@ export const NeoDashboardSidebarInfoModal = ({ open, dashboard, handleClose }) =
     <Dialog size='large' isOpen={open} onClose={handleClose}>
       <Dialog.Header>About '{dashboard && dashboard.title}'</Dialog.Header>
       <Dialog.Content>
-        <div style={{ height: '300px' }}>
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            // DataGrid v7 names (the v5 props used here before were ignored).
-            disableRowSelectionOnClick
-            columnHeaderHeight={0}
-            hideFooter={true}
-            slots={{
-              columnSortedDescendingIcon: () => <></>,
-              columnSortedAscendingIcon: () => <></>,
-            }}
-          />
-        </div>
+        <table className='nd-props-table'>
+          <tbody>
+            {rows.map(([field, value]) => (
+              <tr key={field}>
+                <th scope='row'>{field}</th>
+                <td>{value === undefined || value === null ? '' : `${value}`}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </Dialog.Content>
     </Dialog>
   );

@@ -1,7 +1,7 @@
 import { CleanIconButton, OutlinedButton, TextButton } from '@neo4j-ndl/react';
 import React from 'react';
 import { EllipsisVerticalIconOutline } from '@neo4j-ndl/react/icons';
-import Tooltip from '@mui/material/Tooltip';
+import { Tip } from '../../component/text/Tip';
 import { NEODASH_VERSION } from '../DashboardReducer';
 
 export const DashboardSidebarListItem = ({ title, selected, readonly, saved, version, onSelect, onSettingsOpen }) => {
@@ -10,11 +10,7 @@ export const DashboardSidebarListItem = ({ title, selected, readonly, saved, ver
   return (
     <div className='nd-dashboard-panel-header'>
       <div style={{ display: 'contents', width: '100%' }}>
-        <Tooltip
-          title={version !== NEODASH_VERSION ? `Old version: v${version}` : ''}
-          aria-label='old version'
-          disableInteractive
-        >
+        <Tip title={version !== NEODASH_VERSION ? `Old version: v${version}` : ''} placement='right'>
           {/* A span takes the tooltip's props (the design system's buttons don't pass them through). */}
           <span>
             <ItemButton
@@ -38,7 +34,7 @@ export const DashboardSidebarListItem = ({ title, selected, readonly, saved, ver
               {title ? title : '(no title)'}
             </ItemButton>
           </span>
-        </Tooltip>
+        </Tip>
         {readonly !== true ? (
           <CleanIconButton
             description={saved ? 'Dashboard actions' : 'Dashboard actions (unsaved changes)'}

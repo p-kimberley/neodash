@@ -1,4 +1,4 @@
-import { CircularProgress } from '@mui/material';
+import { LoadingSpinner } from '@neo4j-ndl/react';
 import debounce from 'lodash/debounce';
 import React, { useCallback } from 'react';
 import { ParameterSelectProps } from './ParameterSelect';
@@ -83,7 +83,7 @@ const FreeTextParameterSelectComponent = (props: ParameterSelectProps) => {
       />
       {manualParameterSave ? <SelectionConfirmationButton onClick={() => manualHandleParametersUpdate()} /> : <></>}
       {running && !manualParameterSave ? (
-        <CircularProgress size={18} style={{ position: 'absolute', right: '20px' }} />
+        <LoadingSpinner size='small' style={{ position: 'absolute', right: '20px' }} />
       ) : (
         <></>
       )}

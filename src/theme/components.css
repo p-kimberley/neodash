@@ -973,3 +973,63 @@ body {
 .nd-dashboard-panel .ndl-btn .ndl-btn-inner {
   justify-content: flex-start;
 }
+
+/* Dashboard JSON in the import, export and upgrade dialogs (over the text area's size font). */
+.ndl-text-area.nd-json-text textarea {
+  font-family: var(--nd-font-mono);
+  font-size: var(--nd-text-sm);
+  line-height: 1.5;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}
+
+/* Properties of a node or relationship (graph popup, tooltip and inspector). */
+.nd-props-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--nd-text-sm);
+  color: var(--nd-text-secondary);
+}
+.nd-props-table th,
+.nd-props-table td {
+  padding: 6px 12px 6px 0;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--nd-border);
+  overflow-wrap: anywhere;
+}
+.nd-props-table thead th {
+  font-weight: 600;
+  color: var(--nd-text-muted);
+}
+.nd-props-table tbody th {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.nd-props-table tr:last-child > * {
+  border-bottom: 0;
+}
+.nd-props-table .nd-props-table-check {
+  text-align: center;
+}
+
+/* The hover tooltip on graph nodes and relationships (built as HTML in GraphChartTooltip). */
+.nd-graph-tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 360px;
+  padding: 8px 12px;
+  background: var(--nd-surface-raised);
+  color: var(--nd-text);
+  border: 1px solid var(--nd-border);
+  border-radius: var(--nd-radius-md);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  font-family: var(--nd-font-sans);
+  font-size: var(--nd-text-sm);
+}
+.nd-graph-tooltip .nd-props-table th,
+.nd-graph-tooltip .nd-props-table td {
+  padding: 3px 8px 3px 0;
+}

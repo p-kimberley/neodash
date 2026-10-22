@@ -1,8 +1,7 @@
 import React from 'react';
 import { DocumentArrowDownIconOutline } from '@neo4j-ndl/react/icons';
-import { Dialog, OutlinedButton } from '@neo4j-ndl/react';
+import { Dialog, OutlinedButton, TextArea } from '@neo4j-ndl/react';
 import { valueIsArray, valueIsObject } from '../../../chart/ChartUtils';
-import { TextareaAutosize } from '@mui/material';
 
 /**
  * Configures setting the current Neo4j database connection for the dashboard.
@@ -64,12 +63,14 @@ export const NeoDashboardSidebarExportModal = ({ open, dashboard, handleClose })
         </OutlinedButton>
         <br />
         <br />
-        <TextareaAutosize
-          style={{ minHeight: '500px', width: '100%', border: '1px solid lightgray' }}
-          className={'textinput-linenumbers'}
+        <TextArea
+          isFluid
+          isReadOnly
+          className='nd-json-text'
+          ariaLabel='Dashboard JSON'
           value={dashboardString}
-          aria-label=''
           placeholder='Your dashboard JSON should be displayed here.'
+          htmlAttributes={{ rows: 24, spellCheck: false }}
         />
       </Dialog.Content>
     </Dialog>

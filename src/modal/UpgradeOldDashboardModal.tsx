@@ -1,6 +1,5 @@
 import React from 'react';
-import { TextareaAutosize } from '@mui/material';
-import { Dialog, FilledButton } from '@neo4j-ndl/react';
+import { Dialog, FilledButton, TextArea } from '@neo4j-ndl/react';
 import { TrashIconOutline, PlayIconSolid } from '@neo4j-ndl/react/icons';
 import { createUUID } from '../utils/uuid';
 
@@ -41,13 +40,13 @@ export const NeoUpgradeOldDashboardModal = ({ open, text, clearOldDashboard, loa
               <PlayIconSolid className='btn-icon-base-r' />
             </FilledButton>
           </div>
-          <TextareaAutosize
-            style={{ minHeight: '200px', width: '100%', border: '1px solid lightgray' }}
-            className={'textinput-linenumbers'}
-            onChange={() => {}}
+          <TextArea
+            isFluid
+            isReadOnly
+            className='nd-json-text'
+            ariaLabel='Dashboard JSON'
             value={text ? text : ''}
-            aria-label=''
-            placeholder=''
+            htmlAttributes={{ rows: 10, spellCheck: false }}
           />
         </Dialog.Content>
       </Dialog>

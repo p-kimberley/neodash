@@ -1,7 +1,6 @@
 import React from 'react';
 import ShowMoreText from '../../../component/text/ShowMoreText';
-import { Checkbox, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import { TextLink } from '@neo4j-ndl/react';
+import { Checkbox, TextLink } from '@neo4j-ndl/react';
 // import DOMPurify from 'dompurify';
 
 export const formatProperty = (property) => {
@@ -53,62 +52,49 @@ export const GraphEntityInspectionTable = ({
     }
   }
 
-  const tableTextColor = 'var(--nd-text-secondary)';
-
   return (
-    <TableContainer>
-      <Table size='small'>
-        {hasPropertyToShow ? (
-          <TableHead>
-            <TableRow>
-              <TableCell align='left' style={{ color: tableTextColor }}>
-                Property
-              </TableCell>
-              <TableCell align='left' style={{ color: tableTextColor }}>
-                Value
-              </TableCell>
-              {checklistEnabled ? <TableCell align='center'>Select Property</TableCell> : <></>}
-            </TableRow>
-          </TableHead>
+    <table className='nd-props-table'>
+      {hasPropertyToShow ? (
+        <thead>
+          <tr>
+            <th scope='col'>Property</th>
+            <th scope='col'>Value</th>
+            {checklistEnabled ? <th scope='col'>Select Property</th> : <></>}
+          </tr>
+        </thead>
+      ) : (
+        <></>
+      )}
+      <tbody>
+        {!hasPropertyToShow ? (
+          <tr key='empty-row'>
+            <th scope='row'>(No properties)</th>
+          </tr>
         ) : (
-          <></>
+          Object.keys(entity.properties)
+            .sort()
+            .map((key) => (
+              <tr key={key}>
+                <th scope='row'>{key}</th>
+                <td>
+                  <ShowMoreText lines={2}>{formatProperty(entity?.properties[key])}</ShowMoreText>
+                </td>
+                {checklistEnabled ? (
+                  <td className='nd-props-table-check'>
+                    <Checkbox
+                      ariaLabel={`Select ${key}`}
+                      isChecked={checkedParameters.includes(key)}
+                      onChange={(event) => handleCheckboxClick(key, event.target.checked)}
+                    />
+                  </td>
+                ) : (
+                  <></>
+                )}
+              </tr>
+            ))
         )}
-        <TableBody>
-          {!hasPropertyToShow ? (
-            <TableRow key='empty-row'>
-              <TableCell component='th' scope='row'>
-                (No properties)
-              </TableCell>
-            </TableRow>
-          ) : (
-            Object.keys(entity.properties)
-              .sort()
-              .map((key) => (
-                <TableRow key={key}>
-                  <TableCell component='th' scope='row' style={{ color: tableTextColor }}>
-                    {key}
-                  </TableCell>
-                  <TableCell align={'left'} style={{ color: tableTextColor }}>
-                    <ShowMoreText lines={2}>{formatProperty(entity?.properties[key])}</ShowMoreText>
-                  </TableCell>
-                  {checklistEnabled ? (
-                    <TableCell align={'center'}>
-                      <Checkbox
-                        color='default'
-                        onChange={(event) => {
-                          handleCheckboxClick(key, event.target.checked);
-                        }}
-                      />
-                    </TableCell>
-                  ) : (
-                    <></>
-                  )}
-                </TableRow>
-              ))
-          )}
-        </TableBody>
-      </Table>
-    </TableContainer>
+      </tbody>
+    </table>
   );
 };
 

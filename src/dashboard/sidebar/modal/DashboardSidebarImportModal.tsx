@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { PlayIconSolid, DocumentPlusIconOutline } from '@neo4j-ndl/react/icons';
-import { Dialog, FilledButton, OutlinedButton } from '@neo4j-ndl/react';
-import TextareaAutosize from '@mui/material/TextareaAutosize';
+import { Dialog, FilledButton, OutlinedButton, TextArea } from '@neo4j-ndl/react';
 
 export const NeoDashboardSidebarImportModal = ({ open, onImport, handleClose }) => {
   const [text, setText] = React.useState('');
@@ -28,15 +27,15 @@ export const NeoDashboardSidebarImportModal = ({ open, onImport, handleClose }) 
         <br />
         <b>Importing will discard your current draft, if any.</b>
         <br /> <br />
+        <TextArea
+          isFluid
+          className='nd-json-text'
+          ariaLabel='Dashboard JSON'
+          value={text}
+          placeholder='Paste a dashboard JSON file here...'
+          htmlAttributes={{ rows: 10, spellCheck: false, onChange: (e) => setText(e.target.value) }}
+        />
       </Dialog.Content>
-      <TextareaAutosize
-        style={{ minHeight: '200px', width: '100%', border: '1px solid lightgray' }}
-        className={'textinput-linenumbers'}
-        onChange={(e) => setText(e.target.value)}
-        value={text}
-        aria-label=''
-        placeholder='Paste a dashboard JSON file here...'
-      />
       <Dialog.Actions>
         <OutlinedButton
           onClick={() => {

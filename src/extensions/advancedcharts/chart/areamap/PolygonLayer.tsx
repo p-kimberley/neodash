@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
-import { Button } from '@mui/material';
+import { FilledButton } from '@neo4j-ndl/react';
 import { categoricalColorSchemes } from '../../../../config/ColorConfig';
 import { abbreviateNumber } from '../../../../chart/map/MapUtils';
 
@@ -235,15 +235,15 @@ export const MapBoundary = ({ map, dimensions, data, props, featureLevel0, featu
 
   const resetButton = (
     <div className='nd-map-reset'>
-      <Button
-        variant='contained'
+      <FilledButton
+        size='small'
         onClick={() => {
           setDrilledInto(undefined);
           map?.easeTo(WORLD_VIEW);
         }}
       >
         Reset View
-      </Button>
+      </FilledButton>
     </div>
   );
 

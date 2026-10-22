@@ -1,4 +1,3 @@
-import { Chip, Tooltip } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import { QueryStatus, runCypherQuery } from './ReportQueryRunner';
 import debounce from 'lodash/debounce';
@@ -10,8 +9,9 @@ import { useContext } from 'react';
 import NeoTableChart from '../chart/table/TableChart';
 import { getReportTypes } from '../extensions/ExtensionUtils';
 import { SELECTION_TYPES } from '../config/CardConfig';
-import { LoadingSpinner } from '@neo4j-ndl/react';
-import { EllipsisVerticalIconOutline, ExclamationTriangleIconSolid } from '@neo4j-ndl/react/icons';
+import { LoadingSpinner, ReadOnlyTag } from '@neo4j-ndl/react';
+import { Tip } from '../component/text/Tip';
+import { Cog6ToothIconOutline, ExclamationTriangleIconSolid } from '@neo4j-ndl/react/icons';
 import { connect } from 'react-redux';
 import { setPageNumberThunk } from '../settings/SettingsThunks';
 import { EXTENSIONS } from '../extensions/ExtensionConfig';
@@ -242,12 +242,9 @@ export const NeoReport = ({
     return (
       <div className={'n-text-neutral-text-default'} style={{ padding: 15 }}>
         No query specified. <br /> Use the &nbsp;
-        <Chip
-          style={{ backgroundColor: '#dddddd' }}
-          size='small'
-          icon={<EllipsisVerticalIconOutline className='btn-icon-base-r' />}
-          label='Report Settings'
-        />{' '}
+        <ReadOnlyTag size='small' leadingVisual={<Cog6ToothIconOutline />}>
+          Report Settings
+        </ReadOnlyTag>{' '}
         button to get started.
       </div>
     );
@@ -296,18 +293,19 @@ export const NeoReport = ({
       <div style={{ height: '100%', marginTop: '0px', overflow: reportTypes[type].allowScrolling ? 'auto' : 'hidden' }}>
         <div style={{ marginBottom: '-31px' }}>
           <div style={{ display: 'flex' }}>
-            <Tooltip
-              title={`Over ${rowLimit} row(s) were returned, results have been truncated.`}
-              placement='left'
-              aria-label='host'
-              disableInteractive
-            >
-              <ExclamationTriangleIconSolid
-                aria-label={'Exclamation'}
-                className='icon-base n-z-10'
-                style={{ marginTop: '2px', marginRight: '20px', marginLeft: 'auto', color: 'orange' }}
-              />
-            </Tooltip>
+            <Tip title={`Over ${rowLimit} row(s) were returned, results have been truncated.`} placement='left'>
+              <span
+                className='n-z-10'
+                style={{ marginTop: '2px', marginRight: '20px', marginLeft: 'auto', display: 'inline-flex' }}
+                tabIndex={0}
+              >
+                <ExclamationTriangleIconSolid
+                  aria-label='Results truncated'
+                  className='icon-base'
+                  style={{ color: 'var(--theme-color-warning-icon)' }}
+                />
+              </span>
+            </Tip>
           </div>
         </div>
         <ChartType

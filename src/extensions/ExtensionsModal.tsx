@@ -8,7 +8,7 @@ import { setExtensionReducerEnabled } from './state/ExtensionActions';
 import { Dialog, TextLink, Typography, Checkbox, IconButton, StatusLabel } from '@neo4j-ndl/react';
 import { PuzzlePieceIconSolid } from '@neo4j-ndl/react/icons';
 import { Section, SectionContent } from '../modal/ModalUtils';
-import Tooltip from '@mui/material/Tooltip/Tooltip';
+import { Tip } from '../component/text/Tip';
 import { docsUrl } from '../utils/docs';
 
 const NeoExtensionsModal = ({
@@ -74,7 +74,7 @@ const NeoExtensionsModal = ({
                               </td>
                               <td style={{ width: 50 }}></td>
                               <td style={{ float: 'right' }}>
-                                <Tooltip title='Enable the extension' aria-label='' disableInteractive>
+                                <Tip title='Enable the extension'>
                                   <span>
                                     <Checkbox
                                       label='Active'
@@ -102,7 +102,7 @@ const NeoExtensionsModal = ({
                                       htmlAttributes={{ id: `checkbox-${e.name}`, name: 'enable' }}
                                     />
                                   </span>
-                                </Tooltip>
+                                </Tip>
                               </td>
                             </tr>
                             <tr>

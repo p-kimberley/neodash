@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
-import { List, ListItem } from '@mui/material';
 import debounce from 'lodash/debounce';
 import { getModelClientObject, getQueryTranslatorDefaultConfig } from '../QueryTranslatorConfig';
 import { QUERY_TRANSLATOR_HISTORY_PREFIX, getQueryTranslatorSettings } from '../state/QueryTranslatorSelector';
@@ -142,14 +141,14 @@ export const ClientSettings = ({
   );
 
   const component = (
-    <List style={{ marginLeft: 0, marginRight: 0 }}>
+    <div>
       {/* Only render the base settings (required for auth) if no authentication is available. */}
       {Object.keys(defaultSettings)
         .filter((setting) => defaultSettings[setting].authentication == true || status == Status.AUTHENTICATED)
         .map((setting) => {
           let disabled = checkIfDisabled(setting);
           return (
-            <ListItem key={`list-${setting}`} style={{ padding: 0 }}>
+            <div key={`list-${setting}`} className='n-flex n-items-center'>
               <NeoSetting
                 key={setting}
                 style={{ marginLeft: 0, marginRight: 0 }}
@@ -171,7 +170,7 @@ export const ClientSettings = ({
                 }}
               />
               {defaultSettings[setting]?.hasAuthButton ? authButton : <></>}
-            </ListItem>
+            </div>
           );
         })}
       <br />
@@ -200,7 +199,7 @@ export const ClientSettings = ({
       ) : (
         <></>
       )}
-    </List>
+    </div>
   );
   return component;
 };
