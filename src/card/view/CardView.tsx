@@ -44,7 +44,10 @@ const NeoCardView = ({
   expanded,
   onToggleCardExpand,
 }) => {
-  const reportHeight = heightPx - CARD_FOOTER_HEIGHT - CARD_HEADER_HEIGHT + 11;
+  // With field selectors below, the report stops where they start (they end 12px above the card's
+  // edge); without, it fills the card down to its border.
+  const reportHeight = heightPx - CARD_FOOTER_HEIGHT - CARD_HEADER_HEIGHT + 19;
+  const reportHeightWithoutFooter = heightPx - CARD_HEADER_HEIGHT;
   const cardHeight = heightPx - CARD_FOOTER_HEIGHT - CARD_HEADER_HEIGHT + 95;
   const ref = React.useRef(undefined);
 
@@ -171,10 +174,10 @@ const NeoCardView = ({
     // Starts below the title row (it used to overlap it by 9px, covering the buttons' lower edge).
     height: expanded
       ? withoutFooter
-        ? 'calc(100% - 9px)'
-        : `calc(100% - ${CARD_FOOTER_HEIGHT + 9}px)`
+        ? 'calc(100% - 3px)'
+        : `calc(100% - ${CARD_FOOTER_HEIGHT + 4}px)`
       : withoutFooter
-        ? `${reportHeight + CARD_FOOTER_HEIGHT - (reportTypeHasNoFooter ? 0 : 20)}px`
+        ? `${reportHeightWithoutFooter}px`
         : `${reportHeight}px`,
     overflow: 'auto',
   };
