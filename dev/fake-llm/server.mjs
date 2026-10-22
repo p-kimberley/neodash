@@ -25,6 +25,7 @@ const REPORTS = {
     query: 'MATCH (o:Order) RETURN o.channel AS channel, count(o) AS orders ORDER BY orders DESC',
     selection: { index: 'channel', value: 'orders' },
     why: 'How orders split across sales channels.',
+    description: 'Bar chart: sales channels along the bottom, number of orders up the side.',
   },
   segment: {
     type: 'pie',
@@ -32,6 +33,7 @@ const REPORTS = {
     query: 'MATCH (c:Customer) RETURN c.segment AS segment, count(c) AS customers ORDER BY customers DESC',
     selection: { index: 'segment', value: 'customers' },
     why: 'The mix of customer segments.',
+    description: 'Pie chart with one slice per customer segment, sized by its number of customers.',
   },
   month: {
     type: 'line',
@@ -39,6 +41,7 @@ const REPORTS = {
     query: "MATCH (o:Order) RETURN date.truncate('month', o.date) AS month, sum(o.total) AS revenue ORDER BY month",
     selection: { x: 'month', value: ['revenue'] },
     why: 'Revenue over time.',
+    description: 'Line chart: months along the bottom, total revenue up the side.',
   },
   product: {
     type: 'bar',
@@ -47,6 +50,7 @@ const REPORTS = {
       'MATCH (:Order)-[:CONTAINS]->(p:Product) RETURN p.name AS product, count(*) AS units ORDER BY units DESC LIMIT 10',
     selection: { index: 'product', value: 'units' },
     why: 'The best-selling products.',
+    description: 'Bar chart of the 10 best-selling products: products along one axis, units sold along the other.',
   },
 };
 const reportFor = (text) =>
@@ -58,6 +62,15 @@ const reportFor = (text) =>
         ? REPORTS.product
         : REPORTS.channel;
 
+/** Settings a request asks for, by keyword. */
+const settingsFor = (request) => {
+  const settings = {};
+  if (/horizontal/i.test(request)) settings.layout = 'horizontal';
+  if (/legend/i.test(request)) settings.legend = true;
+  if (/stacked/i.test(request)) settings.groupMode = 'stacked';
+  return settings;
+};
+
 /** Build with AI requests (told apart by their instructions); undefined for other questions. */
 const builderAnswer = (messages) => {
   const system = String(messages.find((m) => m.role === 'system')?.content ?? '');
@@ -67,7 +80,30 @@ const builderAnswer = (messages) => {
   if (system.startsWith('You suggest reports')) {
     const first = reportFor(request);
     const others = Object.values(REPORTS).filter((r) => r !== first);
-    return { suggestions: [first, ...others].slice(0, 3) };
+    if (!request || /^Suggest reports/.test(request)) return { options: [first, ...others].slice(0, 3) };
+    // With a request: the matching report with the settings it asks for (recommended), the same data as a
+    // table, and another report.
+    const settings = settingsFor(request);
+    const note = [
+      settings.layout === 'horizontal' ? 'Bars run sideways.' : '',
+      settings.legend ? 'A legend is shown.' : '',
+      settings.groupMode === 'stacked' ? 'Bars are stacked.' : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+    let recommended = { ...first, settings, settingsNote: note };
+    // "broken" first answers with a misspelt label, so the checks and the correction can be seen.
+    if (/broken/i.test(request) && !correcting)
+      recommended = { ...recommended, query: first.query.replace(':Order', ':Ordr') };
+    const table = {
+      type: 'table',
+      title: `${first.title} (table)`,
+      query: first.query,
+      selection: {},
+      settings: {},
+      description: `Table with one row per ${Object.values(first.selection)[0]}, and its value in a column.`,
+    };
+    return { options: [recommended, table, others[0]] };
   }
   if (system.startsWith('You build one report')) {
     const report = reportFor(request);
@@ -76,11 +112,7 @@ const builderAnswer = (messages) => {
     return report;
   }
   if (system.startsWith('Choose settings')) {
-    const settings = {};
-    if (/horizontal/i.test(request)) settings.layout = 'horizontal';
-    if (/legend/i.test(request)) settings.legend = true;
-    if (/stacked/i.test(request)) settings.groupMode = 'stacked';
-    return { settings };
+    return { settings: settingsFor(request) };
   }
   return undefined;
 };

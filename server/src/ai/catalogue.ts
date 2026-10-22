@@ -86,6 +86,12 @@ export interface ReportSpec {
   settings: Record<string, unknown>;
   /** Why this report (suggestions), or what it shows. */
   why?: string;
+  /** What the report creates, in plain language (options). */
+  description?: string;
+  /** What its settings change, in plain language (options; empty without settings). */
+  settingsNote?: string;
+  /** The first rows of its query's trial run, as plain values, for a preview in the browser. */
+  preview?: { columns: string[]; rows: unknown[][] };
 }
 
 export const suggestionSchema = z.object({

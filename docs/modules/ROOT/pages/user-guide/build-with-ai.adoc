@@ -12,11 +12,12 @@ Build with AI is part of NeoDash: it is available in every dashboard when the se
 
 A new report (or any report without a query) shows two buttons: *Configure*, which opens its settings, and *Build with AI*.
 
-. Click *Build with AI*. Up to three suggestions appear, based on your data and the dashboard (its title, pages, parameters and other reports, which they avoid repeating).
-. Click a suggestion to build it, or describe the report you want, for example "revenue per month as a line" or "top 10 products as horizontal bars with a legend", and click *Build* (or press Ctrl+Enter). The suggestions follow your description as you type.
+. Click *Build with AI*. Up to three options appear, based on your data and the dashboard (its title, pages, parameters and other reports, which they avoid repeating).
+. Or describe the report you want, for example "revenue per month as a line" or "top 10 products as horizontal bars with a legend". When you stop typing (or press Enter), up to three options for it appear; the first is the one recommended.
+. Each option shows a small preview drawn from its data, a plain description of what it creates (the kind of chart, what is on each axis, how it is coloured), and a note on any settings it sets (for example "Bars run sideways. A legend is shown."). Click one to build it.
 . The report is built and runs. It is not saved until you save the dashboard, and the message that confirms it has *Undo*.
 
-To change a report later, open its settings and type into *Ask AI* at the top, for example "make it a stacked bar chart by region" or "show a legend", then press Enter or *Apply*. Run the report to see it; *Undo* puts it back.
+To change a report later, click *Edit*, then *Change with AI* (beside the report's type and database), and describe the change, for example "make it a stacked bar chart by region" or "show a legend". Options for the change appear the same way; click one to apply it. *Save* keeps it, *Cancel* (or *Undo*) puts the report back.
 
 == What is checked
 

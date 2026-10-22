@@ -424,16 +424,16 @@ body {
   list-style: disc;
 }
 
-.nd-ai-suggestions {
+.nd-ai-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nd-ai-option-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-
-.nd-ai-suggestions-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--theme-color-neutral-text-weak);
 }
 
 .nd-ai-suggestions-none {
@@ -441,18 +441,16 @@ body {
   color: var(--theme-color-neutral-text-weaker);
 }
 
-.nd-ai-suggestion-skeleton {
-  border-radius: 8px;
-}
-
-.nd-ai-suggestion {
+/* One option: a 60px preview on the left, then its title, description and settings note (at most
+   three lines next to the preview). */
+.nd-ai-option {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   width: 100%;
-  padding: 8px 10px;
+  padding: 8px;
   border: 1px solid var(--theme-color-neutral-border-weak);
-  border-radius: 8px;
+  border-radius: 10px;
   background: transparent;
   color: var(--theme-color-neutral-text-default);
   font: inherit;
@@ -463,77 +461,98 @@ body {
     background-color 0.15s;
 }
 
-.nd-ai-suggestion:hover:not(:disabled),
-.nd-ai-suggestion:focus-visible {
+button.nd-ai-option:hover,
+button.nd-ai-option:focus-visible {
   border-color: var(--theme-color-primary-border-strong);
   background: color-mix(in srgb, var(--theme-color-primary-bg-weak) 45%, transparent);
   outline: none;
 }
 
-.nd-ai-suggestion:disabled {
+.nd-ai-option-loading {
   cursor: progress;
-  opacity: 0.7;
 }
 
-.nd-ai-suggestion-icon {
-  display: inline-flex;
+.nd-ai-preview,
+.nd-ai-option-skeleton-preview {
   flex: none;
-  width: 20px;
-  height: 20px;
-  color: var(--theme-color-primary-icon);
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  background: var(--theme-color-neutral-bg-default);
 }
 
-.nd-ai-suggestion-text {
+.nd-ai-option-text {
   display: flex;
-  flex-direction: column;
-  min-width: 0;
   flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
 }
 
-.nd-ai-suggestion-title {
+.nd-ai-option-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 14px;
   font-weight: 600;
+  line-height: 18px;
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.nd-ai-suggestion-why {
-  font-size: 12px;
-  color: var(--theme-color-neutral-text-weak);
+.nd-ai-option-title-text {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.nd-ai-suggestion-type {
+/* In narrow reports the type gives way first (the preview shows what it is). */
+@container (max-width: 320px) {
+  .nd-ai-option-type {
+    display: none;
+  }
+}
+
+.nd-ai-option-list {
+  container-type: inline-size;
+}
+
+.nd-ai-option-recommended {
   flex: none;
+  padding: 1px 6px;
+  border-radius: 9px;
+  background: var(--theme-color-primary-bg-weak);
+  color: var(--theme-color-primary-text);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.nd-ai-option-type {
+  flex: none;
+  margin-left: auto;
   font-size: 12px;
+  font-weight: 400;
   color: var(--theme-color-neutral-text-weaker);
 }
 
-/* While the query is being described in English. */
-.nd-describing {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 120px;
-  padding: 12px;
-  border: 1px dashed var(--theme-color-neutral-border-strong);
+.nd-ai-option-description,
+.nd-ai-option-note {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.nd-ai-option-description {
+  -webkit-line-clamp: 2;
+  color: var(--theme-color-neutral-text-default);
+}
+
+.nd-ai-option-note {
+  -webkit-line-clamp: 1;
   color: var(--theme-color-neutral-text-weak);
-  font-size: 13px;
-}
-
-.nd-ask-ai {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.nd-ask-ai > :first-child {
-  flex: 1;
-  min-width: 0;
 }
 
 .nd-empty-action-ai .nd-empty-action-icon {
@@ -1434,6 +1453,23 @@ body:has(.nd-maximised) .ndl-menu {
 /* The settings face's query editor and fields. */
 .nd-card-settings-content {
   padding: 16px;
+}
+
+/* Type and Database, with "Change with AI" at the right of the same row. */
+.nd-card-settings-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.ndl-btn.nd-change-with-ai {
+  margin-left: auto;
+}
+
+.nd-card-settings-top .ndl-combobox.ndl-combobox-field.nd-card-settings-select {
+  margin-right: 0;
 }
 
 /* Suggestions under a text field (SuggestInput). */

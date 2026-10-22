@@ -87,6 +87,12 @@ export interface AiReport {
   selection: Record<string, string | string[]>;
   settings: Record<string, unknown>;
   why?: string;
+  /** What the option creates, in plain language. */
+  description?: string;
+  /** What its settings change, in plain language. */
+  settingsNote?: string;
+  /** The first rows of its query's trial run, for a preview. */
+  preview?: { columns: string[]; rows: any[][] };
 }
 
 export interface AiRequest {

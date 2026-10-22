@@ -81,6 +81,53 @@ export function kindOf(value: unknown): ValueKind | undefined {
 
 const MISSING = /the missing (label name|relationship type|property name) is: ([^)]+)\)/i;
 
+const toNumber = (v: any) => (neo4j.isInt(v) ? v.toNumber() : v);
+
+/** Coordinates of a node, from latitude/longitude properties or a point property. */
+const coordinatesOf = (properties: Record<string, any>) => {
+  const lat = properties.latitude ?? properties.lat;
+  const lon = properties.longitude ?? properties.long ?? properties.lon ?? properties.lng;
+  if (lat !== undefined && lon !== undefined) return { lat: Number(toNumber(lat)), lon: Number(toNumber(lon)) };
+  for (const value of Object.values(properties)) {
+    if (neo4j.isPoint(value as any)) return { lat: Number((value as any).y), lon: Number((value as any).x) };
+  }
+  return {};
+};
+
+/**
+ * A value from Neo4j as plain JSON for a preview: numbers, text, dates as text, nodes and
+ * relationships as just enough to draw them.
+ */
+export function plainValue(value: unknown, depth = 0): unknown {
+  if (value === null || value === undefined) return null;
+  if (neo4j.isInt(value)) return (value as any).toNumber();
+  if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') return value;
+  if (neo4j.isNode(value as any)) {
+    const node = value as any;
+    return { node: node.labels?.[0] ?? '', id: node.elementId, ...coordinatesOf(node.properties ?? {}) };
+  }
+  if (neo4j.isRelationship(value as any)) {
+    const rel = value as any;
+    return { rel: rel.type, start: rel.startNodeElementId, end: rel.endNodeElementId };
+  }
+  if (neo4j.isPath(value as any)) {
+    const path = value as any;
+    return {
+      path: path.segments.flatMap((s: any) => [plainValue(s.start), plainValue(s.relationship), plainValue(s.end)]),
+    };
+  }
+  if (Array.isArray(value)) return depth > 2 ? [] : value.slice(0, 20).map((v) => plainValue(v, depth + 1));
+  if (kindOf(value) === 'datetime' || kindOf(value) === 'point') return String(value);
+  if (typeof value === 'object' && depth <= 2) {
+    return Object.fromEntries(
+      Object.entries(value as object)
+        .slice(0, 20)
+        .map(([k, v]) => [k, plainValue(v, depth + 1)])
+    );
+  }
+  return null;
+}
+
 /** The database checks, through the driver: EXPLAIN and a short trial run, both read-only. */
 export class DriverChecks implements CypherChecks {
   constructor(private readonly driver: Driver) {}
@@ -110,15 +157,22 @@ export class DriverChecks implements CypherChecks {
       const columns = (await result.keys()) as string[];
       const kinds: Record<string, Set<ValueKind>> = Object.fromEntries(columns.map((c) => [c, new Set<ValueKind>()]));
       let rows = 0;
+      const sample: unknown[][] = [];
       for await (const record of result) {
         rows++;
         for (const column of columns) {
           const kind = kindOf(record.get(column));
           if (kind) kinds[column]!.add(kind);
         }
+        sample.push(columns.map((column) => plainValue(record.get(column))));
         if (rows >= PROBE_ROWS) break;
       }
-      return { columns, rows, kinds: Object.fromEntries(Object.entries(kinds).map(([c, k]) => [c, [...k]])) };
+      return {
+        columns,
+        rows,
+        sample,
+        kinds: Object.fromEntries(Object.entries(kinds).map(([c, k]) => [c, [...k]])),
+      };
     } catch (e) {
       return { error: (e as Error).message };
     } finally {
@@ -205,6 +259,42 @@ const CORE_RULES = `Rules for queries:
 
 const REPORT_JSON =
   '{"type": "<report type key>", "title": "<short title>", "query": "<Cypher, or Markdown for text reports>", "selection": {"<field>": "<column>"}, "why": "<one short sentence>"}';
+
+const OPTION_JSON =
+  '{"type": "<report type key>", "title": "<short title>", "query": "<Cypher, or Markdown for text reports>", "selection": {"<field>": "<column>"}, "settings": {"<setting>": <value>}, "description": "<plain language: what it creates>", "settingsNote": "<plain language: what the settings change, or empty>"}';
+
+/** Problems with settings (or the plain-language texts): corrected if possible, else left out. */
+const isSettingProblem = (p: Problem) => p.path.startsWith('settings') || p.path === 'description';
+
+/** Each report type's settings and their allowed values, briefly, for the model. */
+function describeSettingsByType(catalogue: Catalogue): string {
+  return catalogue.types
+    .filter((t) => t.settings.length)
+    .map(
+      (t) =>
+        `- ${t.key}: ${t.settings
+          .slice(0, 60)
+          .map((s) =>
+            s.kind === 'choice'
+              ? `${s.key} (${(s.values ?? [])
+                  .slice(0, 12)
+                  .map((v) => JSON.stringify(v))
+                  .join('|')})`
+              : `${s.key} (${s.kind === 'color' ? 'CSS colour' : s.kind})`
+          )
+          .join(', ')}`
+    )
+    .join('\n');
+}
+
+/** A plain description from a report's type and fields, when the model gave none. */
+function fallbackDescription(spec: ReportSpec, type: ReportTypeDef): string {
+  const fields = Object.entries(spec.selection).map(([key, value]) => {
+    const label = type.fields.find((f) => f.key === key)?.label ?? key;
+    return `${label.toLowerCase()}: ${[value].flat().join(', ')}`;
+  });
+  return `${type.label}${fields.length ? ` (${fields.join('; ')})` : ''}.`;
+}
 
 /** A JSON schema for one report's core, so constrained decoding only produces known report types. */
 const coreJsonSchema = (catalogue: Catalogue) => ({
@@ -356,6 +446,8 @@ export class ReportBuilder {
         },
       ];
     }
+    // The trial run's first rows go to the browser for a preview (never to the model).
+    spec.preview = { columns: result.columns, rows: result.sample ?? [] };
     return checkColumns(spec, type, result);
   }
 
@@ -374,19 +466,32 @@ export class ReportBuilder {
       };
     }
     const { spec, problems } = checkSpec(answer, catalogue);
-    if (!spec || problems.length) return { spec, problems };
+    // Wrong settings don't stop the query being checked (they are corrected, or left out at the end).
+    if (!spec || problems.some((p) => !isSettingProblem(p))) return { spec, problems };
     const type = findType(catalogue, spec.type)!;
     // Laid out one clause per line; the laid-out query is the one checked and used.
     if (type.input === 'cypher') spec.query = formatCypher(spec.query);
-    return { spec, problems: await this.checkQuery(database, spec, type, names, parameters, probe) };
+    return {
+      spec,
+      problems: [...problems, ...(await this.checkQuery(database, spec, type, names, parameters, probe))],
+    };
   }
 
-  private async systemPrompt(database: string, catalogue: Catalogue, context: BuildContext, task: string) {
+  private async systemPrompt(
+    database: string,
+    catalogue: Catalogue,
+    context: BuildContext,
+    task: string,
+    withSettings = false
+  ) {
     const schema = await this.llm.schema(database);
     return [
       task,
       CORE_RULES,
       `Report types:\n${describeTypes(catalogue)}`,
+      ...(withSettings
+        ? [`Settings of each report type (name (allowed values)):\n${describeSettingsByType(catalogue)}`]
+        : []),
       `Schema:\n${schema}`,
       describeContext(context),
     ].join('\n\n');
@@ -499,7 +604,14 @@ export class ReportBuilder {
     return valid;
   }
 
-  /** Up to three checked report suggestions for the dashboard (following the request, if any). */
+  /**
+   * Up to three options for a report, each complete (type, query, fields, the settings the request asks
+   * for) and checked, with a plain-language description; the recommended one first. With a request
+   * they follow it (changing the report when it already has a query); without one they suggest reports
+   * the dashboard doesn't have yet. Options are corrected as a whole list until all are right, the same
+   * problems repeat or the attempts run out; then wrong settings are left out, and options that are
+   * still wrong are dropped.
+   */
   async suggest(request: {
     database: string;
     prompt: string;
@@ -509,48 +621,103 @@ export class ReportBuilder {
     const { database, catalogue } = request;
     const context = contextSchema.parse(request.context ?? {});
     const names = await this.llm.schemaNames(database);
-    const system = await this.systemPrompt(
-      database,
-      catalogue,
-      context,
-      `You suggest reports for NeoDash, a dashboard for Neo4j: up to three different, useful reports that are not already on the dashboard. If the user wrote a request, every suggestion must follow it. Answer with JSON only: {"suggestions": [${REPORT_JSON}, ...]}`
-    );
+    const prompt = request.prompt.trim();
+    const changing = Boolean(context.report.query?.trim());
+    const task = [
+      'You suggest reports for NeoDash, a dashboard for Neo4j. Give up to three options; put the one you recommend first.',
+      prompt
+        ? changing
+          ? 'Each option changes the report described below as the request asks; the options differ in how they do it.'
+          : 'Every option must do what the request asks; the options differ in how they show it (the kind of chart, grouping, layout).'
+        : 'Suggest different, useful reports that are not already on the dashboard.',
+      `Answer with JSON only: {"options": [${OPTION_JSON}, ...]}`,
+      '"description": what the option creates, in plain language for someone who does not know Cypher: the kind of chart, what is on each axis (or what the slices, rows or nodes are), and how it is coloured or grouped. One or two sentences.',
+      `"settings": only settings the request asks for or clearly implies, from the chosen report type's settings (listed below); {} if none. "settingsNote": if there are settings, say briefly in plain words what they change; otherwise "".`,
+    ].join('\n');
+    const system = await this.systemPrompt(database, catalogue, context, task, Boolean(prompt));
     const messages: ChatMessage[] = [
       { role: 'system', content: system },
-      { role: 'user', content: request.prompt.trim() || 'Suggest reports for this dashboard.' },
+      { role: 'user', content: prompt || 'Suggest reports for this dashboard.' },
     ];
+    const option = {
+      ...coreJsonSchema(catalogue),
+      properties: {
+        ...coreJsonSchema(catalogue).properties,
+        settings: { type: 'object' },
+        description: { type: 'string' },
+        settingsNote: { type: 'string' },
+      },
+      required: ['type', 'title', 'query', 'selection', 'description'],
+    };
     const schema = {
       type: 'object',
-      properties: { suggestions: { type: 'array', maxItems: 3, items: coreJsonSchema(catalogue) } },
-      required: ['suggestions'],
+      properties: { options: { type: 'array', maxItems: 3, items: option } },
+      required: ['options'],
     };
 
-    const good: ReportSpec[] = [];
-    for (let attempt = 1; attempt <= Math.min(2, this.options.maxAttempts); attempt++) {
+    type Checked = { spec?: ReportSpec; problems: Problem[] }[];
+    // Options worth keeping from a round: right, or wrong only in settings or the description.
+    const usable = (round: Checked) =>
+      round.filter(({ spec, problems }) => spec && !problems.some((p) => !p.soft && !isSettingProblem(p))).length;
+    let best: Checked = [];
+    let previous = '';
+    const attempts = Math.min(3, this.options.maxAttempts);
+    for (let attempt = 1; attempt <= attempts; attempt++) {
       const answer = await this.chatJson(messages, schema);
-      const parsed = parseJson(answer) as { suggestions?: unknown[] } | undefined;
-      const items = Array.isArray(parsed?.suggestions) ? parsed!.suggestions.slice(0, 3) : [];
-      const failed: string[] = [];
-      for (const [index, item] of items.entries()) {
-        const { spec, problems } = await this.checkCore(item, catalogue, database, names, context.parameters, true);
-        if (spec && !problems.some((p) => !p.soft)) {
-          if (!good.some((g) => g.query === spec.query)) good.push(spec);
-        } else {
-          failed.push(
-            `Suggestion ${index + 1}:\n${problems.map((p) => `- ${p.path ? `${p.path}: ` : ''}${p.message}`).join('\n')}`
-          );
+      const parsed = parseJson(answer) as { options?: unknown[]; suggestions?: unknown[] } | undefined;
+      const items = (
+        Array.isArray(parsed?.options) ? parsed!.options : Array.isArray(parsed?.suggestions) ? parsed!.suggestions : []
+      ).slice(0, 3);
+      const checked: Checked = [];
+      for (const item of items) {
+        const result = await this.checkCore(item, catalogue, database, names, context.parameters, true);
+        if (result.spec && !result.spec.description) {
+          result.problems.push({
+            path: 'description',
+            message: 'Describe in plain language what this option creates (kind of chart, axes, colouring).',
+          });
         }
+        checked.push(result);
       }
-      if (good.length >= 3 || (!failed.length && items.length)) break;
-      // One round of corrections for the ones that failed.
+      // A later round that went worse (e.g. an empty answer) doesn't replace a better one.
+      if (usable(checked) >= usable(best)) best = checked;
+      const failures = checked
+        .map(({ problems }, index) => ({ index, problems: problems.filter((p) => !p.soft) }))
+        .filter(({ problems }) => problems.length);
+      if (items.length && !failures.length) break;
+      const feedback = failures.length
+        ? failures
+            .map(
+              ({ index, problems }) =>
+                `Option ${index + 1}:\n${problems.map((p) => `- ${p.path ? `${p.path}: ` : ''}${p.message}`).join('\n')}`
+            )
+            .join('\n')
+        : 'There were no usable options.';
+      if (feedback === previous) break;
+      previous = feedback;
       messages.push(
         { role: 'assistant', content: answer },
         {
           role: 'user',
-          content: `${failed.join('\n') || 'There were no usable suggestions.'}\nAnswer again with corrected suggestions only (JSON, same shape), leaving out the ones that were right.`,
+          content: `${feedback}\nAnswer again with all the options (the ones that were right too), corrected, as JSON in the same shape.`,
         }
       );
     }
-    return good.slice(0, 3);
+
+    // Keep options whose only remaining problems are with settings (left out) or the description
+    // (written from the report's fields); drop the rest.
+    const options: ReportSpec[] = [];
+    for (const { spec, problems } of best) {
+      if (!spec || problems.some((p) => !p.soft && !isSettingProblem(p))) continue;
+      const type = findType(catalogue, spec.type)!;
+      if (!spec.description) spec.description = fallbackDescription(spec, type);
+      if (!Object.keys(spec.settings).length) spec.settingsNote = undefined;
+      const duplicate = options.some(
+        (o) =>
+          o.type === spec.type && o.query === spec.query && JSON.stringify(o.settings) === JSON.stringify(spec.settings)
+      );
+      if (!duplicate) options.push(spec);
+    }
+    return options.slice(0, 3);
   }
 }

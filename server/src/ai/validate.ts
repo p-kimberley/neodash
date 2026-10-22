@@ -221,6 +221,10 @@ export function checkSpec(raw: unknown, catalogue: Catalogue): { spec?: ReportSp
       selection,
       settings,
       why: typeof r.why === 'string' ? r.why.slice(0, 500) : undefined,
+      description:
+        typeof r.description === 'string' && r.description.trim() ? r.description.trim().slice(0, 600) : undefined,
+      settingsNote:
+        typeof r.settingsNote === 'string' && r.settingsNote.trim() ? r.settingsNote.trim().slice(0, 400) : undefined,
     },
     problems,
   };
@@ -253,6 +257,8 @@ export interface ProbeResult {
   /** The kinds of value seen in each column (nulls left out). */
   kinds: Record<string, ValueKind[]>;
   rows: number;
+  /** The rows seen, as plain values (for previews; never sent to the model). */
+  sample?: unknown[][];
 }
 
 /** Checks a report's field selection against what its query actually returned. */

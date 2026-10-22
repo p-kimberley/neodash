@@ -11,6 +11,8 @@ import { objMerge } from '../../utils/ObjectManipulation';
 import NeoText2CypherQueryEditor from '../../text2cypher/component/OverrideCardQueryEditor';
 import { text2cypherAvailable } from '../../text2cypher/util/Util';
 import { AskAiBox } from '../../ai/AskAiBox';
+import { OutlinedButton } from '@neo4j-ndl/react';
+import { SparklesIconOutline } from '@neo4j-ndl/react/icons';
 
 const NeoCardSettingsContent = ({
   closingSettings = undefined as { current: 'save' | 'cancel' } | undefined,
@@ -33,6 +35,8 @@ const NeoCardSettingsContent = ({
   const debouncedQueryUpdate = useCallback(debounce(onQueryUpdate, 200), []);
   // State to manage the current database entry inside the form
   const [databaseText, setDatabaseText] = React.useState(database);
+  // "Change with AI": the Ask AI box, opened from the button beside Type and Database.
+  const [askOpen, setAskOpen] = React.useState(false);
   const debouncedDatabaseUpdate = useCallback(debounce(onDatabaseChanged, 200), []);
   // When the settings close, typing still on its way is kept (Save) or dropped (Cancel).
   useEffect(
@@ -120,42 +124,56 @@ const NeoCardSettingsContent = ({
 
   return (
     <div className='nd-card-settings-content'>
-      <SelectField
-        label='Type'
-        options={Object.keys(reportTypes).map((option) => ({
-          label: reportTypes[option].label,
-          value: reportTypes[option].label,
-        }))}
-        value={report?.label || ''}
-        onChange={(label) =>
-          label && onTypeUpdate(Object.keys(reportTypes).find((key) => reportTypes[key].label === label))
-        }
-        isSearchable
-        className='nd-card-settings-select'
-        htmlAttributes={{ 'data-test': 'type-dropdown', id: 'type' }}
-      />
-
-      {report?.disableDatabaseSelector == undefined ? (
+      <div className='nd-card-settings-top'>
         <SelectField
-          label='Database'
-          placeholder='neo4j'
-          options={databaseList.map((database) => ({ label: database, value: database }))}
-          value={databaseText}
-          onChange={(database) => {
-            if (database) {
-              setDatabaseText(database);
-              debouncedDatabaseUpdate(database);
-            }
-          }}
+          label='Type'
+          options={Object.keys(reportTypes).map((option) => ({
+            label: reportTypes[option].label,
+            value: reportTypes[option].label,
+          }))}
+          value={report?.label || ''}
+          onChange={(label) =>
+            label && onTypeUpdate(Object.keys(reportTypes).find((key) => reportTypes[key].label === label))
+          }
+          isSearchable
           className='nd-card-settings-select'
-          htmlAttributes={{ id: 'databaseSelector' }}
+          htmlAttributes={{ 'data-test': 'type-dropdown', id: 'type' }}
         />
-      ) : (
-        <></>
-      )}
 
-      <br />
-      <br />
+        {report?.disableDatabaseSelector == undefined ? (
+          <SelectField
+            label='Database'
+            placeholder='neo4j'
+            options={databaseList.map((database) => ({ label: database, value: database }))}
+            value={databaseText}
+            onChange={(database) => {
+              if (database) {
+                setDatabaseText(database);
+                debouncedDatabaseUpdate(database);
+              }
+            }}
+            className='nd-card-settings-select'
+            htmlAttributes={{ id: 'databaseSelector' }}
+          />
+        ) : (
+          <></>
+        )}
+        {text2cypherAvailable() ? (
+          <OutlinedButton
+            size='small'
+            className='nd-change-with-ai'
+            leadingVisual={<SparklesIconOutline />}
+            onClick={() => setAskOpen(!askOpen)}
+            htmlAttributes={{ 'aria-expanded': askOpen }}
+          >
+            Change with AI
+          </OutlinedButton>
+        ) : (
+          <></>
+        )}
+      </div>
+      {askOpen ? <AskAiBox reportId={reportId} onApplied={() => setAskOpen(false)} /> : <></>}
+
       {/* Allow for overriding the code box with a custom component */}
       {report && report.settingsComponent ? (
         <SettingsComponent
@@ -173,7 +191,6 @@ const NeoCardSettingsContent = ({
         <div>
           {/* With a language model on the server: Ask AI changes the whole report, and the query can also
               be written in English (query help only). */}
-          {text2cypherAvailable() ? <AskAiBox reportId={reportId} /> : <></>}
           {text2cypherAvailable() ? (
             <NeoText2CypherQueryEditor
               pagenumber={pagenumber}

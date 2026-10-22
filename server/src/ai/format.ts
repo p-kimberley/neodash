@@ -3,7 +3,20 @@
 // changed: strings, comments and anything inside brackets (pattern comprehensions, subqueries, maps)
 // stay as they are. Queries already spread over several lines are left alone.
 
-const CLAUSES = ['OPTIONAL MATCH', 'MATCH', 'WHERE', 'WITH', 'RETURN', 'ORDER BY', 'SKIP', 'LIMIT', 'UNWIND', 'CALL', 'UNION ALL', 'UNION'];
+const CLAUSES = [
+  'OPTIONAL MATCH',
+  'MATCH',
+  'WHERE',
+  'WITH',
+  'RETURN',
+  'ORDER BY',
+  'SKIP',
+  'LIMIT',
+  'UNWIND',
+  'CALL',
+  'UNION ALL',
+  'UNION',
+];
 
 /** Words that make a following clause keyword part of an expression (STARTS WITH, ENDS WITH, ...). */
 const NOT_A_CLAUSE_AFTER = new Set(['STARTS', 'ENDS', 'OPTIONAL']);

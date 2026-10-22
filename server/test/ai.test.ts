@@ -338,26 +338,111 @@ describe('building a report', () => {
   });
 });
 
-describe('suggesting reports', () => {
-  it('returns up to three checked suggestions, correcting the ones that fail', async () => {
-    const other = {
-      ...GOOD_BAR,
-      title: 'Top products',
-      query: 'MATCH (p:Product) RETURN p.name AS name, count(*) AS total',
-      selection: { index: 'name', value: 'total' },
-    };
+describe('suggesting options', () => {
+  const OTHER = {
+    ...GOOD_BAR,
+    title: 'Top products',
+    query: 'MATCH (p:Product) RETURN p.name AS name, count(*) AS total',
+    selection: { index: 'name', value: 'total' },
+    description: 'Bars of products, with the count on the vertical axis.',
+  };
+  const DESCRIBED = { ...GOOD_BAR, description: 'Vertical bars: segments along the bottom, order counts up the side.' };
+
+  it('returns complete, checked options with plain descriptions, the recommended one first', async () => {
     const { builder, requests } = makeBuilder([
-      { suggestions: [GOOD_BAR, { ...other, query: 'MATCH (p:Ordr) RETURN p.name AS name, count(*) AS total' }] },
-      { suggestions: [other] },
+      {
+        options: [
+          {
+            ...DESCRIBED,
+            settings: { layout: 'horizontal', legend: true },
+            settingsNote: 'Bars run sideways; a legend is shown.',
+          },
+          OTHER,
+        ],
+      },
     ]);
-    const suggestions = await builder.suggest({
+    const options = await builder.suggest({
       database: 'neo4j',
-      prompt: '',
+      prompt: 'orders per segment',
       catalogue: CATALOGUE,
       context: {} as any,
     });
-    expect(suggestions.map((s) => s.title)).toEqual(['Orders per segment', 'Top products']);
-    expect(requests[1].messages.at(-1).content).toMatch(/Suggestion 2:\n- query: the label "Ordr" does not exist/);
+    expect(options.map((o) => o.title)).toEqual(['Orders per segment', 'Top products']);
+    expect(options[0]).toMatchObject({
+      settings: { layout: 'horizontal', legend: true },
+      settingsNote: 'Bars run sideways; a legend is shown.',
+      description: expect.stringMatching(/segments along the bottom/),
+    });
+    // The query is laid out, and the second option has no settings, so no note.
+    expect(options[0]!.query).toContain('\nRETURN');
+    expect(options[1]!.settingsNote).toBeUndefined();
+    // With a request, the model sees each type's settings and their allowed values.
+    expect(requests[0].messages[0].content).toMatch(
+      /- bar: legend \(true\|false\), colors \("default"\|"nivo"\|"set1"\)/
+    );
+    expect(requests[0].response_format.json_schema.schema.properties.options.items.required).toContain('description');
+  });
+
+  it('sends every problem back for the whole list, then keeps the corrected options', async () => {
+    const { builder, requests } = makeBuilder([
+      {
+        options: [
+          { ...DESCRIBED, settings: { layout: 'sideways' } },
+          { ...OTHER, query: 'MATCH (p:Ordr) RETURN p.name AS name, count(*) AS total' },
+        ],
+      },
+      { options: [{ ...DESCRIBED, settings: { layout: 'horizontal' } }, OTHER] },
+    ]);
+    const options = await builder.suggest({ database: 'neo4j', prompt: 'x', catalogue: CATALOGUE, context: {} as any });
+    expect(options.map((o) => o.settings)).toEqual([{ layout: 'horizontal' }, {}]);
+    const feedback = requests[1].messages.at(-1).content;
+    expect(feedback).toMatch(
+      /Option 1:\n- settings\.layout: "sideways" is not allowed .* Use one of: "vertical", "horizontal"/
+    );
+    expect(feedback).toMatch(/Option 2:\n- query: the label "Ordr" does not exist/);
+    expect(feedback).toMatch(/Answer again with all the options/);
+  });
+
+  it('leaves out settings that stay wrong, describes options from their fields if need be, and drops broken ones', async () => {
+    const stubborn = { ...GOOD_BAR, settings: { layout: 'sideways' } };
+    const broken = { ...OTHER, query: 'SELECT 1' };
+    const { builder } = makeBuilder([
+      { options: [stubborn, broken] },
+      { options: [{ ...stubborn }, { ...broken, query: 'SELECT 2' }] },
+      {
+        options: [
+          { ...stubborn, title: 'Orders per segment' },
+          { ...broken, query: 'SELECT 3' },
+        ],
+      },
+    ]);
+    const options = await builder.suggest({ database: 'neo4j', prompt: 'x', catalogue: CATALOGUE, context: {} as any });
+    expect(options).toHaveLength(1);
+    expect(options[0]!.settings).toEqual({});
+    expect(options[0]!.description).toBe('Bar Chart (category: segment; value: orders_count).');
+  });
+
+  it('keeps the best round when a later answer is worse', async () => {
+    const { builder } = makeBuilder([{ options: [DESCRIBED, { ...OTHER, query: 'SELECT 1' }] }, 'not json']);
+    const options = await builder.suggest({ database: 'neo4j', prompt: 'x', catalogue: CATALOGUE, context: {} as any });
+    expect(options.map((o) => o.title)).toEqual(['Orders per segment']);
+  });
+
+  it('suggests new reports without a request, and changes the report with one when it has a query', async () => {
+    const empty = makeBuilder([{ options: [DESCRIBED] }]);
+    await empty.builder.suggest({ database: 'neo4j', prompt: '', catalogue: CATALOGUE, context: {} as any });
+    expect(empty.requests[0].messages[0].content).toMatch(/not already on the dashboard/);
+    expect(empty.requests[0].messages[0].content).not.toMatch(/Settings of each report type/);
+
+    const editing = makeBuilder([{ options: [DESCRIBED] }]);
+    await editing.builder.suggest({
+      database: 'neo4j',
+      prompt: 'as horizontal bars',
+      catalogue: CATALOGUE,
+      context: { report: { title: 'Orders', type: 'table', query: 'MATCH (o:Order) RETURN o' } } as any,
+    });
+    expect(editing.requests[0].messages[0].content).toMatch(/Each option changes the report described below/);
+    expect(editing.requests[0].messages[0].content).toMatch(/It is now a table report with this query/);
   });
 });
 
@@ -392,9 +477,16 @@ describe('the API', () => {
 
   it('describes queries for editors only, and only when configured', async () => {
     const body = { query: 'MATCH (n) RETURN n' };
-    expect((await app.inject({ method: 'POST', url: '/api/ai/describe', headers: viewer, payload: body })).statusCode).toBe(403);
-    expect((await plain.inject({ method: 'POST', url: '/api/ai/describe', headers: editor, payload: body })).statusCode).toBe(404);
-    expect((await app.inject({ method: 'POST', url: '/api/ai/describe', headers: editor, payload: { query: ' ' } })).statusCode).toBe(400);
+    expect(
+      (await app.inject({ method: 'POST', url: '/api/ai/describe', headers: viewer, payload: body })).statusCode
+    ).toBe(403);
+    expect(
+      (await plain.inject({ method: 'POST', url: '/api/ai/describe', headers: editor, payload: body })).statusCode
+    ).toBe(404);
+    expect(
+      (await app.inject({ method: 'POST', url: '/api/ai/describe', headers: editor, payload: { query: ' ' } }))
+        .statusCode
+    ).toBe(400);
   });
 
   it('rejects requests without a usable catalogue', async () => {
