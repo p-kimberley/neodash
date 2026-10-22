@@ -282,39 +282,40 @@ body {
   box-shadow: 0 0 0 3px var(--nd-selected);
 }
 
-/* The design system's editor colours, pointed at our syntax tokens (values are "R, G, B"). */
+/* The design system's editor colours, pointed at our syntax tokens. NDL 4 uses them as full colours
+   (NDL 1 wrapped them in rgb(), so they used to be "R, G, B" triples). */
 .nd-code-editor .cm-editor.cm-light,
 .nd-code-editor .cm-editor.cm-dark {
-  --background: 246, 248, 250;
-  --color: 31, 35, 40;
-  --cursor-color: 31, 35, 40;
-  --selection-bg: 204, 229, 255;
-  --comment: 92, 102, 112;
-  --keyword: 207, 34, 46;
-  --relationship: 17, 99, 41;
-  --string: 10, 48, 105;
-  --number: 5, 80, 174;
-  --variable: 149, 56, 0;
-  --function: 102, 57, 186;
-  --procedure: 102, 57, 186;
-  --button: 0, 111, 214;
+  --background: rgb(246 248 250);
+  --color: rgb(31 35 40);
+  --cursor-color: rgb(31 35 40);
+  --selection-bg: rgb(204 229 255);
+  --comment: rgb(92 102 112);
+  --keyword: rgb(207 34 46);
+  --relationship: rgb(17 99 41);
+  --string: rgb(10 48 105);
+  --number: rgb(5 80 174);
+  --variable: rgb(149 56 0);
+  --function: rgb(102 57 186);
+  --procedure: rgb(102 57 186);
+  --button: rgb(0 111 214);
 }
 
 .ndl-theme-dark .nd-code-editor .cm-editor.cm-light,
 .ndl-theme-dark .nd-code-editor .cm-editor.cm-dark {
-  --background: 18, 26, 36;
-  --color: 230, 237, 243;
-  --cursor-color: 230, 237, 243;
-  --selection-bg: 38, 79, 120;
-  --comment: 139, 148, 158;
-  --keyword: 255, 123, 114;
-  --relationship: 126, 231, 135;
-  --string: 165, 214, 255;
-  --number: 121, 192, 255;
-  --variable: 255, 166, 87;
-  --function: 210, 168, 255;
-  --procedure: 210, 168, 255;
-  --button: 124, 200, 255;
+  --background: rgb(18 26 36);
+  --color: rgb(230 237 243);
+  --cursor-color: rgb(230 237 243);
+  --selection-bg: rgb(38 79 120);
+  --comment: rgb(139 148 158);
+  --keyword: rgb(255 123 114);
+  --relationship: rgb(126 231 135);
+  --string: rgb(165 214 255);
+  --number: rgb(121 192 255);
+  --variable: rgb(255 166 87);
+  --function: rgb(210 168 255);
+  --procedure: rgb(210 168 255);
+  --button: rgb(124 200 255);
 }
 
 .nd-code-editor .cm-editor {
@@ -328,11 +329,18 @@ body {
   padding: 0 12px 0 8px;
 }
 
+/* The gutter keeps the editor's background, so text scrolled sideways doesn't show through the
+   line numbers. */
 .nd-code-editor .cm-editor .cm-gutters {
-  background: transparent !important;
+  background: var(--background) !important;
   color: var(--nd-code-gutter);
   border-right: 1px solid var(--nd-border) !important;
   padding: 0 4px 0 6px;
+}
+
+/* A thin text cursor (the design system 4 draws a block 0.67em wide). */
+.nd-code-editor .cm-editor .cm-cursor {
+  border-left-width: 2px;
 }
 
 .nd-code-editor .cm-editor .cm-activeLine {
@@ -350,12 +358,12 @@ body {
 
 .nd-code-editor .cm-p-label,
 .nd-code-editor .cm-p-label .cm-keyword {
-  color: rgb(var(--relationship));
+  color: var(--relationship);
 }
 
 .nd-code-editor .cm-p-parameter,
 .nd-code-editor .cm-p-parameter .cm-keyword {
-  color: rgb(var(--variable));
+  color: var(--variable);
   font-weight: 600;
 }
 
