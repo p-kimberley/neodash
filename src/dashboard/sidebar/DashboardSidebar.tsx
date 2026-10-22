@@ -44,7 +44,6 @@ import NeoDashboardSidebarExportModal from './modal/DashboardSidebarExportModal'
 import NeoDashboardSidebarDeleteModal from './modal/DashboardSidebarDeleteModal';
 import NeoDashboardSidebarInfoModal from './modal/DashboardSidebarInfoModal';
 import NeoDashboardSidebarShareModal from './modal/DashboardSidebarShareModal';
-import NeoDashboardSidebarAccessModal from './modal/DashboardSidebarAccessModal';
 import { NEODASH_VERSION } from '../DashboardReducer';
 
 // Which (small) pop-up menu is currently open for the sidebar.
@@ -67,7 +66,6 @@ enum Modal {
   LOAD = 7,
   SAVE = 8,
   NONE = 9,
-  ACCESS = 10,
 }
 
 // We use "index = -1" to represent a non-saved draft dashboard in the sidebar's dashboard list.
@@ -274,16 +272,6 @@ export const NeoDashboardSidebar = ({
         }}
       />
 
-      <NeoDashboardSidebarAccessModal
-        open={modalOpen == Modal.ACCESS}
-        database={dashboardDatabase}
-        dashboard={dashboards[inspectedIndex]}
-        handleClose={() => {
-          setModalOpen(Modal.NONE);
-          setCachedDashboard('');
-        }}
-      />
-
       {/* The panel overlays the dashboard (see .dashboard-sidebar-slot), so the grid keeps its layout.
           The header's menu button opens and closes it (application state). */}
       <nav className={`nd-dashboard-panel ${expanded ? 'is-expanded' : ''}`} aria-label='Dashboards'>
@@ -352,10 +340,6 @@ export const NeoDashboardSidebar = ({
               handleShareClicked={() => {
                 setMenuOpen(Menu.NONE);
                 setModalOpen(Modal.SHARE);
-              }}
-              handleAccessClicked={() => {
-                setMenuOpen(Menu.NONE);
-                setModalOpen(Modal.ACCESS);
               }}
               handleDeleteClicked={() => {
                 setMenuOpen(Menu.NONE);
