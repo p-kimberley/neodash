@@ -2,39 +2,30 @@ include::/banner.adoc[]
 
 = Quickstart
 
-include::/banner.adoc[]
+== Using NeoDash
 
-There are three easy ways to run NeoDash and start dashboarding your Neo4j data:
+Open the NeoDash address your administrator gave you and sign in. You start on the list of
+dashboards: search it by name or author, sort it by name or by when dashboards were last updated,
+and click one to open it.
 
-. The latest version is always available online:
-https://neodash.graphapp.io.
-. Neo4j Desktop: Install it from the https://install.graphapp.io[Graph
-App Gallery].
-. Using Docker:
-```
-docker pull neo4jlabs/neodash:latest
-docker run -it --rm -p 5005:5005 neo4jlabs/neodash
-```
+Editors also see *New dashboard*, to start building one. See link:user-guide/dashboards[Dashboards]
+to get going, and link:user-guide/reports[Reports] for the types of report you can add.
 
-Or, build it yourself:
-```
-git clone https://github.com/neo4j-contrib/neodash     
-yarn install      
-yarn run dev
-```
+If you are signed in but can't open NeoDash, your account doesn't have the viewer or editor role
+yet: ask your administrator.
 
-NeoDash connects to any recent version of the Neo4j database. (Neo4j 4.0
-or later). The quickest way to get started is to create a free cloud
-database on https://console.neo4j.io[Neo4j Aura].
+== Running NeoDash
 
-To get started with building your own dashboard, see the Dashboards
-page.
+NeoDash runs on Kubernetes, installed with its Helm chart, next to a Neo4j 5 server (Community or
+Enterprise) and an OpenID Connect identity provider such as Keycloak. See
+link:developer-guide/deploy-a-build[Deploy a Build].
 
-== NeoDash in Five Minutes
+To try it on your own machine, the repository's `dev/` folder starts everything with Docker:
+Neo4j Community with example data and dashboards, Keycloak with test users (`viewer` and
+`editor`, password `password`), and NeoDash on http://localhost:3000.
 
-See the video below for tips on how to get started with NeoDash in 5 minutes:
-https://www.youtube.com/watch?v=Ygzj0Y4cYm4[image:https://img.youtube.com/vi/Ygzj0Y4cYm4/0.jpg[Youtube
-Video]]
+....
+docker compose -f dev/compose.yaml up -d --build
+....
 
-See also the link:../user-guide/faq#1-how-can-i-learn-more-about-neodash[list of
-blog posts] in the FAQ.
+To work on NeoDash itself, see link:developer-guide/build-and-run[Build & Run].

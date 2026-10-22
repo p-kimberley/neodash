@@ -1,11 +1,14 @@
 
 = Map
 
-include::../../banner.adoc[]
-
 The map report will render all returned nodes, relationships and paths
-on a geomap. https://www.openstreetmap.org[Open Street Map] is used to
-visualize the data on the map.
+on a geomap.
+
+The map's background (its tiles) comes from the map tile server set up for your NeoDash
+deployment, for example a tile server inside your network. NeoDash itself never fetches
+tiles from the internet: without a tile server, nodes and relationships are drawn on a
+plain background. An administrator sets the default tile server (`maps.tileUrl` in the
+Helm chart, or `MAP_TILE_URL`); a report can use another one with its *Map Provider URL* setting.
 
 Map visualizations work best with
 https://neo4j.com/docs/cypher-manual/current/syntax/spatial/#cypher-spatial-specifying-spatial-instants[Neo4j
@@ -83,9 +86,11 @@ image::map3.png[Artificial Map Data]
 |===
 |Name |Type |Default Value |Description
 |Layer Type |List |markers |Allows you to choose between the standard map with markers, or a heatmap.
-|Cluster markers |on/off |off |Whether to automatically cluster and expand the markers on the map.
+|Cluster Markers |on/off |off |Whether to automatically cluster nearby markers (showing how many there are) and expand them as you zoom in. Clicking a cluster zooms in on it.
+
+|Seperate Overlapping Markers |on/off |off |Whether to group markers at (almost) the same place; clicking the group fans them out.
 |Node Color Scheme |List |neodash |The color scheme to use for the node
-labels. Colors are assigned automatically (consequitevely) to the
+labels. Colors are assigned automatically (consecutively) to the
 different labels returned by the Cypher query.
 
 |Node Marker Size |List |large |The size of the markers for the nodes on
@@ -99,7 +104,7 @@ HTML color value.
 |Relationship Color |Text |#a0a0a0 |The color used for drawing the
 relationships on the map.
 
-|Relationship Width |Text |1 |The (default) width of the relationships
+|Relationship Width |Number |1 |The (default) width of the relationships
 on the map.
 
 |Relationship Color Property |Text |color |Optionally, the name of the
@@ -112,7 +117,7 @@ relationship property to map to the arrow width. This lets you define
 widths on a relationship-specific level, if you have a property that
 directly maps to the width value.
 
-|Map Provider URL|Text|https://\{s}.tile.openstreetmap.org/\{z}/\{x}/\{y}.png| When specified, overrides Open Street map provider with a custom map tiles provider.
+|Map Provider URL |Text |(the deployment's tile server) |When specified, the tile server to use for this map instead of the deployment's: a URL template such as `https://tiles.example.com/\{z}/\{x}/\{y}.png`. The browser loads the tiles from it, so it must be reachable from your users' network.
 
 |Intensity Property (for heatmap)|Text|intensity|Optionally, and only for heatmaps, the node property to use as the intensity of that point on the heatmap. If left empty, all points will have the same intensity of 1. If one of the nodes in the results doesn't have the specific property, its intensity will be set to 0.
 
@@ -122,7 +127,7 @@ selector (footer of the visualization).
 |Auto-run query |on/off |on |when activated automatically runs the query
 when the report is displayed. When set to `off', the query is displayed
 and will need to be executed manually.
-|Report Description |markdown text | | When specified, adds another button the report header that opens a pop-up. This pop-up contains the rendered markdown from this setting. 
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 |===
 
 == Rule-Based Styling

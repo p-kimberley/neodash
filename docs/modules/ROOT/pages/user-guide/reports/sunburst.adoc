@@ -1,8 +1,6 @@
 
 = Sunburst
 
-include::../../banner.adoc[]
-
 link:../../extensions/advanced-visualizations[label:Advanced&nbsp;Visualization[]]
 
 A sunburst chart will render hierarchical data in a multi-level pie
@@ -31,13 +29,14 @@ image::sunburst.png[Sunburst Chart]
 [width="100%",cols="19%,2%,26%,53%",options="header",]
 |===
 |Name |Type |Default Value |Description
-|Show Values on Arcs |on/off |off |If enabled, show the category values
+|Background Color |Color |#fafafa |The background color of the visualization.
+
+|Show Values on Arcs |on/off |on |If enabled, show the category values
 inside the sunburst arcs.
 
-|Enable interactivity |on/off |on |If enabled, turn on animations when a
-user hovers over an arc.
+|Enable interactivity |on/off |on |Has no effect in this version (kept so that saved dashboards load unchanged).
 
-|Color Scheme |List | |The color scheme to use for the arcs. Colors are
+|Color Scheme |List |set2 |The color scheme to use for the arcs. Colors are
 assigned automatically for each of the sub-hierarchies.
 
 |Arc border width (px) |number |0 |The width of the border of each arc.
@@ -67,5 +66,5 @@ assigned based on the color scheme.
 |Auto-run query |on/off |on |When activated, automatically runs the
 query when the report is displayed. When set to `off', the query is
 displayed and will need to be executed manually.
-|Report Description |markdown text | | When specified, adds another button the report header that opens a pop-up. This pop-up contains the rendered markdown from this setting. 
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 |===

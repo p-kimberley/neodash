@@ -1,151 +1,72 @@
-include::../banner.adoc[]
-
 = State Management
 
-include::../banner.adoc[]
+The app's state is held in a https://redux.js.org/[Redux] store (`src/store.ts`); if you change it, be familiar with Redux's patterns (actions, reducers, selectors and thunks).
 
-NeoDash is an application with a complex internal state. If you are
-planning to extend the application state in some way, make sure you are
-familiar with https://redux.js.org/[Redux] design patterns.
-
-The app’s entire state object is encapsulated in the following JSON
-structure:
+The state has three parts:
 
 ....
 {
-  "dashboard": {
-    "title": "My Dashboard Name",
-    "version": "2.4",
-    "settings": {
-      "pagenumber": 0,
-      "editable": true,
-      ...
-      "parameters": {
-          ...
-       }
-    },
-    "pages": [
-        ...
-    ]
+  "dashboard":      { ... },   // the open dashboard: this is what gets saved
+  "application":    { ... },   // the app's own state: open dialogs, appearance, panel, unsaved changes
+  "sessionStorage": { ... }    // values kept for the current session only
+}
+....
+
+The store is kept in the browser's local storage (`redux-persist`, set up in `src/index.tsx`).
+
+____
+To see the whole state, download a *Debug Report* from the About dialog (Help menu in the header).
+____
+
+== Dashboard state
+
+The `dashboard` part is the dashboard as it is saved: the backend stores this JSON as a `_Neodash_Dashboard` node, in the same format as NeoDash 2.4, so saved dashboards keep working in both. For example:
+
+....
+{
+  "uuid": "5a1e5000-0000-4000-8000-000000000000",
+  "title": "Sales Overview",
+  "version": "2.4",
+  "settings": {
+    "pagenumber": 0,
+    "editable": true,
+    "parameters": { "neodash_region_name": "Europe" }
   },
-  "application": {
-        ...
-   },
-  "version": "2.1.0"
-}
-....
-
-At the highest level, this object consists of three entries: 
-
-- `dashboard`: all state related to the currently active dashboard. This
-is changed when a dashboard gets loaded, modified or removed. 
-- `application`: all state related to the application itself. This
-describes which windows are open, what database you are connected to,
-etc. 
-- `version`: the version of NeoDash that is running. Note that
-these are complete version numbers (of the shape X.Y.Z), unlike
-dashboard versions, which have a different versioning scheme.
-
-____
-Want to see the complete state object for your application? Generate a
-*Debug Report* from the About window.
-____
-
-== Dashboard State
-
-The dashboard entry contains the entire state of the currently loaded
-dashboard. Take the following simple dashboard as an example.
-
-....
-{
-  "dashboard": {
-    "title": "A Simple Dashboard",
-    "version": "2.4",
-    "settings": {
-      "pagenumber": 0,
-      "editable": true,
-      "fullscreenEnabled": true,
-      "parameters": {
-          "neodash_person_name": "Bob"
-       }
-    },
-    "pages": [
+  "pages": [
+    {
+      "title": "Overview",
+      "reports": [
         {
-          title: “My Page”
-          reports: [
-            {
-                "title": "My Report",
-                "query": "MATCH (n)-[e]->(m) RETURN n,e,m",
-                "type": "graph",
-                "x": "1",
-                "y": "2",
-                "width": "6",
-                "height": "3",
-                "settings": {
-                    "nodeColorSchmeme": "blue"
-                }
-            }
-        ]
-     }
-    ]
-  }
+          "id": "5a1e5000-0000-4000-8000-000000000005",
+          "title": "Revenue",
+          "query": "MATCH (o:Order) RETURN sum(o.total) AS Revenue",
+          "type": "value",
+          "x": 0, "y": 2, "width": 6, "height": 2,
+          "selection": {},
+          "settings": { "textAlign": "center" }
+        }
+      ]
+    }
+  ],
+  "parameters": {},
+  "extensions": { "active": true, "activeReducers": [], "styling": { "active": true } }
 }
 ....
 
-Key entries of the object are: 
+- `version`: the dashboard format. Older formats are upgraded when a dashboard is opened (`VERSION_TO_MIGRATE` in `src/dashboard/DashboardReducer.ts`).
+- `settings`: dashboard settings, including the current page and the parameter values.
+- `pages`: each page's title and reports. A report's `id` identifies it to the backend: a viewer's query request names the dashboard and report, and the backend runs the query saved there.
+- `extensions`: which extensions the dashboard uses, and their state.
 
-- `title`: the title of the dashboard. This is displayed on the top of the window. 
-- `version`: _Main_ version of the dashboard that is loaded. 
-- `settings`: contains settings for the dashboard. This includes the current page number, whether the dashboard
-is editable, whether the dashboard is in fullscreen mode, and the
-dashboard parameters that are currently set. 
-- `pages`: contains the list of all pages in the dashboard. Each page has a title and a list of
-reports.
+Keep this format compatible: dashboards saved by this version must still open in NeoDash 2.4 and the other way round. Add new report settings with a default that keeps the old behaviour.
 
-== Application State
+== Application state
 
-The application state is a flat dictionary of values that determine what
-the user’s window looks like (which windows are open?) as well as the
-current database connection, and whether the app is running in
-standalone mode.
+The `application` part is a flat object describing the app around the dashboard: whether there are unsaved changes (`draft`), which dialogs are open, the appearance (`themePreference`), whether the dashboards panel is open (`sidebarOpen`) or the start page is shown (`homeOpen`), and notifications.
+It also still has upstream NeoDash's connection and standalone fields (`connection`, `standalone`, …). The backend owns the connection now, so these are no longer used for connecting.
 
-....
-"application": {
-    "notificationTitle": null,
-    "notificationMessage": null,
-    "connectionModalOpen": false,
-    "welcomeScreenOpen": true,
-    "aboutModalOpen": true,
-    "connection": {
-      "protocol": "neo4j+s",
-      "url": "localhost",
-      "port": "",
-      "database": "",
-      "username": "neo4j",
-      "password": "************"
-    },
-    "desktopConnection": null,
-    "connected": false,
-    "dashboardToLoadAfterConnecting": null,
-    "waitForSSO": false,
-    "standalone": false,
-    "oldDashboard": null,
-    "ssoEnabled": false,
-    "ssoProviders": [],
-    "ssoDiscoveryUrl": "https://example.com",
-    "standaloneProtocol": "neo4j+s",
-    "standaloneHost": "localhost",
-    "standalonePort": "7687",
-    "standaloneDatabase": "neo4j",
-    "standaloneDashboardName": "My Dashboard",
-    "standaloneDashboardDatabase": "dashboards",
-    "standaloneDashboardURL": "dashboards",
-    "loggingMode": "0",
-    "loggingDatabase": "logging",
-    "standaloneAllowLoad": false,
-    "standaloneLoadFromOtherDatabases ": false,
-    "standaloneMultiDatabase": false,
-    "standaloneDatabaseList": "neo4j",
-    "notificationIsDismissable": null
-}
-....
+Who is signed in and the server's settings are not in the store: `session` in `src/api/client.ts` holds the results of `/api/me` and `/api/config`, read at start-up.
+
+== Session storage
+
+See xref:developer-guide/session-storage.adoc[Session Storage].

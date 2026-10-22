@@ -1,8 +1,6 @@
 
 = Parameter Select
 
-include::../../banner.adoc[]
-
 Parameter select reports provide you with an easy way to add
 interactivity into your dashboards.
 
@@ -24,6 +22,8 @@ There are five types of parameter select reports:
 
 === Node Property Select
 A node property selector lets users choose a property from a node with a given label, to be used as a parameter in the dashboard.
+As the user types, matching values are suggested from the database.
+With *Multiple Selection* on, the chosen values are shown as tags; while the field isn't in use, only the first few are shown (see *Multiselect Value Limit*), followed by "+N" for the rest.
 
 image::select.png[Node Property Select]
 
@@ -33,17 +33,18 @@ A relationship property selector lets users choose a property from a relationshi
 image::select2.png[Relationship Property Select]
 
 === Free Text Select
-A free text selectors lets users enter any string value, which can then be used as a parameter inside dashboard queries.
+A free text selector lets users enter any string value, which can then be used as a parameter inside dashboard queries.
 
 image::select3.png[Free Text Select]
 
-== Date Select
-A date selector lets users specify dates using a calendar widget, or by entering a date format.
+=== Date Select
+A date selector lets users pick a date from a calendar, or type it as `2025-03-14` or `20250314`.
+Clearing the field restores the default date, if one is set (see *Default Value (Override)*), and otherwise clears the parameter.
 
-image::select4.png[Free Text Select]
+image::select4.png[Date Select]
 
-== Custom Query Select
-A custom query selectors lets you specify a custom selector widget, where user suggestions are populated based on an `$input` variable that is passed down into your custom query.
+=== Custom Query Select
+A custom query selector lets you specify a custom selector widget, where user suggestions are populated based on an `$input` variable that is passed down into your custom query.
 
 image::select5.png[Custom Query Select]
 
@@ -54,22 +55,46 @@ image::select5.png[Custom Query Select]
 [width="100%",cols="19%,17%,26%,38%",options="header",]
 |===
 |Name |Type |Default Value |Description
-|Clear Parameter on Field Reset |on/off |off |If enabled, removes the
-global parameter completely when the field is cleared. This may break
-some visualizations. If disabled, sets the parameter value to “” (empty
-string) when the input field is cleared.
+|Multiple Selection |on/off |off |If enabled, allows the user to select multiple values. The parameter will then be a list of the selected values.
 
-|Multiple Selection |on/off |off |If enabled, allows user to select multiple choices. Parameter will be then an array of selections.
+|Multiline |on/off |off |For free text selectors: if enabled, the field accepts several lines of text.
 
 |Manual Parameter Save |on/off |off |If enabled, adds a confirmation button in order to propagate the selection into the dashboard parameter.
 
-|Enable Manual Label/Property Name Specification |on/off |off |If
-enabled, does not enforce you to select a node label/property using an
-auto-complete field, instead, you can enter any value. This is useful
-for large datasets where the autocomplete field is too slow to render.
+|Property Display Name Override |on/off |off |If enabled, lets you choose a second property that is shown to the user, while the parameter gets the value of the first one. For example, show a person's name but set the parameter to their id.
+
+|Value Suggestion Limit |Number |5 |The number of suggestions shown while the user types.
+
+|Search Type |List |CONTAINS |How suggestions match what the user types: CONTAINS, STARTS WITH or ENDS WITH.
+
+|Disable the field |on/off |off |If enabled, the field can't be changed. Useful with a default value.
+
+|Case Sensitive Search |on/off |off |If enabled, suggestions match the user's text only with the same upper/lower case.
+
+|Deduplicate Suggestion Values |on/off |on |If enabled, each suggested value appears only once.
+
+|Default Value (Override) |Text |(none) |The value the parameter gets when nothing is selected. For date selectors, a date as `YYYY-MM-DD`.
+
+|Clear Parameter on Field Reset |on/off |off |If enabled, removes the
+global parameter completely when the field is cleared. This may break
+some visualizations. If disabled, sets the parameter value to "" (empty
+string) when the input field is cleared.
+
+|Auto-select first value on no selection |on/off |off |If enabled, selects the first suggestion when nothing is selected.
+
+|Manual Label/Property Name Specification |on/off |off |If
+enabled, you can type any node label/property name in the selector's settings, instead of picking one from a list. This is useful
+for large databases where the list is slow to load.
+
+|Multiselect Value Limit |Number |5 |With *Multiple Selection* on: how many of the selected values are shown while the field isn't in use; the rest are summarized as "+N".
 
 |Helper Text (Override) |Text |(none) |Text to show above the user input
 field. This will override the autogenerated text from the
 node/relationship property pair.
-|Report Description |markdown text | | When specified, adds another button the report header that opens a pop-up. This pop-up contains the rendered markdown from this setting. 
+
+|Timeout for value suggestions (ms) |Number |250 |How long to wait after the user stops typing before looking up suggestions.
+
+|Timeout for value updates (ms) |Number |1000 |For free text selectors: how long to wait after the user stops typing before the parameter is set.
+
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 |===

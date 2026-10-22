@@ -1,8 +1,6 @@
 
 = Sankey Chart
 
-include::../../banner.adoc[]
-
 link:../../extensions/advanced-visualizations[label:Advanced&nbsp;Visualization[]]
 
 A Sankey visualization will generate a flow diagram from nodes and links.
@@ -27,48 +25,42 @@ image::sankey.png[Sankey Chart]
 [width="100%",cols="15%,2%,6%,77%",options="header",]
 |===
 |Name |Type |Default Value |Description
-|Show Legend |on/off |off |If enabled, shows a legend on the bottom of
-the visualization.
+|Background Color |Color |#fafafa |The background color of the visualization.
 
-|Enable interactivity |on/off |on |If enabled, turn on animations when a
-user hovers over a node or link.
+|Show legend |on/off |off |If enabled, shows a legend on the bottom of the visualization.
 
-|Relationship Property |text | value | Name of the property with an integer value that is going
-to be used to determine thickness of links. Using 'SANKEY_UNWEIGHTED', this sankey will assume
-every relationship with a weight of 1.
+|Enable interactivity |on/off |on |If enabled, shows a tooltip and highlights a node or link when the mouse is over it.
 
-|Color Scheme |List | |The color scheme to use for the slices. Colors
-are assigned automatically (consecutively) to the different categories
-returned by the Cypher query.
+|Sankey layout |List |horizontal |The direction of the flows: horizontal or vertical.
 
-|Layout |List |horizontal |Sankey layout direction.
+|Color Scheme |List |set2 |The color scheme to use for the nodes. Colors are assigned automatically (consecutively) to the different nodes returned by the Cypher query.
 
-|Label Position |List |inside |Control sankey label position.
+|Control sankey label position |List |inside |Whether the labels are drawn inside or outside the chart.
 
-|Label Orientation |List |horizontal |Control sankey label orientation.
+|Control sankey label orientation |List |horizontal |Whether the labels are horizontal or vertical.
 
-|Node Border Width (px) |number |0 |Controls Node border width.
+|Node border width (px) |Number |0 |The width of the border of each node.
 
-|Node Spacing (px) |number |18 |Controls spacing between nodes at an identical level (px).
+|Margin Left (px) |Number |24 |The margin in pixels on the left side of the visualization.
 
-|Node thickness (px) |number |18 |Controls Node thickness.
+|Margin Right (px) |Number |24 |The margin in pixels on the right side of the visualization.
 
-|Margin Left (px) |number |24 |The margin in pixels on the left side of
-the visualization.
+|Margin Top (px) |Number |24 |The margin in pixels on the top side of the visualization.
 
-|Margin Right (px) |number |24 |The margin in pixels on the right side
-of the visualization.
+|Margin Bottom (px) |Number |40 |The margin in pixels on the bottom side of the visualization.
 
-|Margin Top (px) |number |24 |The margin in pixels on the top side of
-the visualization.
+|Relationship value Property |Text |value |Name of the relationship property with a number that is going
+to be used to determine thickness of links. With `SANKEY_UNWEIGHTED`, every relationship counts with a weight of 1.
 
-|Margin Bottom (px) |number |40 |The margin in pixels on the bottom side
-of the visualization.
+|Node thickness (px) |Number |18 |The thickness of the nodes.
 
-|Auto-run query |on/off |on |when activated automatically runs the query
-when the report is displayed. When set to `off', the query is displayed
-and will need to be executed manually.
-|Report Description |markdown text | | When specified, adds another button the report header that opens a pop-up. This pop-up contains the rendered markdown from this setting. 
+|Spacing between nodes at an identical level (px) |Number |18 |The space between nodes at the same level.
+
+|Override no data message |Text |Query returned no data. |Override the message displayed to the user when their query returns no data.
+
+|Auto-run query |on/off |on |When activated, automatically runs the query when the report is displayed. When set to off, the query is displayed and will need to be executed manually.
+
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 |===
 
 

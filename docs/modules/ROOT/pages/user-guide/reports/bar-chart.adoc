@@ -1,8 +1,6 @@
 
 = Bar Chart
 
-include::../../banner.adoc[]
-
 A bar chart will draw categories and values in a familiar bar-layout.
 The bar chart will require you to choose the following selections:
 
@@ -42,6 +40,8 @@ image::barstacked.png[Basic Table]
 |Show Legend |on/off |off |If enabled, shows a legend at the top right
 of the visualization.
 
+|Grouping |on/off |off |If enabled, shows the *Group* selector below the chart, so that the bars can be split into groups.
+
 |Custom Dimensions |on/off |off |If enabled, the chart will no longer autofit to the size of the report card. If width extends beyond the report card, a scroll bar will be introduced to explore the chart horizontally.
 
 |Value Scale |List |linear |When set to symlog, uses a Symmetric
@@ -61,16 +61,16 @@ grouped, they are placed alongside each other.
 |Layout |List |vertical |Whether to use a vertical or horizontal bar
 chart layout.
 
-|Color Scheme |List | |The color scheme to use for the category groups.
-Colors are assigned automatically (consequitevely) to the different
+|Color Scheme |List |set2 |The color scheme to use for the category groups.
+Colors are assigned automatically (consecutively) to the different
 groups returned by the Cypher query.
 
 |Show Values on Bars |on/off |off |If enabled, shows the category value
 inside the respective bar.
 
-|Skip label on width (px) |number |0 |Skip label if bar width is lower than provided value, ignored if 0.
+|Skip label if Bar Width < Xpx |number |0 |Skip label if bar width is lower than provided value, ignored if 0.
 
-|Skip label on height (px) |number |0 |Skip label if bar height is lower than provided value, ignored if 0.
+|Skip label if Bar Height < Xpx |number |0 |Skip label if bar height is lower than provided value, ignored if 0.
 
 |Custom label position |off/top/bottom |off | Allow user to place label out of the bar. This will override any other
 label configuration.
@@ -78,19 +78,19 @@ label configuration.
 |Label Rotation (degrees) |number |45 |the angle at which the bar labels
 are rotated.
 
-|Margin Left (px) |number |50 |The margin in pixels on the left side of
+|Margin Left |number |50 |The margin in pixels on the left side of
 the visualization.
 
-|Margin Right (px) |number |24 |The margin in pixels on the right side
+|Margin Right |number |24 |The margin in pixels on the right side
 of the visualization.
 
-|Margin Top (px) |number |24 |The margin in pixels on the top side of
+|Margin Top |number |24 |The margin in pixels on the top side of
 the visualization.
 
-|Margin Bottom (px) |number |40 |The margin in pixels on the bottom side
+|Margin Bottom |number |30 |The margin in pixels on the bottom side
 of the visualization.
 
-|Legend Width (px) |number |128 |The width in pixels of each legend
+|Legend Width |number |128 |The width in pixels of each legend
 label on top of the visualization (if enabled).
 
 |Hide Selections |on/off |off |If enabled, hides the property selector
@@ -100,7 +100,7 @@ label on top of the visualization (if enabled).
 when the report is displayed. When set to `off', the query is displayed
 and will need to be executed manually.
 
-|Report Description |markdown text | | When specified, adds another button the report header that opens a pop-up. This pop-up contains the rendered markdown from this setting. 
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 
 |Bar Width |number |10 |*Only active when 'Custom Dimensions' is on.* The width of each bar. Increasing the bar width will increase the width of the chart. This setting will have the largest influence on the width of the chart.
 
@@ -108,7 +108,13 @@ and will need to be executed manually.
 
 |Inner Padding |number |0 |When specified, will add padding between any grouped elements.
 
-|Legend Position |Vertical/Horizontal |Vertical |Will dictate whether the lagend is displayed vertically on the right hand side of the chart or horizontally on the bottom of the chart.
+|Padding |number |0.25 |The space between the bars, as a fraction of a bar's width.
+
+|Display Y axis |on/off |on |Whether to draw the value axis.
+
+|Display Y grid lines |on/off |on |Whether to draw grid lines for the values.
+
+|Legend Position |Vertical/Horizontal |Vertical |Will dictate whether the legend is displayed vertically on the right hand side of the chart or horizontally on the bottom of the chart.
 |===
 
 == Rule-Based Styling

@@ -1,15 +1,13 @@
-
-= Report Actions 
-
 include::../../banner.adoc[]
 
-link:../#_2_pro_extensions[label:Pro&nbsp;Extension[]]
+= Report Actions
 
 Report actions let dashboard builders add interactivity into dashboards. Actions can be used to achieve:
 
 1. Cross-report filtering.
 2. Using the output of one report in another report.
 3. Providing users with more parameterized control beyond parameter selectors.
+4. Switching to another page of the dashboard.
 
 The image below displays an example of two reports interacting using report actions:
 
@@ -18,27 +16,31 @@ The image below displays an example of two reports interacting using report acti
 
 image::report-actions.png[Report Actions]
 
-
-
 == Configuration
+
 First, ensure that the extension is enabled.
-Then, to create a **Report Action**, open up the report settings, Then, click the 'Report Action' button on the bottom right (marked with the red circle):
+Then, to create a **Report Action**, open up the report settings, then click the *Set report actions* button at the bottom right (marked with the red circle):
 
 image::reportactionsbutton.png[Report]
-
 
 This will open up the rule definition window. Inside this screen, a list
 of rules can be defined. An unlimited number of rules can be defined, and based on the visualization, different actions can be specified. Each rule will have the following structure:
 
- IF [CONDITION] SET [OBJECT] TO [VALUE] 
+ IF [CONDITION] SET [OBJECT] TO [VALUE]
+
+The object is either a dashboard parameter, or the dashboard's page (to switch pages).
 
 image::reportactions.png[Report]
+
+Actions work for viewers too: they set parameters and switch pages, which only changes what the
+viewer sees.
 
 == Supported Visualizations
 
 Report Actions are available for the following report types:
 
 - Tables
-- Graphs
+- Bar Charts
+- Graphs and 3D Graphs
 - Maps
-
+- Gantt Charts

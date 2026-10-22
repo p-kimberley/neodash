@@ -2,8 +2,6 @@ include::../banner.adoc[]
 
 = Pages
 
-include::../banner.adoc[]
-
 A page is a collection of link:../reports[reports] that can be viewed at
 the same time. Each page can have an unlimited number of reports in it,
 and will switch to a scrollable view when the number of reports do not
@@ -14,10 +12,12 @@ An example of a dashboard with 4 pages can be seen below:
 image::page.png[Page]
 
 A dashboard may have as many pages as required by the dashboard builder.
-To switch pages, simply click on the page title in the dashboard header.
+To switch pages, click on the page title in the tabs below the dashboard title.
+The page you are on is part of the address in your browser (`?page=1` for the second page), so a link
+or bookmark opens the same page.
 
 == Editing Pages
 
-Pages can be added, renamed, and deleted by using the buttons in the
-dashboard header (if editing is enabled). Pages can additionally be
-*re-ordered* by dragging and dropping them in the header.
+Editors can add pages with the *+* button after the last tab. Hover over a tab and
+click its *⋮* button to rename the page (*Edit name*) or delete it. Pages can also be
+*re-ordered* by dragging and dropping their tabs.

@@ -2,16 +2,13 @@ include::../banner.adoc[]
 
 = User Guide
 
-include::../banner.adoc[]
-
-The following pages contain everything you need to get started with NeoDash.
-
+The following pages contain everything you need to build and use dashboards in NeoDash.
 
 * link:../quickstart[Quickstart] tells you how to get started with NeoDash right away.
-* link:dashboards[Dashboards] elaborates on how dashboards are created and used in
-NeoDash.
+* link:dashboards[Dashboards] explains how dashboards are opened, saved, shared and configured.
 * link:pages[Pages] explains how to manage pages inside a dashboard.
 * link:reports[Reports] contains information on how a report works, and lists the
 different types that can be used.
-* link:publishing[Publishing] explains how to publish a dashboard for others to view.
+* link:publishing[Publishing] explains who can see and change your dashboards.
 * link:extensions[Extensions] lists the different extensions available for NeoDash.
+* link:faq[FAQ] answers common questions.

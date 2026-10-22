@@ -1,16 +1,10 @@
 
 = iFrame
 
-include::../../banner.adoc[]
-
 An iFrame report lets you embed a webpage inside your NeoDash dashboard.
 The page can be loaded from any web address starting with `http://` or
-`https://`, with some exceptions*.
-
-____
-The webpage must not explicitly disallow itself to be embedded, such as
-https://google.com.
-____
+`https://` that your users' browsers can reach, with one exception:
+the webpage must not explicitly disallow itself to be embedded (many public sites, such as search engines, do).
 
 To render iFrames interactively based on the dashboard state, your
 global dashboard parameters can be passed into it dynamically. See the
@@ -38,5 +32,5 @@ iFrame URL.
 |Append global parameters to iFrame URL |on/off |off |If enabled,
 appends the full list of global parameters as URL parameters to the
 specified URL.
-|Report Description |markdown text | | When specified, adds another button the report header that opens a pop-up. This pop-up contains the rendered markdown from this setting. 
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 |===

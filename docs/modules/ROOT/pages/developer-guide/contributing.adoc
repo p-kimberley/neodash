@@ -1,25 +1,27 @@
-include::../banner.adoc[]
-
 = Contributing
 
-include::../banner.adoc[]
+This version of NeoDash is a fork of NeoDash 2.4, which is no longer maintained upstream. Its repository is https://github.com/p-kimberley/neodash[github.com/p-kimberley/neodash]; changes and bug reports go there, not to the upstream project.
 
-Contributions to the project are highly welcomed. Please consider
-creating a https://github.com/neo4j-contrib/neodash/pulls[Pull Request].
-Ensure you start from the `develop` branch, and set the merge base to
-`develop` as well.
+== Changes
 
-For your feature to be accepted, ensure: 
+Work on a branch and open a pull request against `master`. For a change to be accepted:
 
-1. The component is tested (if relevant, see Testing). 
-2. Your code is aligned with
-https://www.w3.org/wiki/JavaScript_best_practices[JS Best Practices]. 
-3. The component is well documented in the documentation portal (if
-applicable).
+. *Existing dashboards keep working.* Saved dashboards must open and behave as before, and stay readable by NeoDash 2.4: add new settings with defaults that keep the old behaviour, and don't change the meaning of saved ones.
+. *It's tested.* Add or update a browser test in `dev/e2e` for UI changes, and backend tests in `server/test` for API changes (see xref:developer-guide/testing.adoc[Testing]).
+. *It passes the checks* that run on every push: lint, type check, tests, build, and the Helm chart's checks.
+. *It works offline and in both appearances.* No requests to the internet from the image, and readable text in light and dark.
+. *It's documented* in these pages if users or administrators will notice it, and in `changelog.md`.
 
-== Feature Requests / Bugs
+== Releases
 
-If you have a request for a feature, or have found a bug, consider
-creating an https://github.com/neo4j-contrib/neodash/issues[issue] on
-GitHub. Please include a link:./testing#debug-report[Debug Report] if
-available.
+The app and the Helm chart have their own versions: the app is 3.x (the image tag), the chart 2.x.
+
+. Add a `## NeoDash <version>` section at the top of `changelog.md`. It becomes the release's notes; `scripts/release-notes.sh <version>` previews it.
+. Set the new version as `appVersion` in `k8s-deploy/neodash/Chart.yaml`, as `version` in `package.json` and in the About dialog (`src/modal/AboutModal.tsx`), and raise the chart's `version` if the chart changed. CI refuses to publish a chart version twice.
+. Merge to `master`, then tag `v<version>` (it must equal `appVersion`) and push the tag. CI publishes the image and the chart and creates the GitHub release.
+
+New features are minor versions (3.4.0), fixes are patch versions (3.3.1).
+
+== Bugs and feature requests
+
+Open an issue on the repository. A xref:developer-guide/testing.adoc#_debug_report[Debug Report] helps with bugs; check it doesn't contain anything you can't share, as it includes the dashboard's queries and parameter values.

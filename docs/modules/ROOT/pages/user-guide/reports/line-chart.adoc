@@ -1,8 +1,6 @@
 
 = Line Chart
 
-include::../../banner.adoc[]
-
 A line chart can be used to draw one or more lines in a two-dimensional
 plane. It requires two numeric fields:
 
@@ -48,12 +46,10 @@ image::line2.png[Multi Line Chart]
 [width="100%",cols="13%,2%,6%,79%",options="header",]
 |===
 |Name |Type |Default Value |Description
-|Plot Type |List |line | Whether to use a line plot (with connections) or a scatter plot of disjointed points
-
 |Show Legend |on/off |off |If enabled, shows a legend at the top right
 of the visualization.
 
-|Color Scheme |List |neodash |The color scheme to use for the lines.
+|Color Scheme |List |set2 |The color scheme to use for the lines.
 Colors are assigned automatically to the different fields selected in
 the report footer.
 
@@ -75,13 +71,13 @@ minimum value on the y-axis.
 |Max Y Value |Number |auto |If not set to ``auto'', this variable is the
 maximum value on the y-axis.
 
-|X-axis Tick Count |Number |auto |If not set to ``auto'', the number of
+|X-axis Tick Count (Approximate) |Number |auto |If not set to ``auto'', the number of
 ticks to be made on the x-axis. This is an approximate number that the
 visualization tries to adhere to (numeric X-axis only)
 
 |X-axis Format (Time chart) |Text |%Y-%m-%dT%H:%M:%SZ |When using a time
 chart, this setting lets you override how time values are rendered on
-the x-axis. This uses the ISO 8601 time notations.
+the x-axis, with `%` codes such as `%Y` (year), `%m` (month), `%d` (day) and `%H:%M` (time).
 
 |X-axis Tick Size (Time chart) |Text |every 1 year |When using a time
 chart, this setting helps you set the frequency of ticks. The text
@@ -116,8 +112,7 @@ the visualization.
 |Margin Bottom (px) |number |40 |The margin in pixels on the bottom side
 of the visualization.
 
-|Legend Width (px) |number |128 |The width in pixels of each legend
-label on top of the visualization (if enabled).
+|Legend Label Width (px) |number |100 |Has no effect in this version (kept so that saved dashboards load unchanged).
 
 |Hide Property Selection |on/off |off |If enabled, hides the property
 selector (footer of the visualization).
@@ -125,7 +120,7 @@ selector (footer of the visualization).
 |Auto-run query |on/off |on |when activated automatically runs the query
 when the report is displayed. When set to `off', the query is displayed
 and will need to be executed manually.
-|Report Description |markdown text | | When specified, adds another button the report header that opens a pop-up. This pop-up contains the rendered markdown from this setting. 
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 |===
 
 == Rule-Based Styling

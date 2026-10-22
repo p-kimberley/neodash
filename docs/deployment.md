@@ -260,7 +260,8 @@ Nothing in the running system needs internet access:
 - Choropleth and area-map reports load country and region shapes from the image itself
   (`/maps`, about 8 MB, sent compressed at under 1 MB). Set `maps.dataUrl` only to serve them
   from elsewhere.
-- The optional text-to-Cypher extension calls an external LLM only if an editor configures it.
+- Text2Cypher calls a language model only if one is configured (`text2cypher.baseUrl`), and only
+  that address: run one in the cluster (for example vLLM) to keep it inside the network.
 
 To install without internet access, copy the image and chart into registries the cluster can
 reach, for example with `skopeo` (or `docker pull` / `tag` / `push`) and `helm pull`, on a

@@ -1,13 +1,12 @@
 
 = Markdown
 
-include::../../banner.adoc[]
-
 Markdown reports let you specify
 https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#styling-text[Markdown]
-text, to be renderer as rich HTML. This lets you turn your dashboards
-into a storybook with textual descriptions, hyperlinks, images and
-videos.
+text, to be rendered as rich text. This lets you turn your dashboards
+into a storybook with textual descriptions, hyperlinks, tables and images.
+Links open in a new tab. HTML inside the markdown isn't rendered.
+Images are loaded by the browser, so they must be reachable from your users' network.
 
 To use dashboard parameters in Markdown, turn on the `Replace global parameters in Markdown` setting.
 Then, include a variable surrounded by backticks inside the markdown string. For example:
@@ -41,5 +40,5 @@ image::markdown.png[Basic Markdown]
 |Replace global parameters in Markdown |on/off |on |If enabled, replaces
 all instances of query parameters (e.g. $neodash_person_name) inside the
 markdown source.
-|Report Description |markdown text | | When specified, adds another button the report header that opens a pop-up. This pop-up contains the rendered markdown from this setting. 
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 |===

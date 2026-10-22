@@ -1,0 +1,58 @@
+= Roles, Security & Audit
+
+== Viewers and editors
+
+One deployment serves everyone. Each user's role comes from their identity token when they sign in (the `realm_access.roles` claim by default; see xref:developer-guide/configuration.adoc[Configuration]):
+
+[cols="1,4",options="header"]
+|===
+|Role |Can
+|`neodash-viewer` |List and open dashboards, change parameter values, and run the queries saved in them.
+|`neodash-editor` |Also run any Cypher, edit, save and delete dashboards, use Text2Cypher, the forms extension and graph exploration ("expand node") and editing.
+|neither |Nothing: they see a "no access" page after signing in.
+|===
+
+A user with both roles is an editor. Roles are read again only at the next sign-in, at the latest after the session's maximum age (8 hours by default).
+
+This replaces upstream NeoDash's _standalone mode_: there's no separate read-only deployment, and no fixed dashboard per deployment.
+
+== What the backend enforces
+
+- *Viewers run saved queries only.* A viewer's request names a dashboard and a report; the backend reads that report's Cypher from the stored dashboard (never from the request) and runs it in a read transaction, with the viewer's parameter values. Neo4j itself rejects any write.
+- *Every query is limited* in time (`QUERY_TIMEOUT_SECONDS_MAX`) and rows (`QUERY_ROW_LIMIT_MAX`).
+- *Neo4j credentials stay on the server.* Browsers never connect to Neo4j. Editors' queries run as the backend's Neo4j user, so give that user the access your editors need.
+- *Sessions* are encrypted cookies (AES-256-GCM, `HttpOnly`, `SameSite=Lax`, `Secure` over HTTPS), so pods share nothing but the session key. Requests that change data must be JSON and come from `PUBLIC_URL`.
+- *Scripts* can call the API with an access token from the same identity provider (`Authorization: Bearer <token>`), with the same roles.
+
+For dashboard authors: a saved query that runs a parameter as Cypher (for example `CALL apoc.cypher.run($query, {})`) would let viewers run any read-only query of their own. Don't write those.
+
+== URLs
+
+Everything a user sees has a URL, so links can be shared and audit lines matched to what was on screen:
+
+- `/`: the start page, listing the dashboards.
+- `/dashboards/<uuid>?page=<n>&neodash_<parameter>=<value>`: a dashboard, its page (counting from 0) and parameter values. Parameters other than text are written as `json:<value>`.
+- Share links from NeoDash 2.4 (`?share&type=database&id=<uuid>`) still open the dashboard; credentials in them are ignored.
+
+The browser title follows the URL: `Page · Dashboard · NeoDash`.
+
+== Audit log
+
+Each sign-in, refusal and data access writes one JSON line to stdout with `"audit": true`:
+
+[cols="2,3",options="header"]
+|===
+|Event |When
+|`auth.login`, `auth.login.denied`, `auth.login.failed`, `auth.logout` |Sign-in and sign-out; `denied` means the user has neither role.
+|`access.denied` |A request the user's role doesn't allow.
+|`dashboard.list`, `dashboard.view`, `dashboard.save`, `dashboard.delete` |Dashboard access and changes.
+|`query` |Every query: dashboard, report, database, duration, rows and (with `AUDIT_LOG_PARAMETERS`) parameter values.
+|`text2cypher` |Each question and the query the language model wrote.
+|===
+
+Lines include the user (subject, username and role), the client's address and a request ID. Collect the pods' logs as usual and filter on `audit`, for example:
+
+[source,sh]
+----
+kubectl -n neodash logs deploy/neodash | grep '"audit":true'
+----

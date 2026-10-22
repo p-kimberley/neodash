@@ -1,24 +1,22 @@
 
 = Gantt Chart
 
-include::../../banner.adoc[]
-
 link:../../extensions/advanced-visualizations[label:Advanced&nbsp;Visualization[]]
 
 A Gantt chart can be used to visualize tasks on a timeline, as well as their dependencies.
-The NeoDash Gantt chart views your tasks are nodes in the graph, and your relationships are dependencies between them.
+The NeoDash Gantt chart views your tasks as nodes in the graph, and your relationships as dependencies between them.
 
-To use the Sankey chart, nodes must have at least three properties on them:
+To use the Gantt chart, nodes must have at least three properties on them (their names can be changed in the advanced settings):
 
 - A `startDate`
 - An `endDate`
-- A `title`
+- A `name`
 
 In addition, different types of task dependencies can be visualized. The dependency must be stored as a property on a relationship, and can be one of four values:
 
 - `**SE**`: The dependency is from the **S**tart of the origin task, to the **E**nd of the next task.
-- `**SS**`: The dependency is from the **S**tart of the origin task, to the **S**start of the next task.
-- `**ES**`: The dependency is from the **E**nd of the origin task, to the **S**start of the next task.
+- `**SS**`: The dependency is from the **S**tart of the origin task, to the **S**tart of the next task.
+- `**ES**`: The dependency is from the **E**nd of the origin task, to the **S**tart of the next task.
 - `**EE**`: The dependency is from the **E**nd of the origin task, to the **E**nd of the next task.
 
 == Examples
@@ -41,38 +39,25 @@ image::gantt.png[Gantt Chart]
 [width="100%",cols="15%,2%,6%,77%",options="header",]
 |===
 |Name |Type |Default Value |Description
+|Bar Color |Text |#a3a3ff |Default color for the task bars (with no style rules applied).
 
-| Bar Color  | string  | '#a3a3ff' | Default color for the task bars (with no style rules applied.)
+|Task Label Property |Text |name |Node property to display on the task bar.
 
-| Task Label Property  | string  | 'activityName' | Node property to display on the task bar.
+|Task Start Date Property |Text |startDate |Node property to use as a start date for the task.
 
-| Task Start Date Property  | string  | 'startDate' | Node property to use as a start date for the task.
+|Task End Date Property |Text |endDate |Node property to use as an end date for the task.
 
-| Task End Date Property  | string  | 'endDate' | Node property to use as an end date for the task.
+|Task Ordering Property |Text |(auto) |Custom ordering of the tasks. Defaults to use the start date property.
 
-| Task Ordering Property  | string  | (auto) | Custom ordering of the tasks. Defaults to use the start date property.
+|Dependency Type Property |Text |rel_type |The relationship property that stores the dependency type: SS, SE, ES or EE.
 
-| Dependency Type Property  | string  | 'rel_type' | The relationship property that stores the dependency type. Property values must be one of `['SS', 'SE', 'ES', 'EE']`
+|View mode |List |auto |Zoom level of the chart: auto, Half Day, Day, Week, Month, Quarter or Year.
 
-| View mode  | string  | 'auto' | Zoom level of the chart. one of `['auto', 'Half Day', 'Day', 'Week', 'Month', 'Year']`.
+|Override no data message |Text |Query returned no data. |Override the message displayed to the user when their query returns no data.
 
-|Margin Left (px) |number |24 |The margin in pixels on the left side of
-the visualization.
+|Auto-run query |on/off |on |When activated, automatically runs the query when the report is displayed. When set to off, the query is displayed and will need to be executed manually.
 
-|Margin Right (px) |number |24 |The margin in pixels on the right side
-of the visualization.
-
-|Margin Top (px) |number |24 |The margin in pixels on the top side of
-the visualization.
-
-|Margin Bottom (px) |number |40 |The margin in pixels on the bottom side
-of the visualization.
-
-|Auto-run query |on/off |on |when activated automatically runs the query
-when the report is displayed. When set to `off', the query is displayed
-and will need to be executed manually.
-
-|Report Description |markdown text | | When specified, adds another button the report header that opens a pop-up. This pop-up contains the rendered markdown from this setting. 
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 |===
 
 

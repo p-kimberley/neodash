@@ -1,55 +1,82 @@
-= Deploy a Build
+= Deploy
 
-[IMPORTANT]
-====
-This page describes deploying the upstream, browser-only NeoDash build. This fork serves NeoDash from a backend with OIDC sign-in and viewer/editor roles, so
-browser-side connection settings, `config.json` and standalone mode no longer apply. See
-https://github.com/p-kimberley/neodash/blob/master/docs/deployment.md[docs/deployment.md] for
-deploying this version.
-====
+NeoDash runs on Kubernetes as one stateless Deployment, installed with the Helm chart in `k8s-deploy/neodash`. Each pod serves the UI, signs users in and runs the Neo4j queries; browsers never connect to Neo4j.
 
-include::../banner.adoc[]
+The full guide, with Keycloak set-up, Gateway API, network policies, upgrades and CI/CD, is `docs/deployment.md` in the repository. Every chart value is described in `k8s-deploy/neodash/README.md`.
 
-If you have a pre-built NeoDash application, you can easily deploy it on an any webserver.
-A NeoDash build is "just" a collection of HTML, CSS and JavaScript files, so it can run virtually anywhere.
+== What you need
 
-This guide walks you through the process of deploying a NeoDash build onto your own webserver.
+- Kubernetes 1.25+ and Helm 3.
+- Neo4j 5, Community or Enterprise, reachable from the cluster, and a Neo4j user for NeoDash. Editors can run any Cypher as this user, so give it the access your editors need.
+- An OpenID Connect provider such as Keycloak, with a confidential client (redirect URI `https://<host>/auth/callback`) and the roles `neodash-viewer` and `neodash-editor` assigned to users or groups.
+- An Ingress controller or a Gateway API implementation, and a TLS certificate for the host.
+- The NeoDash image, from the project's registry or a mirror of it.
 
-== 1. Prepare the files
-First, check that you have the correct files.
-We typically provide builds as either a zip file or tarball with the following naming convention: 
-`neodash-2.X.X.zip` or `neodash-2.X.X.tar.gz`.
+== Install
 
-For zip files, open up the terminal and run:
-```bash
-unzip neodash-2.X.X.zip
-```
+The chart never takes credentials as values. Create the Secrets first:
 
-For tar.gz files, open up the terminal and run:
-```bash
-tar -xf neodash-2.X.X.tar.gz
-```
+[source,sh]
+----
+kubectl create namespace neodash
+kubectl -n neodash create secret generic neo4j-credentials \
+  --from-literal=username=neodash --from-literal=password='<neo4j password>'
+kubectl -n neodash create secret generic neodash-oidc \
+  --from-literal=client-secret='<client secret>'
+kubectl -n neodash create secret tls neodash-tls --cert=tls.crt --key=tls.key
+----
 
-After running either of these, you should now have a folder `neodash-2.X.X` in the current directory.
+Then a values file with the minimum settings:
 
-== 2. Edit Configuration (Optional)
-This is an optional step if you want to configure optional settings for your NeoDash deployment (e.g. SSO or standalone mode).
+[source,yaml]
+----
+image:
+  repository: <owner>/neodash
+publicUrl: https://neodash.example.com
+neo4j:
+  uri: neo4j://neo4j.neo4j.svc.cluster.local:7687
+  auth:
+    existingSecret: neo4j-credentials
+oidc:
+  issuerUrl: https://keycloak.example.com/realms/acme
+  existingSecret: neodash-oidc
+ingress:
+  host: neodash.example.com
+  tls:
+    secretName: neodash-tls
+----
 
-1. Inside the folder you just unzipped, open up `config.json`. 
-2. Edit this file to modify your link:../configuration[Configuration] settings.
-3. Save the file.
-4. Inside the folder you just unzipped, open up `style.config.json`.
-5. Edit this file to modify your link:../styleConfiguration[Style Configuration] settings.
-6. Save the file
+And install, from the published chart or from a checkout:
 
-== 3. Move the tarball/zip to your webserver
-Finally, copy the files to the correct folder on your webserver.
-Depending on the webserver type and version, this could be different directory.
-As an example - to copy the files to an nginx webserver using `scp`:
+[source,sh]
+----
+helm install neodash oci://ghcr.io/<owner>/charts/neodash --version <chart version> -n neodash -f my-values.yaml
+# or: helm install neodash k8s-deploy/neodash -n neodash -f my-values.yaml
+helm test neodash -n neodash
+----
 
-```bash
-scp neodash-2.4.11-labs username@host:/usr/share/nginx/html
-```
+The chart stops with a message if a required value is missing. `helm test` checks that the service answers and that NeoDash can reach Neo4j.
+The session key, which encrypts the sign-in cookie, is generated on the first install and kept across upgrades; with GitOps tools that render charts offline, create it yourself and set `session.existingSecret`.
 
-NeoDash should now be visible by visiting your (sub)domain in the browser.
- Can't see the application? Check that the webserver user has read-permissions on the files you copied into the HTML directory.
+== Exposing it
+
+The UI, the API (`/api`) and sign-in (`/auth`) share one host and path, and `publicUrl` must be the address users open.
+By default the chart creates an Ingress for ingress-nginx with a larger request body (dashboards are saved as one document), a read timeout above the longest query and a larger header buffer (for the session cookie). For other controllers, set `ingress.className` and their equivalent annotations; for the Gateway API, set `ingress.enabled: false` and `httpRoute.enabled: true` with the Gateway in `httpRoute.parentRefs`.
+
+== The image
+
+- Distroless Node.js 22, running as UID 65532 with a read-only root filesystem, no shell and no capabilities.
+- It makes no outbound internet requests: fonts, the UI, these docs and the map shapes for choropleth and area maps are all inside it. Map reports draw background tiles only if you set an internal tile server (`maps.tileUrl`).
+- So it runs in air-gapped clusters: copy the image and the chart to registries the cluster can reach, and set `global.imageRegistry`.
+
+== Running it
+
+- Pods are stateless: scale with `replicaCount` or `autoscaling.enabled`. Upgrades are rolling and keep the old pods serving until the new ones are ready.
+- `/healthz` is the liveness check; `/readyz` also checks Neo4j.
+- Credentials are read at start-up: after rotating a Secret, restart the Deployment. Rotating the session key signs everyone out.
+- Logs, including the audit lines, are JSON on stdout; see xref:developer-guide/roles-and-security.adoc[Roles, Security & Audit].
+
+== Upgrading from upstream NeoDash
+
+Dashboards don't need to change: they stay in Neo4j as `_Neodash_Dashboard` nodes, in the same format, and NeoDash 2.4 and this version can share a database while you move over.
+Browser-side settings of upstream NeoDash (`config.json`, the `standalone…` settings, `ssoEnabled`, share links carrying credentials) no longer apply: the backend owns the connection, and the viewer role replaces standalone mode.

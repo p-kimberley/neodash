@@ -1,11 +1,11 @@
+include::../../banner.adoc[]
 
 = Extensions
 
-include::../../banner.adoc[]
-
 Extensions provide a way to expand the basic functionality of NeoDash with extra features.
-To enable an extension, open up the extensions window by clicking the puzzle piece icon in the left-sidebar of the screen.
-This will open up the **Extensions Window**, which lets you toggle active extensions for the current dashboard.
+Editors turn extensions on and off for each dashboard: click the puzzle piece button next to the
+dashboard title to open the **Extensions Window**. The extensions you turn on are saved with the
+dashboard, so viewers get them too.
 
 image::extensions.png[The Extensions Window]
 
@@ -15,25 +15,14 @@ The following types of functionality can be added through NeoDash extensions:
 - A more customizable version of an existing visualization.
 - New core features, such as rule-based styling or interactive reports.
 
-The currently available extensions in NeoDash are:
+The extensions in NeoDash are:
 
 - link:advanced-visualizations[Advanced Visualizations]
 - link:rule-based-styling[Rule-based Styling]
 - link:report-actions[Report Actions]
-- link:natural-language-queries[Text2Cypher - Natural Language Queries]
+- link:natural-language-queries[Text2Cypher - Natural Language Queries] (only when the server has a
+language model set up)
 - link:forms[Forms]
 
-== Types of Extensions
-
-=== 1. Core Extensions
-Core Extensions are available as part of the open-source NeoDash project.
-These are available to use for free anywhere - Neo4j Desktop, public NeoDash deployments, and self-hosted NeoDash deployments.
-
-=== 2. Expert Extensions
-Expert Extensions are built by the Neo4j Professional Services team.
-These extensions push NeoDash to the next level, by providing extra functionality to create interactive graph applications.
-Reach out to link:mailto:emea_pmo@neotechnology.com[Neo4j Professional Services] if you are interested in a customized / new expert extension for your use-case.
-
-=== 3. Custom Extensions
-Custom Extensions are self-built extensions that you can plug into the project.
-To learn about how to fork and extend NeoDash, check out the link:../../developer-guide[Developer Guide].
+All of them are part of NeoDash; none needs a separate license. To learn how to build your own
+extensions, check out the link:../../developer-guide[Developer Guide].

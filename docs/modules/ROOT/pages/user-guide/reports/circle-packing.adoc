@@ -1,8 +1,6 @@
 
 = Circle Packing
 
-include::../../banner.adoc[]
-
 link:../../extensions/advanced-visualizations[label:Advanced&nbsp;Visualization[]]
 
 A circle packing chart will render hierarchical data in a group of
@@ -31,11 +29,14 @@ image::circlepacking.png[Circle Packing Chart]
 [width="100%",cols="13%,3%,26%,58%",options="header",]
 |===
 |Name |Type |Default Value |Description
-|Enable interactivity |on/off |on |If enabled, turn on animations when a
-user hovers over an circle.
+|Background Color |Color |#fafafa |The background color of the visualization.
 
-|Color Scheme |List | |The color scheme to use for the circles. Colors
+|Enable interactivity |on/off |on |Has no effect in this version (kept so that saved dashboards load unchanged).
+
+|Color Scheme |List |set2 |The color scheme to use for the circles. Colors
 are assigned automatically for each of the sub-hierarchies.
+
+|Show Circle Labels |on/off |on |If enabled, shows the name of each circle.
 
 |Circle border width (px) |number |0 |The width of the border of each
 circle.
@@ -55,5 +56,5 @@ of the visualization.
 |Auto-run query |on/off |on |When activated, automatically runs the
 query when the report is displayed. When set to `off', the query is
 displayed and will need to be executed manually.
-|Report Description |markdown text | | When specified, adds another button the report header that opens a pop-up. This pop-up contains the rendered markdown from this setting. 
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 |===

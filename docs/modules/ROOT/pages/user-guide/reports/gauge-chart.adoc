@@ -1,8 +1,6 @@
 
 = Gauge Chart
 
-include::../../banner.adoc[]
-
 link:../../extensions/advanced-visualizations[label:Advanced&nbsp;Visualization[]]
 
 A gauge chart takes a single numeric value, and plots it on an animated gauge:
@@ -25,21 +23,36 @@ image::gauge.png[Gauge Chart]
 
 == Advanced Settings
 
-              
 [width="100%",cols="15%,2%,6%,77%",options="header",]
 |===
 |Name |Type |Default Value |Description
-|Number of levels | number | 3 | The number of distinct colored levels in the gauge.
+|Background Color |Color |#fafafa |The background color of the visualization.
 
-| Comma-separated length of each arc | List |  "0.15, 0.55, 0.3" | A comma-separated list of length for each of the colored arc segments on the gauge.
+|Number of levels |Number |3 |The number of distinct colored levels in the gauge.
 
-| Comma-separated arc colors | List | "#5BE12C, #F5CD19, #EA4228" | The HEX color values to assign to each arc.
+|Comma-separated length of each arc |Text |0.15, 0.55, 0.3 |A comma-separated list of length for each of the colored arc segments on the gauge.
 
-| Color of the text | string | black | The color of the number on the gauge.
+|Arc padding |Text |0.02 |The gap between the colored arc segments.
 
-| Delay in ms before needle animation | number | 0 | Delay in milliseconds before starting the animation.
+|Comma-separated arc colors |Text |#5BE12C, #F5CD19, #EA4228 |The HEX color values to assign to each arc.
 
-| Duration in ms for needle animation | number | 2000 | The duration of the moving needle animation when the chart renders.
+|Color of the text |Text |black |The color of the number on the gauge.
 
+|Delay in ms before needle animation |Number |0 |Delay in milliseconds before starting the animation.
+
+|Duration in ms for needle animation |Number |2000 |The duration of the moving needle animation when the chart renders.
+
+|Margin Left (px) |Number |24 |The margin in pixels on the left side of the visualization.
+
+|Margin Right (px) |Number |24 |The margin in pixels on the right side of the visualization.
+
+|Margin Top (px) |Number |40 |The margin in pixels on the top side of the visualization.
+
+|Margin Bottom (px) |Number |40 |The margin in pixels on the bottom side of the visualization.
+
+|Override no data message |Text |Query returned no data. |Override the message displayed to the user when their query returns no data.
+
+|Auto-run query |on/off |on |When activated, automatically runs the query when the report is displayed. When set to off, the query is displayed and will need to be executed manually.
+
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 |===
-

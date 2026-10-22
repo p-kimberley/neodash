@@ -2,40 +2,38 @@ include::../banner.adoc[]
 
 = Publishing
 
-include::../banner.adoc[]
+A dashboard is published as soon as an editor saves it: everyone who can sign in to NeoDash
+finds it in the list of dashboards. There is no separate viewer deployment to set up; what
+people can do depends on the role they have in your identity provider.
 
-When you are done building a dashboard, you may want to *publish* that
-dashboard for others to view. The workflow for a continuous dashboarding
-cycle may look something like this:
+[cols="1,3",options="header"]
+|===
+|Role |What they can do
+|Viewer |Open dashboards and use them: switch pages, set parameters and filters, follow report
+actions, maximise reports. Reports run only the queries saved in the dashboard, read-only; viewers
+can't see or change the queries, and can't save.
+|Editor |Everything viewers can, plus create, edit, save, import, export and delete dashboards,
+and run any Cypher query from a report's editor.
+|===
 
-image::publish.png[Workflow]
+A user without either role is turned away after signing in. Your administrator assigns the
+roles (for example as Keycloak realm roles); see
+link:../../developer-guide/roles-and-security[Roles, Security & Audit].
 
-Keep in mind that the purpose of an application in the `View' phase is
-very different from the `Build' phase: 
+== Building and publishing
 
-1. A dashboard cannot be edited
-after it has been published. 
-2. A fixed dashboard must be loaded and a fixed database must be connected to. 
-3. Users in the `View' phase should not see the Cypher queries configuration powering the visualizations.
+Editors change a dashboard in place. Changes stay in your browser as a *draft* (the header shows
+*Unsaved changes*) until you click *Save*; only then do viewers see them. To try out larger changes
+without affecting viewers, export the dashboard, import it as a new one, and work on the copy.
 
-== Architecture
+== Presentation mode
 
-NeoDash enables the Build, Publish, View workflow by having two seperate
-deployments of the NeoDash application: 
+The dashboard setting *Editable* (see link:../dashboards#_dashboard_settings[Dashboard Settings])
+turns off editing in the dashboard for editors too, which is useful while presenting. Viewers can
+never edit, whatever this setting says.
 
-1. An `editor` deployment for the build phase. 
-2. A `viewer` deployment for the view phase.
+== Sharing
 
-The *editor* deployment is the app you are using from Neo4j Desktop,
-from https://neodash.graphapp.io, or from your own deployment.
-
-The *viewer* deployment will require some configuration to be set up.
-These three configurations must be set for NeoDash to be able to run in
-`View' mode: 
-
-1. A flag telling the app to disable all editing features.
-2. A hardcoded Neo4j database to connect to. 
-3. A hardcoded dashboard to load.
-
-Technical details on setting this up are documented in the link:../../developer-guide/standalone-mode[Standalone
-Mode] page. 
+Every dashboard has its own address, including the page and the parameter values in use, so you
+can share it as a link; see link:../dashboards#_share_a_dashboard[Share a Dashboard]. Whoever opens
+the link signs in first, and their role decides what they can do.

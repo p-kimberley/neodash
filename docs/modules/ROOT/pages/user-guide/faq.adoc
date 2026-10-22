@@ -2,83 +2,45 @@ include::../banner.adoc[]
 
 = FAQ
 
-include::../banner.adoc[]
+== 1. How is this NeoDash different from NeoDash Labs?
 
-== 1. How can I learn more about NeoDash?
+It is a fork of NeoDash 2.4, the open source dashboard builder from Neo4j Labs, made to run as a
+shared service on Kubernetes:
 
-To learn more, check out the following list of resources (blogs, videos
-and sites): 
+- A server holds the Neo4j credentials and runs every query. Browsers never connect to Neo4j, and
+there is no connection screen.
+- Users sign in through your identity provider (for example Keycloak), and have the viewer or
+editor role. See link:../publishing[Publishing].
+- Dashboards are listed on a start page and have their own addresses, which include the page and
+parameter values.
+- It works with Neo4j Community Edition, and makes no requests to the internet (this
+documentation is part of it).
 
-- https://www.youtube.com/watch?v=Ygzj0Y4cYm4[NeoDash 2.0 in
-Five Minutes] 
-- https://www.youtube.com/watch?v=vjZ9M7JpExA[NeoDash 2.0 - Hands On at Neo4j Live] 
-- https://medium.com/p/ddc938ff82fa[Investigating Supply Chains with NeoDash] 
-- https://thatdavestevens.medium.com/social-recommendations-slack-neo4j-and-neodash-fe916588e65b[Social Recommendations with Neo4j & NeoDash] 
-- https://neo4j.com/developer-blog/bitcoin-transactions-dashboard-neo4j-neodash/[Real-Time Dashboard of Bitcoin Transactions With Neo4j and NeoDash]
-- https://medium.com/@a.emrevarol/european-natural-gas-network-via-knowledge-graph-3c3decb5f2ec[European
-Natural Gas Pipelines] 
-- http://blog.bruggen.com/2020/11/exporting-spotify-playlists-into-neo4j.html[Exporting Spotify Playlists into Neo4j] 
-- https://nielsdejong.nl/neo4j%20projects/2021/12/14/neodash-2.0-a-brand-new-way-of-visualizing-neo4j-data.html[NeoDash
-2.0 Release Overview] 
-- https://nielsdejong.nl/neo4j%20projects/2021/06/06/neodash-1.1-extensible-interactive-dashboards.html[NeoDash
-1.1 Release Overview] 
-- https://nielsdejong.nl/neo4j%20projects/2020/11/16/neodash[NeoDash 1.0
-Release Overview]
-
-_Have a blog post about NeoDash you’d like to share? Let us know and we
-can add it to this list!_
+Dashboards made with NeoDash 2.x open unchanged.
 
 == 2. Is NeoDash free to use?
 
-NeoDash 2.X is available under the
-https://www.apache.org/licenses/LICENSE-2.0[Apache 2.0 license], which
-means you can use it for free for with your project.
-
-____
-Keep in mind! As NeoDash is a https://neo4j.com/labs/[Neo4j Labs]
-project, it is not part of the official Neo4j product suite, and is not
-supported as part of a Neo4j license. (See also question #8 below…)
-____
+Yes. NeoDash is available under the
+https://www.apache.org/licenses/LICENSE-2.0[Apache 2.0 license].
 
 == 3. Can I publish the dashboard that I built?
 
-When you’re done building a dashboard and want to show to others as a
-read-only web page, you can set up a xref:developer-guide/standalone-mode.adoc[Standalone
-Mode] deployment of NeoDash.
+Yes: save it, and everyone who can sign in to NeoDash can open it. Viewers can use it but not
+change it. See link:../publishing[Publishing].
 
-If you need help setting this up, please contact the NeoDash team.
+== 4. Can I use NeoDash with Neo4j Community Edition?
 
-== 4. Is NeoDash Production Ready?
+Yes. Community Edition has a single user database and no database roles, so access is controlled
+by NeoDash instead: viewers' queries run read-only, and only the queries saved in dashboards run
+for them. Neo4j Enterprise Edition works too.
 
-NeoDash Labs is an experimental tool without official support.
-For production-grade usage with Neo4j Enterprise Edition, we recommend a `NeoDash commercial` license.
+== 5. Why does a report show "No answer from the server"?
 
-== 5. Can I use NeoDash with Neo4j Community Edition?
+The answer to the report's query didn't arrive within the report's time limit plus 30 seconds,
+for example because a network connection dropped. Run it again with the report's *Refresh* button
+(if the report has one), or reload the page.
 
-Yes, NeoDash can be used with any type of Neo4j deployment (On-premise,
-cloud, or fully managed in Neo4j Aura). We do however recommend that you use the
-Enterprise version, as it lets you create a
-dedicated read-only user for reporting.
+== 6. Where do I report a problem or ask for a feature?
 
-== 6. I’m missing a feature. Can I ask for help?
-Feature requests and bug reports are more than welcome. Please open an
-issue on https://github.com/neo4j-contrib/neodash/issues[Github]. Issues
-will be addressed on a best-effort basis.
-
-If you’re looking for a specific feature with high priority, you can
-reach out to the Neo4j team.
-
-== 7. How can I contribute to NeoDash myself?
-
-NeoDash is an open-source tool that can be extended by anyone. If you
-are interested in contributing, please check out the
-https://github.com/neo4j-contrib/neodash[Github repository].
-
-Aside from code contributions, we are also very happy to hear about how
-you use NeoDash. If you have a blog post, podcast or video of your graph
-dashboard, let us know!
-
-== 8. Can I get professional help with NeoDash?
-
-If you are interested in a services agreement to support your NeoDash deployment, please reach out to the
-https://neo4j.com/professional-services/[Neo4j Services Team].
+Ask the team that runs NeoDash for you. Issues with this version of NeoDash itself can be raised
+on its https://github.com/p-kimberley/neodash/issues[GitHub repository].

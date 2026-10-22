@@ -1,51 +1,59 @@
-include::../banner.adoc[]
-
 = Design
 
-include::../banner.adoc[]
+Guidelines for the code's structure and for the interface.
 
+== File structure
 
-This page contains some key guidelines for design of the application.
-This entails code architecture, as well as UX/UI design.
+The web app's source in `src/` is organised by component. A component `ABC` with its own state lives in a directory `abc/` with:
 
-== File Structure
+* `ABC.tsx`: the component.
+* `ABCActions.ts`: the actions that change its state.
+* `ABCReducer.ts`: how the state changes for each action.
+* `ABCSelectors.ts`: functions components use to read the state.
+* `ABCThunks.ts`: logic that fires one or more actions, or calls the backend.
 
-The source code of NeoDash is organized as a flat file structure based
-on components. Given a component `ABC` is to be added, you should create
-a directory called `abc` with the following files:
-
-* `ABC.tsx` (component renderer)
-* `ABCActions.ts` (objects defining state manipulation)
-* `ABCReducer.ts` (handling state changes based on actions)
-* `ABCSelectors.ts` (used by components to retrieve part of the state)
-* `ABCThunks.ts` (Complex state handling logic, to fire one or more
-actions)
-
-=== Structure of the other folders
+`application/`, `dashboard/`, `page/`, `card/`, `settings/` (dashboard settings) and `sessionStorage/` follow this pattern. The other directories in `src/`:
 
 ....
-conf: nginx configuration for Docker image.
-dist: directory for generated webpack files.
-node_modules: downloaded dependencies
-public: style files/images. Runtime app config.
-scripts: utility scripts for deployment.
-src: source code. 
-target: compiled package as tgz file.
-.babelrc: javascript compiled settings.
-.gitignore: gitignore files.
-Dockerfile: docker image definition.
+api/            the backend's API client, and a driver look-alike that runs queries through it
+chart/          the core visualizations
+component/      shared building blocks: dialog, code editor, form fields
+config/         report types and their settings, card and dashboard settings, branding
+extensions/     optional features: advanced charts, rule-based styling, report actions, forms, Text2Cypher
+modal/          dialogs used across the app
+report/         running a report's query and processing its records
+stubs/          stand-ins for modules the bundle doesn't need (see webpack.config.js)
+theme/          design tokens and component styles (see Style Configuration)
+utils/          small helpers: parameters, ids, documentation links, keyboard handling
 ....
 
-== UX Design
+And in the repository:
 
-At it’s core, NeoDash aims to be a tool that is _easy to learn, but hard
-to master_. This translates into the following five design principles in
-mind:
+....
+dev/            the local dev stack: Docker Compose, Keycloak realm, sample data, browser tests (dev/e2e)
+docs/           this documentation (Antora layout), built into the app by scripts/build-docs.mjs
+k8s-deploy/     the Helm chart
+public/         static files served with the app: index.html, map shapes, images
+scripts/        building the docs, compressing the build, release notes
+server/         the backend (Fastify, TypeScript), with its own package.json and tests
+Dockerfile      the image: UI, docs and backend
+changelog.md    the release notes, one section per version
+....
+
+== Interface design
+
+At its core, NeoDash aims to be a tool that is _easy to learn, but hard to master_:
 
 [arabic]
 . Use a limited set of core visualizations, with high customizability.
 . It should be easy to get started without reading documentation.
 . The tool should be self-documenting.
-. Complex data transformations should be done by dashboard builders in
-Cypher, and not by the application.
+. Complex data transformations should be done by dashboard builders in Cypher, and not by the application.
 . The tool should be easy to extend with custom visualizations.
+
+And, for this version:
+
+. Use the Neo4j design system's components and tokens rather than custom ones, so the app looks and behaves consistently (keyboard, screen readers, light and dark).
+. Every text colour must stay readable (WCAG AA) in both appearances.
+. Existing dashboards must keep working unchanged: new behaviour is opt-in through a setting, and saved settings keep their meaning.
+. The image makes no outbound requests: no fonts, scripts, images or data from the internet.

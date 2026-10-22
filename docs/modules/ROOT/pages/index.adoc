@@ -2,14 +2,16 @@ include::/banner.adoc[]
 
 = Introduction
 
-This portal contains information on getting started with NeoDash - A Low-Code Dashboard Builder for Neo4j.
-
-NeoDash is an open source tool for visualizing your Neo4j data. It lets you group visualizations together as dashboards, and allow for interactions between reports.
-
+NeoDash is a low-code dashboard builder for Neo4j. It lets you group visualizations of your Neo4j data into dashboards, with interactions between reports.
 
 image::dashboard.png[Dashboard]
 
-Neodash supports presenting your data as tables, graphs, bar charts, line charts, maps and more. It contains a Cypher editor to directly write the Cypher queries that populate the reports. You can save dashboards to your database, and share them with others.
+Reports show your data as tables, graphs, bar charts, line charts, maps and more. Each report is filled by a Cypher query, written in the report's editor. Dashboards are saved in Neo4j, and everyone who can sign in to NeoDash can open them.
+
+In this version of NeoDash, a server holds the Neo4j credentials and runs every query: browsers never connect to Neo4j. Users sign in through your identity provider (for example Keycloak), and their role decides what they can do:
+
+- *Viewers* open dashboards and use them (filters, parameters, drill-downs). Their reports run only the queries saved in the dashboards, read-only.
+- *Editors* also create, change, save and delete dashboards, and can run any query from a report's editor.
 
 - To get started, see the link:quickstart[Quickstart] page.
 - For more on building dashboards, visit the link:user-guide[User Guide].

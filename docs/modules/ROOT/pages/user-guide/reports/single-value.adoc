@@ -1,8 +1,6 @@
 
 = Single Value
 
-include::../../banner.adoc[]
-
 A single value report will render the first column of the first row
 returned by the Cypher query. Single value reports are typically used
 for key metrics: 
@@ -41,7 +39,11 @@ image::value2.png[Styled Value]
 |Font Size |Number |64 |The font size of the value text.
 
 |Color |Text |rgba(0, 0, 0, 0.87) |The HTML color value of the text.
-|Background Color |Text | white |The HTML color value of the background of the report.
+|Background Color |Color |#fafafa |The HTML color value of the background of the report.
+|Display format |List |auto |How values that aren't a single number or text are shown: auto, json or yml.
+
+|Use monospace font |on/off |off |If enabled, shows the value in a monospace font.
+
 |Horizontal Align |List |left |The horizontal alignment of the text.
 
 |Vertical Align |List |top |The vertical alignment of the text.
@@ -49,7 +51,7 @@ image::value2.png[Styled Value]
 |Auto-run query |on/off |on |when activated automatically runs the query
 when the report is displayed. When set to `off', the query is displayed
 and will need to be executed manually.
-|Report Description |markdown text | | When specified, adds another button the report header that opens a pop-up. This pop-up contains the rendered markdown from this setting. 
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 |===
 
 == Rule-Based Styling

@@ -1,57 +1,44 @@
-include::../banner.adoc[]
-
 = Component Overview
 
-include::../banner.adoc[]
+The interface is built from these components (paths under `src/`):
 
-The image below contains a high-level overview of the component
-hierarchy within the application. The following conceptual building
-blocks are used to create the interface:
+....
+Application                     application/Application.tsx
+├── App header                  application/AppHeader.tsx
+├── Start page                  dashboard/selector/DashboardSelector.tsx   (no dashboard open)
+├── Dashboard                   dashboard/Dashboard.tsx
+│   ├── Dashboards panel        dashboard/sidebar/DashboardSidebar.tsx
+│   ├── Title and page tabs     dashboard/header/DashboardTitle.tsx, DashboardHeaderPageList.tsx
+│   └── Page                    page/Page.tsx
+│       └── Card (one per report)                card/Card.tsx
+│           ├── Card view       card/view/CardView.tsx
+│           │   ├── Header      card/view/CardViewHeader.tsx
+│           │   ├── Report      report/Report.tsx  →  Chart  (chart/…, extensions/…)
+│           │   └── Footer      card/view/CardViewFooter.tsx
+│           └── Card settings   card/settings/CardSettings.tsx
+│               ├── Header      card/settings/CardSettingsHeader.tsx
+│               ├── Content     card/settings/CardSettingsContent.tsx
+│               └── Footer      card/settings/CardSettingsFooter.tsx
+└── Dialogs                     modal/…, and next to the components that open them
+....
 
-image::component-hierarchy.png[NeoDash Component Hierarchy]
+* *Application*: starts the app (reads who is signed in and the server's settings from `/api/me` and `/api/config`), keeps the URL in step with what's shown (`application/UrlState.ts`), and applies the light or dark appearance.
+* *App header*: the dashboards panel button, the product name, save status, appearance, help and the signed-in user.
+* *Start page*: the list of dashboards, shown at `/`.
+* *Dashboards panel*: switches between dashboards, and creates, imports, exports and deletes them (editors).
+* *Title and page tabs*: the dashboard's title, its settings and extensions, and one tab per page.
+* *Page*: lays the cards out in a grid (`react-grid-layout`) that editors can rearrange and resize.
+* *Card*: one report. It has two faces: the *view* (what everyone sees) and the *settings* (the query editor and report settings, for editors). A maximised card is shown in a dialog.
+* *Card view header*: the drag handle (editors), the report's title and its buttons (download as image, maximise, details, refresh, settings), as the report's settings allow.
+* *Report*: runs the report's query through the backend (`report/ReportQueryRunner.ts`), handles loading, errors and empty results, and renders the chart.
+* *Chart*: draws one visualization from the query's records. See xref:developer-guide/adding-visualizations.adoc[Adding Visualizations].
+* *Card view footer*: the field selectors under a chart (e.g. which property to show for each node label).
+* *Card settings*: the type and database pickers, the Cypher editor, and the report's advanced settings.
 
-* *Application* - highest level in the component structure. Handles all
-application-level logic (e.g. initalizing the app).
-* *Modals* - all pop-up windows used by the tool. (Connection modal,
-save-dashboard modal, errors/warnings, etc.)
-* *Drawer* - the sidebar on the left side of the screen. Contains
-buttons to perform application-level actions.
-* *The Dashboard* - Main dashboard component. Renders components
-dynamically based on the current state.
-* *Dashboard Header* - the textbox at the top of the screen that lets
-you set a title for the dashboard, plus the page selector.
-* *Pages* - a dashboard has one or more pages, each of which can have a
-list of cards.
-* *Cards* - a `block' inside a dashboard. Each card contains a `view'
-window, and a `settings' window.
-* *Card View* - the front of the card containing the selected report.
-* *Card Settings* - the back of the card, containing the cypher editor
-and advanced settings for the report.
-* *Card View Header* - the header of the card, containing a text box
-that acts as the name of the report.
-* *Report* - the component inside the card view that handles query
-execution and result parsing. Contains a single chart (visualization)
-* *Card View Footer* - The footer of the card view. Depending on the
-type, contains several `selectors' that modify the visualization.
-* *Card Settings Header* - Header of the card settings, used for
-moving/deleting the card.
-* *Card Settings Content* - the component containing the main content of
-the report. This is most often the Cypher query editor.
-* *Card Settings Footer* - the `footer' of the card. This contains the
-`advanced settings' window for reports.
-* *Charts* - the different visualizations used by the application: bar
-charts, tables, graphs, etc.
+== Cards, reports and charts
 
+* The *card* places a report on the page and switches between its view and its settings.
+* The *report* runs the query and handles everything around the result.
+* The *chart* only renders the result it is given.
 
-== A note on Cards v.s. Reports
-
-Whereas a user might associate a Card in NeoDash to a report directly,
-the application has a more nuanced seggration of responsibilities:
-
-* The *Card* is responsible for positioning the component in a page.
-* The *Card Content* is the core element of the card (exclusive of the
-title header and any optional footer).
-* A *Report* sits inside the card content, and handles the running of
-queries and displaying errors.
-* A *Chart* is rendered by the report and is solely responsible for
-rendering a specific visualization.
+Shared building blocks used across the app are in `src/component/`: the app's `Dialog` (the design system's dialog, which also closes on a click outside it), the Cypher editor, and form fields such as `SelectField` and `SuggestInput`.

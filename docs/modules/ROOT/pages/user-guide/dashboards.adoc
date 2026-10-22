@@ -2,8 +2,6 @@ include::../banner.adoc[]
 
 = Dashboards
 
-include::../banner.adoc[]
-
 In NeoDash, a dashboard consists of several pages, each of which can
 consist of multiple reports.
 
@@ -15,31 +13,56 @@ Beer Database Dashboard 🍺` is displayed on the top of the window.
 
 The first page is selected, and contains three reports, a table, a graph
 and a map. Each report can be given their own name, and has exactly one
-Cypher query used to populate the report. See Reports for more info on
+Cypher query used to populate the report. See link:../reports[Reports] for more info on
 how reports work.
 
-== Dashboard Management
+== Finding a Dashboard
 
-After startup up NeoDash, you will be given the choice to create a new
-dashboard or open an existing one (if available). After being connected,
-the buttons on the sidebar can be used to save, load or share a
-dashboard.
+After signing in, you start on the list of all dashboards, saved in Neo4j. Search it by
+name or author, and sort it by name or by when each dashboard was last updated. Click
+*NeoDash* in the header to come back to this list at any time.
 
-image::dashboardnewsettings.png[Save/Load/Share Button]
+While a dashboard is open, the *☰* button at the top left opens the *dashboards panel*: the same
+list, next to the dashboard. Choosing a dashboard there opens it and closes the panel. For
+editors, each dashboard in the panel has a *⋮* menu:
 
-=== Save a Dashboard
+- *Info*: its ID, title, author, when it was last saved, and its format version.
+- *Load*: open it (the same as clicking it).
+- *Export*: show its JSON, to copy or save as a file.
+- *Share*: a link to it (see below).
+- *Delete*: remove it from Neo4j. This can't be undone.
 
-A NeoDash dashboard is, simply put, a JSON file. As an example, the
-default dashboard has the following structure:
+With unsaved changes in the open dashboard, its menu offers *Save* and *Discard Draft* instead.
+
+If the server is set up with more than one Neo4j database, the database button at the top of the
+panel switches the database whose dashboards are listed.
+
+== Creating and Saving a Dashboard
+
+Editors start a new dashboard with *New dashboard* in the list of dashboards, or with the *+*
+button in the dashboards panel, which also offers *Import*.
+
+Changes to a dashboard are kept in your browser as a *draft*: the header shows *Unsaved changes*,
+and they survive reloading the page, but nobody else sees them. Click *Save* in the header to
+store the dashboard in Neo4j, where everyone who opens it sees your changes. If you open another
+dashboard while you have unsaved changes, NeoDash asks whether to discard them first.
+
+=== Import and Export
+
+A NeoDash dashboard is, simply put, a JSON document. *Export* shows it, to copy or download as
+`dashboard.json`. *Import* takes such a document, pasted or picked from a file, and opens it as a
+new draft, which you can then save. Dashboards exported from other NeoDash 2.x installations can
+be imported too.
+
+As an example, a small dashboard looks like this:
 
 ....
 {
-  "title": "",
-  "version": "2.0",
+  "title": "My dashboard",
+  "version": "2.4",
   "settings": {
     "pagenumber": 0,
     "editable": true,
-    "fullscreenEnabled": true,
     "parameters": {}
   },
   "pages": [
@@ -47,27 +70,19 @@ default dashboard has the following structure:
       "title": "Main Page",
       "reports": [
         {
-          "title": "Hi there 👋",
-          "query": "**This is your first dashboard!** \n \nYou can click (⋮) to edit this report, or add a new report to get started. You can run any Cypher query directly from each report and render data in a variety of formats. \n \nTip: try _renaming_ this report by editing the title text. You can also edit the dashboard header at the top of the screen.\n\n\n",
-          "width": 3,
-          "type": "text",
-          "height": 3,
-          "selection": {},
-          "settings": {}
-        },
-        {
-          "title": "",
-          "query": "MATCH (n)-[e]->(m) RETURN n,e,m LIMIT 20\n\n\n",
-          "width": 3,
+          "id": "8d1c8a1e-0f2b-4a7e-9a8a-3f5d2a1b6c4d",
+          "title": "Movies and genres",
+          "query": "MATCH (n)-[e]->(m) RETURN n,e,m LIMIT 20",
+          "x": 0,
+          "y": 0,
+          "width": 6,
+          "height": 4,
           "type": "graph",
-          "height": 3,
           "selection": {
             "Movie": "title",
             "Genre": "name"
           },
-          "settings": {
-            "nodePositions": {}
-          }
+          "settings": {}
         }
       ]
     }
@@ -75,86 +90,61 @@ default dashboard has the following structure:
 }
 ....
 
-After opening the save dialog, there are three options for saving your
-dashboard: 
-
-1. Save as a file. This triggers a download of the current
-dashboard as `.json` file. 
-2. Save inside Neo4j. This stores a
-stringified representation of the dashboard as a node in the database.
-When using Neo4j multi-database, you will be given the choice of which
-database to save the dashboard in. 
-3. Copy-paste the JSON file directly.
-
-> Keep in mind that your currently active dashboard is stored in the browser cache. If you clear your cache (cookies), the dashboard is gone.
-
-=== Load a Dashboard
-
-Just like in the save screen, a dashboard can be loaded in one of three
-ways: 
-
-1. Load from a file. This requires you to select a `.json`
-somewhere on your computer. 
-2. Load from Neo4j. This requires you to
-select a dashboard node stored in the database. When loading from Neo4j,
-you will be presented with the list of dashboards in reverse
-chronological order. 
-3. Loading a JSON file by pasting it directly into
-the editor.
-
 === Share a Dashboard
 
-A dashboard can be shared with other users by generating a direct link
-to it. This link will contain: 
+Every dashboard has its own address, `/dashboards/<id>`. The page you are on and the parameter
+values in use are part of the address too, so you can copy it from your browser, or use *Share* in
+the dashboard's menu (which can leave out the page and values). Whoever opens the link signs in
+first, and their role decides what they can do. Links never contain credentials.
 
-- A link to the dashboard (either a
-direct URL or the name of the dashboard inside Neo4j). 
-- (Optionally),
-the credentials of the database that the dashboard is reporting on. *Be
-warned*, when using this feature, the share link will contain the
-database credentials, which can be a security risk. 
-- If the dashboard should be viewed in `editor mode', or `standalone mode'. The latter configures neodash to run in a stripped down UI without any of the editor features enabled.
-
-When creating a NeoDash deployment on a production database, it is not
-recommended to use the `Share' feature. Rather, set up a dedicated
-standalone deployment of NeoDash. See Publishing for more infomation.
+To share a dashboard with another NeoDash installation, use *Export* and *Import*.
 
 == Dashboard Settings
 
-Settings for the entire dashboard can be accessed by clicking the
-*Settings ⚙️* button in the dashboard sidebar.
+Editors open the settings for the entire dashboard with the *Settings ⚙️* button next to the
+dashboard title.
 
 image::dashboardsettings.png[Dashboard Settings]
 
-This window can be used to control the followng settings:
+This window can be used to control the following settings:
 
 [width="100%",cols="19%,17%,26%,38%",options="header",]
 |===
 |Name |Changeable |Default Value |Description
 |Editable |Yes |on |If enabled, show the dashboard in `editing mode'. If
 not, show it in `view mode'. In view mode, all editing is disabled,
-pages and reports can not be moved, edited or renamed.
+pages and reports can not be moved, edited or renamed. Viewers can never edit, whatever
+this setting says.
 
-|Enable Fullscreen Report Views |Yes |on |If enabled, show the *🔳
-Fullscreen* button on the top-right of a report, letting users maximize
-a visualization.
-
-|Maximum Query Time (seconds) |Yes |20 |The maximum time is a query is
+|Maximum Query Time (seconds) |Yes |45 |The maximum time a query is
 allowed to take before being cancelled automatically. Increase this if
-you have complex analytical queries.
+you have complex analytical queries. The server caps it at its own maximum (120 seconds unless
+your administrator changed it).
+
+|Enable Image Download |Yes |off |If enabled, show a button next to the dashboard title that saves
+the dashboard as an image.
 
 |Disable Row Limiting |Yes |off |If enabled, the automatic
-link:reports#row-limiting[row limiting] feature of dashboards is
-disabled.
+link:../reports#row-limiting[row limiting] feature of dashboards is
+disabled. The server still caps the number of rows a query returns.
+
+|Resize Mode |Yes |bottom-right |Where reports can be resized: from their bottom-right corner
+only, or (`all`) also from their sides, bottom edge and lower corners.
+
+|Luma Threshold |Yes |25 |Not used in this version (text colours follow the light or dark
+appearance); kept so saved dashboards load unchanged.
 
 |Page Number |No |0 |The current page number of the dashboard being
-viewed. This can only be changed by switching pages in the dashboard
-header.
+viewed. This can only be changed by switching pages.
 
 |Global Parameters |No | {} |The global parameters that are shared among
 all reports in the dashboard. See the next section for more on global
 parameters.
 |===
+
+Every report can be maximised to fill the window with the *⤢* button in its top right corner.
+Dashboards saved with the old *Enable Fullscreen Report Views* setting keep working; the setting
+is ignored.
 
 == Parameters
 
@@ -162,8 +152,9 @@ Dashboard parameters are key-value pairs that can be used inside the
 queries of reports. A convention is that a dashboard parameter in
 NeoDash will always start with `$neodash_`.
 
-Parameters can only be set (and unset) using the
-link:../reports/parameter-select[Parameter Select] reports. After setting a
+Parameters can be set (and unset) using
+link:../reports/parameter-select[Parameter Select] reports, and by
+link:../extensions/report-actions[report actions]. After setting a
 parameter, it will be available to all reports in the dashboard. A query
 that uses a dashboard parameter will look like this:
 
@@ -175,13 +166,16 @@ RETURN m, a, p
 
 === Deep-Linking Parameters
 
-For browser-based NeoDash deployments, you set NeoDash parameters by
-means of URL parameters. For example, when a user visits the following
-URL:
+Parameters can be set in a dashboard's address. For example, opening the following address:
 
 ....
-https://neodash.graphapp.io/?neodash_person_name=Adam
+https://neodash.example.com/dashboards/<id>?neodash_person_name=Adam
 ....
 
-This will set the parameter `$neodash_person_name` to `Adam` after
-loading the dashboard.
+sets the parameter `$neodash_person_name` to `Adam` after loading the dashboard. Values that aren't
+text (numbers, dates, lists) appear in the address as `json:` followed by their value, so they open
+exactly as they were. As you change parameters, the address in your browser follows, so the back
+and forward buttons and bookmarks work too.
+
+Links in the format of earlier NeoDash versions, `?share&type=database&id=<id>`, still open the
+dashboard.

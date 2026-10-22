@@ -1,25 +1,25 @@
 
 = Reports
 
-include::../../banner.adoc[]
-
-A report is the smallest building build of your dashboard. Each report
+A report is the smallest building block of your dashboard. Each report
 will have a single Cypher query behind it that is used to populate the
 report. Reports can be of several types (graph, table, bar chart, etc.),
 each of which expect different types of data. See the relevant
 documentation pages for more information.
 
-A report can be given a title, which will be displayed in the dashboard
-header. To change the query of a report, open the settings by clicking
-the (⋮) icon on the top right of the report.
+A report can be given a title, which is displayed at the top of the report.
+To change the query of a report, open its settings by clicking
+the cog icon on the top right of the report (editors only).
+Every report also has a maximise button next to it, which shows the report
+over the whole window; Escape or a click outside it restores it.
 
 image::report.gif[Report]
 
 The settings window additionally allows you to change the type of
 report, the refresh rate of the report, and a number of *Advanced
 Settings*. The advanced settings differ between the different report
-types, and can be viewed by toggling the switch on the bottom left of
-the settings page.
+types, and can be viewed by turning on the *Advanced settings* switch at the bottom of
+the settings.
 
 == Create and Delete Reports
 
@@ -28,11 +28,11 @@ the end of the page. By default, a report will have nothing defined, so
 you will need to set the query before any data is visualized.
 
 Reports can be deleted by opening the report settings, and clicking the
-🗑️ icon in the report header.
+bin icon at the top of the report. The icon next to it clones the report.
 
 == Re-order Reports
 
-As of NeoDash 2.1, reports can be re-ordered by dragging and dropping
+Reports can be re-ordered by dragging and dropping
 them around the page. To move a report, grab it by the handle (top left
 corner), and drag it to the desired location.
 
@@ -40,18 +40,22 @@ image::movereport.gif[Report]
 
 == Resize Reports
 
-As of NeoDash 2.1, reports can be resized by grabbing their bottom-right
+Reports can be resized by grabbing their bottom-right
 corner, and dragging your mouse to the desired size.
 
 image::resizereport.gif[Report]
 
 == Writing Queries
 
-A single Cypher query is used to populate each report. As any Cypher
-syntax is supported, this includes
-https://neo4j.com/developer/neo4j-apoc/[APOC],
-https://neo4j.com/docs/graph-data-science/current/[GDS], and even
-https://neo4j.com/docs/operations-manual/current/fabric/queries/[Fabric]!
+A single Cypher query is used to populate each report. Any Cypher
+syntax is supported, including procedures from plugins installed in your
+database, such as APOC or Graph Data Science.
+
+Queries run on the NeoDash server, not in your browser. Editors can run any
+query while writing a dashboard. Viewers only run the queries saved in the
+dashboard, and only to read data: a query that writes to the database fails
+for a viewer. Each query is stopped after its time limit (the dashboard's
+*Maximum Query Time* setting, at most the server's maximum).
 
 Keep the following best practises in mind when writing your Cypher
 queries: 
@@ -64,26 +68,26 @@ relationships, whereas a line chart expects numbers.
 
 == Row Limiting
 
-NeoDash has a built-in post-query *row limiter*. This means that results
-are truncated to a maximum number of rows, depending on the report type.
+NeoDash has a built-in *row limiter*. This means that results
+are truncated to a maximum number of rows, depending on the report type
+(and never more than the server's maximum).
 The row limiter is in place to ensure that visualizations do not become
 too complex for the browser to handle.
 
-Note that even though the row limiter is enabled by default, rows are
-only limited after the query is executed. For this reason, it is
+Note that rows are only limited after the query is executed. For this reason, it is
 recommended to use the `LIMIT` clause in your query at all times.
 
 == Parameters
 
 Parameters can be set in a dashboard by using a link:parameter-select[Parameter Select] report. Set parameters are then available in any Cypher query across the dashboard.
 
-In addition, **session parameters** are available based on the currently active database connection.
+In addition, these **session parameters** are always available:
 
 |===
 |Parameter | Description
-| $session_uri | The URI of the current active database connection.
-| $session_database | The Neo4j database that was connected to when the user logged in.
-| $session_username | The username used to authenticate to Neo4j.
+| $session_uri | The address of the NeoDash server, e.g. `https://neodash.example.com`.
+| $session_database | The server's default Neo4j database.
+| $session_username | The username of the signed-in user.
 |===
 
 == Report Types

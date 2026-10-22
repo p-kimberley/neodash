@@ -1,6 +1,5 @@
 [NOTE]
 ====
-This documentation pertains to the (legacy) unsupported version of NeoDash.
-For users of the supported NeoDash offering, refer to https://neo4j.com/docs/neodash-commercial/[NeoDash commercial].
-
+This documentation describes a fork of NeoDash 2.4 that runs on Kubernetes behind its own server, with sign-in, viewer and editor roles, and no connection from browsers to Neo4j.
+Parts of it differ from the upstream https://github.com/neo4j-labs/neodash[NeoDash] project.
 ====

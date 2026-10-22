@@ -1,15 +1,16 @@
 
 = Area Map
 
-include::../../banner.adoc[]
-
 link:../../extensions/advanced-visualizations[label:Advanced&nbsp;Visualization[]]
 
 The Area Map charts can be used to render geographical based information on geoJson polygons. It's possible to click a polygon to visualize its regions and their related data.
 It takes two fields: 
 
-- *code*: String. This represents the country code or regional code that must be binded to the visualization. The map supports Alpha-3 and Alpha-2 country codes (by default Alpha-2). Instead the supported format for the region polygons is ISO 3166.
-- *value*:  Number. Cardinal data to be used on the chart.
+- *code*: String. The country or region code that the value belongs to. Countries are matched on ISO 3166 Alpha-2 codes (the default) or Alpha-3 codes. Regions (shown when drilling down into a country) are matched on GeoNames-style codes such as `FR.11`.
+- *value*: Number. The value to color the country or region by.
+
+The country and region shapes are bundled with NeoDash, so the chart works without internet access.
+The background tiles behind them come from the map tile server set up for your deployment (see xref:user-guide/reports/map.adoc[Map]); without one, the shapes are drawn on a plain background.
 
 == Examples
 
@@ -39,25 +40,24 @@ image::areamap-regions.png[Example of Drill Down inside a Country]
 [width="100%",cols="15%,2%,26%,57%",options="header",]
 |===
 |Name |Type |Default Value |Description
-|Map Provider URL|Text|https://\{s}.tile.openstreetmap.org/\{z}/\{x}/\{y}.png| When specified, overrides Open Street map provider with a custom map tiles provider.
+|Map Provider URL |Text |(the deployment's tile server) |When specified, the tile server to use for this map instead of the deployment's: a URL template such as `https://tiles.example.com/\{z}/\{x}/\{y}.png`. The browser loads the tiles from it, so it must be reachable from your users' network.
 
-|Color Scheme |List | |The color scheme to use for the area map. Country colors
-will vary according their min to max ratio.
+|Color Scheme |List |YlOrRd |The color scheme to use for the area map. Country colors
+vary from the lowest to the highest value.
 
 |Country Code Format |List |Alpha-2 |Type of the country code (two/three letters).
 
-|Color Legend|on/off |on |Option to show color legend.
+|Color Legend |on/off |on |Option to show color legend.
 
-|Drilldown Enabled |on/off |off |Enable map drilldown to visualize regional data.
+|Drilldown Enabled |on/off |off |Enable map drilldown to visualize regional data: clicking a country shows its regions.
 
 |Refreshable |on/off |off |Enables a refresh button for the report.
 
-|Fullscreen enabled |on/off |off |Enables a fullscreen view button for the report.
-
-|Download image enabled |on/off |off |Enables an image download button for the report.
+|Download Image enabled |on/off |off |Enables an image download button for the report.
 
 |Auto-run query |on/off |on |When activated, automatically runs the
-query when the report is displayed. When set to `off', the query is
+query when the report is displayed. When set to off, the query is
 displayed and will need to be executed manually.
-|Report Description |markdown text | | When specified, adds another button the report header that opens a pop-up. This pop-up contains the rendered markdown from this setting. 
+
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 |===

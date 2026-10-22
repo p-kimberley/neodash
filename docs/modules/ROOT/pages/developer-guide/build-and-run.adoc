@@ -1,231 +1,74 @@
-include::../banner.adoc[]
-
 = Build & Run
 
-include::../banner.adoc[]
+You need Docker, Node.js 22 and `yarn` (1.x; `corepack enable` provides it).
 
-To start developing the application, you will need to set up the
-development environment.
+== The local dev stack
 
-== Run & Build using yarn
+`dev/compose.yaml` runs everything NeoDash needs, with sample data and test users:
 
-NeoDash is built with React. You will need `yarn` installed to run the web
-app.
+[source,sh]
+----
+docker compose -f dev/compose.yaml up -d --build
+----
 
-____
-Use a recent version of `yarn` and `node` to build NeoDash. The
-application has been tested with yarn 1.22.17 & node v18.8.0.
-____
+[cols="1,2,3",options="header"]
+|===
+|Service |Address |
+|`neo4j` |http://localhost:7474, `bolt://localhost:7687` |Neo4j 5 Community with APOC. User `neo4j`, password `devpassword`.
+|`keycloak` |http://localhost:8080 |Realm `neodash` with the test users below. Admin console: `admin` / `admin`.
+|`backend` |http://localhost:3000 |NeoDash itself: the image built from this repository (UI and backend).
+|`fake-llm` |– |A stand-in for an OpenAI-compatible model, so Text2Cypher works locally.
+|`seed` |– |A one-off job that loads the sample data and example dashboards, then checks every report query.
+|`neodash-legacy` |http://localhost:5005 |Unchanged NeoDash 2.4.11, for comparison.
+|===
 
-To run the application in development mode: 
+The first start takes a minute or two. Open http://localhost:3000 and sign in as `editor`, `viewer` or `nobody` (no role, so turned away); every password is `password`.
 
-- https://github.com/neo4j-contrib/neodash[clone this repository.]
-- open a terminal and navigate to the directory you just cloned. 
-- run `yarn install` to install the necessary dependencies. 
-- run `yarn run dev` to run the app in development mode. 
-- the application should be available at http://localhost:3000.
+`dev/README.md` describes the sample data, the example dashboards and how to reset them.
 
-To build the app for production: 
+== Working on the UI
 
-- follow the steps above to clone the repository and install dependencies. 
-- execute `yarn run build`. This will create a `build` folder in your project directory. 
-- deploy the contents of the build folder to a web server. You should then be able to run the web app.
+Rebuilding the container for each change is slow. Keep the stack running and start the webpack dev server, which serves the UI with hot reload and passes `/api` and `/auth` to the backend on port 3000:
 
-== Run locally with Docker
+[source,sh]
+----
+yarn install
+yarn dev        # http://localhost:5173
+----
 
-Pull the latest image from Docker Hub to run the application locally:
+`yarn dev` also builds these docs into `docs/build`, where the dev server serves them at `/docs`; run `yarn docs` to rebuild them after editing a page.
+Restart the dev server after adding or removing packages.
 
-....
-# Run the application on http://localhost:5005
-docker pull neo4jlabs/neodash:latest
-docker run -it --rm -p 5005:5005 neo4jlabs/neodash
+== Working on the backend
 
-# If you want to run on a custom port, set an environment variable
-export NGINX_PORT=5008
-docker run -it --rm -e NGINX_PORT=5008 -p 5008:5008 neo4jlabs/neodash
-....
+The backend is a separate Node.js project in `server/`:
 
-____
-Windows users may need to prefix the `docker run` command with `winpty`.
-____
+[source,sh]
+----
+cd server
+npm install
+npm run dev        # restarts on changes
+npm run typecheck
+npm test
+----
 
-== Build Docker image
+To run it outside Docker against the dev stack, set `PUBLIC_URL=http://localhost:3000`, `NEO4J_PASSWORD=devpassword`, `OIDC_ISSUER_URL=http://localhost:8080/realms/neodash`, `OIDC_CLIENT_ID=neodash`, `OIDC_CLIENT_SECRET=neodash-dev-secret`, `OIDC_ALLOW_INSECURE_HTTP=true` and a `SESSION_SECRET` of at least 32 characters (stop the `backend` container first, as it uses the same port).
+To try a backend change in the full stack instead, rebuild its container:
 
-A pre-built Docker image is available
-https://hub.docker.com/r/neo4jlabs/neodash[on DockerHub]. This image
-is built using the default configuration (running in editor mode,
-without SSO).
+[source,sh]
+----
+docker compose -f dev/compose.yaml up -d --build backend
+----
 
-=== To build the image yourself:
+== Building the image
 
-Make sure you have a recent version of `docker` installed to build the
-multi-stage NeoDash image and run it.
+The `Dockerfile` builds the UI (`yarn run build-minimal`, which also builds these docs into `dist/docs`), builds the backend, and puts both in a distroless Node.js image that runs as a non-root user:
 
-On Unix (Mac/Linux) systems:
+[source,sh]
+----
+docker build -t neodash .
+----
 
-....
-docker build . -t neodash
-....
+The image listens on port 3000 and needs the settings in xref:developer-guide/configuration.adoc[Configuration] (at least Neo4j, OIDC, `PUBLIC_URL` and a session secret). To install it on Kubernetes, see xref:developer-guide/deploy-a-build.adoc[Deploy].
 
-If you use Windows, you might need to prefix the command with `winpty`:
-
-....
-winpty docker build . -t neodash
-....
-
-After building, you can run the image with:
-....
-docker run -it –rm -p 5005:5005 neodash
-.... 
-
-== Run on Kubernetes
-
-=== To deploy using YAML files
-
-YAML examples are available in the https://github.com/neo4j-contrib/neodash[NeoDash repository]. Here is an example of a pod definition YAML file to create a NeoDash pod in a cluster:
-
-....
-apiVersion: v1
-kind: Pod
-metadata:
-  name: neodash
-  labels:
-    project: neodash
-spec:
-  containers:
-    - name: neodash
-      image: neo4jlabs/neodash:latest
-      ports:
-        - containerPort: 5005
-....
-
-
-Creating a Kubernetes service to expose the application:
-....
-apiVersion: v1
-kind: Service
-metadata:
-    name: neodash-svc
-spec:
-    type: LoadBalancer
-    ports:
-    - port: 5005
-      targetPort: 5005
-    selector:
-      project: neodash
-....
-
-=== To deploy using a Helm Charts
-
-A Kubernetes Helm chart is available in the https://github.com/neo4j-contrib/neodash[the NeoDash repository] and here is the full example of the Helm chart values.yaml file,
-
-....
-# Name override or full name override
-nameOverride: ''
-fullnameOverride: neodash-test
-
-# Number of pods
-replicaCount: 1
-
-# Image Details
-image:
-  repository: neo4jlabs/neodash
-  pullPolicy: IfNotPresent
-  tag: 'latest'
-imagePullSecrets: [] # Image pull secret if any
-
-# Pod annotations, labels and security context
-podAnnotations: {}
-podLabels: {}
-podSecurityContext: {}
-
-# Mode configuration using environment variables
-# Set reader mode environment variables when enable_reader_mode is true
-enable_reader_mode: true
-env: 
-  - name: "ssoEnabled"
-    value: "false"
-  - name: "standalone"
-    value: "true"
-  - name: "standaloneProtocol"
-    value: "neo4j+s"
-  - name: "standaloneHost"
-    value: "localhost"
-  - name: "standalonePort"
-    value: "7687"
-  - name: "standaloneDatabase"
-    value: neo4j
-  - name: "standaloneDashboardName"
-    value: "test"
-  - name: "standaloneDashboardDatabase"
-    value: neo4j
-  - name: "standaloneAllowLoad"
-    value: "false"
-  - name: "standaloneLoadFromOtherDatabases"
-    value: "false"
-  - name: "standaloneMultiDatabase"
-    value: "false"
-
-# Environment variable from secret
-envFromSecrets: []
-  # standaloneUsername: 
-      # secretName: "neo4j-connection-secrets"
-      # key: "username"
-  # standalonePassword: 
-      # secretName: "neo4j-connection-secrets"
-      # key: "password"
-
-# Service details
-service:
-  type: LoadBalancer # Can also be ClusterIP or NodePort  
-  port: 5005 # For the service to listen in for Traffic
-  targetPort: 5005 # Target port is the container port
-  annotations: {} # Service annotations for the LoadBalance
-
-# Ingress
-ingress:
-  enabled: false # Enable Kubernetes Ingress
-  className: 'alb' # Class Name
-  annotations: {} # Cloud LoadBalancer annotations
-  hosts: []
-    # - host: neodash.example.com
-    #   paths:
-    #     - path: '/'
-    #       pathType: Prefix
-  tls: []
-
-# Pod resources request, limits and health check
-resources: 
-  requests:
-    memory: "64Mi"
-    cpu: "250m"
-  limits:
-    memory: "128Mi"
-    cpu: "500m"
-livenessProbe:
-  httpGet:
-    path: /*
-    port: 5005
-readinessProbe:
-  httpGet:
-    path: /*
-    port: 5005
-
-# Pod Autoscaler
-autoscaling:
-  enabled: false
-  # minReplicas: 1
-  # maxReplicas: 100
-  # targetCPUUtilizationPercentage: 80
-
-# Pod Volumes
-volumes: []
-volumeMounts: []
-
-# Service Account
-serviceAccount:
-  create: true
-  automount: true
-  # annotations: {}
-  # name: ''
-....
+`yarn build` builds just the UI into `dist/`. On its own it can't sign anyone in or run queries: it needs the backend, which serves it from `STATIC_DIR`.

@@ -1,9 +1,11 @@
-include::../banner.adoc[]
-
 = Session Storage
 
-include::../banner.adoc[]
+The `sessionStorage` part of the state (`src/sessionStorage/`) holds values that should only last for the current session, such as an extension's temporary data. They are not saved with the dashboard.
 
-This reducer serves only to store data that we want to reset at each new session.
-To connect to it, just define a key and use the predefined actions to set a new pair (key,value) inside of it. 
-Inside the actions there is also an action to delete all the keys that match a precise prefix, it can be useful, for example, to wipe the sessionStorage state for a certain extension, if it stores the data inside the sessionStorage using a prefix (for example look at the query-translator extension at getSessionStorageHistoryKey).
+To use it, pick a key and use the actions in `src/sessionStorage/SessionStorageActions.ts`:
+
+- `setSessionStorageValue(key, value)` stores a value, and `deleteSessionStorageValue(key)` removes it.
+- `deleteAllKeysInSessionStorageWithPrefix(prefix)` removes every key starting with a prefix, e.g. to clear all of one extension's data.
+- `getSessionStorageValue(state, key)` and `getSessionStorageValuesWithPrefix(state, prefix)` in `SessionStorageSelectors.ts` read them back.
+
+For example, the Text2Cypher extension keeps each report's earlier questions under a per-report key with a common prefix (`getSessionStorageHistoryKey` in `src/extensions/text2cypher/state/QueryTranslatorSelector.ts`), and its "Forget earlier questions" button clears them by that prefix.

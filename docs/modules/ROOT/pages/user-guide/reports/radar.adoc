@@ -1,8 +1,6 @@
 
 = Radar Chart
 
-include::../../banner.adoc[]
-
 link:../../extensions/advanced-visualizations[label:Advanced&nbsp;Visualization[]]
 
 A Radar chart can be used to render multivariate data from an array of nodes
@@ -33,41 +31,41 @@ image::radar.png[Radar Chart]
 [width="100%",cols="15%,2%,26%,57%",options="header",]
 |===
 |Name |Type |Default Value |Description
-|Enable interactivity |on/off |on |If enabled, turn on animations when a
-user hovers over a layer.
+|Background Color |Color |#fafafa |The background color of the visualization.
 
-|Show Legend |on/off |off |If enabled, shows a legend on the bottom of
-the visualization.
+|Show Legend |on/off |off |If enabled, shows a legend on the bottom of the visualization.
 
-|Color Scheme |List | |The color scheme to use for the Radar. Each polygon will have a color from the list.
+|Enable interactivity |on/off |on |If enabled, shows a tooltip and highlights a layer when the mouse is over it.
 
-|Margin Left (px) |number |24 |The margin in pixels on the left side of
-the visualization.
+|Enable transitions |on/off |on |If enabled, the chart animates when it is drawn or changes.
 
-|Margin Right (px) |number |24 |The margin in pixels on the right side
-of the visualization.
+|Color Scheme |List |set2 |The color scheme to use for the radar. Each polygon will have a color from the list.
 
-|Margin Top (px) |number |24 |The margin in pixels on the top side of
-the visualization.
+|Margin Left (px) |Number |24 |The margin in pixels on the left side of the visualization.
 
-|Margin Bottom (px) |number |40 |The margin in pixels on the bottom side
-of the visualization.
+|Margin Right (px) |Number |24 |The margin in pixels on the right side of the visualization.
 
-|Dot Size |number |10 |Size of the dots (px).
+|Margin Top (px) |Number |40 |The margin in pixels on the top side of the visualization.
 
-|Dot Border Width |number |2 |Width of the dots border (px).
+|Margin Bottom (px) |Number |40 |The margin in pixels on the bottom side of the visualization.
 
-|Grid Levels |number |5 |Number of levels to display for grid.
+|Size of the dots (px) |Number |10 |The size of the dots on each polygon.
 
-|Grid Label Offset (px) |number |16 |Label offset from outer radius (px)
+|Width of the dots border (px) |Number |2 |The width of the dots' border.
 
-|Blend Mode |List |normal |This will define CSS mix-blend-mode for layers
+|Number of levels to display for grid |Number |5 |How many rings the grid has.
 
-|Motion Configuration |List |gentle |This parameter will select the motion config for react-spring.
+|Label offset from outer radius (px) |Number |16 |The distance between the grid and its labels.
 
-|Curve |List |linearClosed |This parameter will select the type of curve interpolation.
+|Blend Mode |List |normal |Has no effect in this version (kept so that saved dashboards load unchanged).
 
-|Auto-run query |on/off |on |When activated, automatically runs the
-query when the report is displayed. When set to `off', the query is
-displayed and will need to be executed manually.
+|Motion Configuration |List |gentle |Has no effect in this version (kept so that saved dashboards load unchanged).
+
+|Curve interpolation |List |linearClosed |Has no effect in this version (kept so that saved dashboards load unchanged).
+
+|Override no data message |Text |Query returned no data. |Override the message displayed to the user when their query returns no data.
+
+|Auto-run query |on/off |on |When activated, automatically runs the query when the report is displayed. When set to off, the query is displayed and will need to be executed manually.
+
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 |===

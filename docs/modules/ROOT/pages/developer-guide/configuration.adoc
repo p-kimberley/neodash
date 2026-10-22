@@ -1,216 +1,69 @@
-include::../banner.adoc[]
-
 = Configuration
 
-[IMPORTANT]
-====
-These settings configure the upstream, browser-only NeoDash. This fork serves NeoDash from a backend with OIDC sign-in and viewer/editor roles, so
-browser-side connection settings, `config.json` and standalone mode no longer apply. See
-https://github.com/p-kimberley/neodash/blob/master/docs/deployment.md[docs/deployment.md] for
-deploying this version.
-====
+NeoDash is configured on the server: the backend reads environment variables at start-up, and the Helm chart sets them from its values. Nothing is configured in the browser.
 
-include::../banner.adoc[]
+Secrets can be given as files instead of values, by setting `<NAME>_FILE` (`NEO4J_PASSWORD_FILE`, `OIDC_CLIENT_SECRET_FILE`, `SESSION_SECRET_FILE`, `TEXT2CYPHER_API_KEY_FILE`), or `NEO4J_AUTH_FILE` containing `user/password`. The chart mounts every secret as a file.
 
-When using a custom NeoDash deployment, there are several settings that
-can be configured. These mostly relate to
-link:../standalone-mode[Standalone Mode] and SSO configurations.
+== Settings
 
-For a simple (non-Dockerized) deployment, these configuration parameters
-can be changed by modifying `dist/config.json` after you have built the
-application. When Docker image, these can be passed as environment
-variables. See link:../standalone-mode[Standalone Mode] for more on
-Docker deployments.
-
-An example configuration for NeoDash (default, running in editor mode)
-will look like this:
-
-....
-{
-    "ssoEnabled": false,
-    "ssoProviders": [],
-    "ssoDiscoveryUrl": "https://example.com",
-    "standalone": false,
-    "standaloneProtocol": "neo4j+s",
-    "standaloneHost": "localhost",
-    "standalonePort": "7687",
-    "standaloneDatabase": "neo4j",
-    "standaloneDashboardName": "My Dashboard",
-    "standaloneDashboardDatabase": "dashboards",
-    "standaloneDashboardURL": "",
-    "standaloneAllowLoad": false,
-    "standaloneLoadFromOtherDatabases": false,
-    "standaloneMultiDatabase": false,
-    "standaloneDatabaseList": "neo4j"    
-    "loggingMode": "0",
-    "loggingDatabase": "logs",
-    "customHeader": "",
-}
-....
-
-== Configuration Options
-
-[width="100%",cols="19%,17%,26%,38%",options="header",]
+[cols="3,3,2,5",options="header"]
 |===
-|Name |Type |Default Value |Description
-|ssoEnabled |boolean |false |If enabled, lets users connect to Neo4j
-using SSO. This requires a
-valid ssoDiscoveryUrl to be set.
+|Variable |Helm value |Default |
 
-|ssoProviders |List |[] |When using multiple SSO providers on the database, you can configure the list of providers (by id) to be used on Neodash. If empty, all providers will be displayed.
+4+|*Server*
+|`PUBLIC_URL` |`publicUrl` |required |The address users open NeoDash on; used for sign-in redirects, cookie security and the same-origin check.
+|`ADDITIONAL_ORIGINS` |– |– |Other origins the UI is served from, e.g. `http://localhost:5173` for the dev server.
+|`TRUST_PROXY` |set when the Ingress or HTTPRoute is enabled |`false` |Trust `X-Forwarded-For`, so audit lines record the client's address.
+|`STATIC_DIR` |set by the image |– |The built UI to serve.
+|`PORT` / `HOST` / `LOG_LEVEL` |`logLevel` |`3000` / `0.0.0.0` / `info` |
 
-|ssoDiscoveryUrl |string |https://example.com |If ssoEnabled is true &
-standalone mode is enabled, the URL to retrieve SSO auth config from.
+4+|*Neo4j*
+|`NEO4J_URI` |`neo4j.uri` |`neo4j://localhost:7687` |
+|`NEO4J_USERNAME` / `NEO4J_PASSWORD` |`neo4j.auth.existingSecret` |`neo4j` / required |
+|`NEO4J_DATABASES` |`neo4j.databases` |`neo4j` |Databases reports may query; the first is the default. Community edition has only `neo4j`.
+|`DASHBOARD_DATABASE` |`neo4j.dashboardDatabase` |the first database |Where the `_Neodash_Dashboard` nodes are.
 
-|standalone |boolean |false |Determines whether to run NeoDash in editor
-mode (false), or reader mode (true). The terms ``Reader mode'' and
-``Standalone mode'' are used interchangibly.
+4+|*Sign-in (OpenID Connect)*
+|`OIDC_ISSUER_URL` |`oidc.issuerUrl` |required |The issuer as browsers and tokens see it.
+|`OIDC_DISCOVERY_URL` |`oidc.discoveryUrl` |the issuer |Where the backend reads the provider's metadata, if different (e.g. an in-cluster address).
+|`OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` |`oidc.clientId` / `oidc.existingSecret` |required |A confidential client; its redirect URI is `PUBLIC_URL/auth/callback`.
+|`OIDC_SCOPES` |`oidc.scopes` |`openid profile email` |
+|`OIDC_ROLES_CLAIM` |`oidc.rolesClaim` |`realm_access.roles` |Dot path to the roles in the token, e.g. `resource_access.neodash.roles` for client roles.
+|`OIDC_USERNAME_CLAIM` |`oidc.usernameClaim` |`preferred_username` |
+|`ROLE_VIEWER` / `ROLE_EDITOR` |`oidc.roles.viewer` / `.editor` |`neodash-viewer` / `neodash-editor` |
+|`OIDC_ALLOW_INSECURE_HTTP` |`oidc.allowInsecureHttp` |`false` |Only for a local `http://` identity provider.
+|`NODE_EXTRA_CA_CERTS` |`oidc.caBundle` |– |Extra certificate authorities, for an identity provider or `neo4j+s://` server with an internal CA.
 
-|standaloneProtocol |string |neo4j |When running in standalone mode, the
-protocol to used for the Neo4j driver. This should be set to one of
-`neo4j`, `neo4j+s`, `neo4j+ssc`, `bolt`, `bolt+s`, or `bolt+ssc`.
+4+|*Sessions*
+|`SESSION_SECRET` |generated, or `session.existingSecret` |required |At least 32 characters; encrypts the session cookie. Changing it signs everyone out.
+|`SESSION_MAX_AGE_SECONDS` |`session.maxAgeSeconds` |`28800` (8 hours) |Roles are read again at the next sign-in.
 
-|standaloneHost |string |localhost |When running in standalone mode, the
-hostname to connect to. This should be *just* the hostname, no protocols
-or ports.
+4+|*Queries and audit*
+|`QUERY_TIMEOUT_SECONDS_DEFAULT` / `_MAX` |`query.timeoutSecondsDefault` / `query.timeoutSecondsMax` |`20` / `120` |A report's time limit is capped at the maximum.
+|`QUERY_ROW_LIMIT_MAX` |`query.rowLimitMax` |`10000` |Rows beyond this aren't fetched; the report says the result was cut short.
+|`AUDIT_LOG_PARAMETERS` |`audit.logParameters` |`true` |Include parameter values in audit lines.
 
-|standalonePort |string |7687 |When running in standalone mode, the Bolt
-port to connect to.
+4+|*Maps*
+|`MAP_TILE_URL` / `MAP_TILE_ATTRIBUTION` |`maps.tileUrl` / `maps.tileAttribution` |– |Background tiles for map reports, e.g. from an internal tile server. Empty: no tiles, so nothing is fetched from the internet.
+|`MAP_DATA_URL` |`maps.dataUrl` |`/maps` |Where choropleth and area maps load country and region shapes from; by default, from the image itself.
 
-|standaloneDatabase |string |neo4j |When running in standalone mode, the
-database to use for reporting. Cypher queries used in reports will read
-data from this database.
-
-|standaloneUsername ⚠️ |string |… |A hidden config parameter enables you
-to set the username for standalone mode by default. Keep in mind this is
-a security risk, as it exposes the Neo4j username to anyone who can
-access the NeoDash deployment.
-
-|standalonePassword ⚠️ |string |… |A hidden config parameter enables you
-to set the password for standalone mode by default. If this value is set
-connections are also made automatically. Keep in mind this is a security
-risk, as it exposes the Neo4j username to anyone who can access the
-NeoDash deployment.
-
-|standaloneDashboardName |string |My Dashboard |The exact name
-(case-sensitive) of the dashboard to be loaded when running in
-standalone mode. This must be a dashboard that is saved as a node in the
-graph.
-
-|standaloneDashboardDatabase |string |neo4j |The name of the Neo4j
-database that contains the saved dashboard node. This is neo4j by
-default, _unless you are using Neo4j Enterprise Edition_, which lets you
-use multiple databases.
-
-|standaloneDashboardURL |string |neo4j |If you do not save a dashboard
-inside Neo4j and would like to run a standalone mode deployment with a
-dashboard from a URL, set this parameter to the complete URL pointing to
-the dashboard JSON.
-
-|standaloneAllowLoad |boolean |false |If set to yes the "Load Dashboard"
-button will be enabled in standalone mode, allowing users to load
-additional dashboards from Neo4J. This parameter is false by default 
-_unless you are using Neo4j Enterprise Edition_, which lets you use multiple 
-databases.
-*NOTE*: when Load is enabled in standalone mode, only Database is available
-as a source, not file.
-
-|standaloneLoadFromOtherDatabases |boolean |false |If _standaloneAllowLoad_ is
-set to true, this parmeter enables or not users to load dashboards from
-other databases than the one deifned in _standaloneDashboardDatabase_. If
-_standaloneAllowLoad_ is set to false this parameters has no effect.
-
-|standaloneMultiDatabase |boolean |false |If this parameter set to true, the
-standalone configuration will ignore the _standaloneDatabase_ parameter and
-allow users to choose which database to connect to in the login screen, among
-the ones provided in _standaloneDatabaseList_, with a dropdown list. This
-parameter is false by default _unless you are using Neo4j Enterprise Edition_,
-which lets you use multiple databases.
-
-|standaloneDatabaseList |string |neo4j |If _standaloneMultiDatabase_ is
-set to true, this parmeter must contain a comma separated list of database
-names that will be displayed as options in the Database dropdown at user
-login (e.g. 'neo4j,database1,database2' will populate the database dropdown
-with the values 'neo4j','database1' and 'database2' in the connection screen).
-If _standaloneMultiDatabase_ is set to false this parameters has no effect. 
-
-|loggingMode |string |none |Determines whether neodash should create any
-user activity logs. possible values include: `0` (no log is created), 
-`1` (user login are tracked), `2` (tracks when a specific dashboard is 
-accessed/loaded or saved by a user*). 
-
-⚠️ Logs are created in Neo4J DB using the current user credentials 
-(or standaloneUsername if configured); write access to the log database 
-must be granted to enble any user to create logs.
-
-⚠️ * Load/Save from/to file are not logged (only from/to Database)   
-
-|loggingDatabase |string |logs |When loggingMode is set to anything 
-else than '0', the database to use for logging. Log records (nodes)
-will be created in this database.
-
-|customHeader |string |none |When set the dashboard header will display
-the prameter value as a fixed string, otherwise it will display the host 
-and port of current connection.
+4+|*Text2Cypher*
+|`TEXT2CYPHER_BASE_URL` |`text2cypher.baseUrl` |– |An OpenAI-compatible API (`<base>/chat/completions`), e.g. vLLM at `http://vllm.ai.svc:8000/v1`. Empty: Text2Cypher is off.
+|`TEXT2CYPHER_MODEL` |`text2cypher.model` |– |The model name the API serves; required with the address.
+|`TEXT2CYPHER_API_KEY` |`text2cypher.apiKey.existingSecret` |– |Optional; sent as a bearer token.
+|`TEXT2CYPHER_TIMEOUT_SECONDS` |`text2cypher.timeoutSeconds` |`60` |Per request to the model.
+|`TEXT2CYPHER_MAX_ATTEMPTS` |`text2cypher.maxAttempts` |`2` |Answers per question: each is checked with `EXPLAIN`, and a failed one is retried with the error.
+|`TEXT2CYPHER_TEMPERATURE` / `TEXT2CYPHER_MAX_TOKENS` |`text2cypher.temperature` / – |`0` / – |
+|`TEXT2CYPHER_SCHEMA_TTL_SECONDS` |– |`300` |How long a database's schema, which is sent to the model, is reused.
 |===
 
-== Configuring SSO
+Variables without a Helm value can be set through `extraEnv`. Product name, logo and colours are set separately: see xref:developer-guide/style-configuration.adoc[Style Configuration].
 
-NeoDash can use SSO as an alternative for password-based sign-in, if
-your Neo4j database is enabled to use single sign on. To enable SSO, set
-`ssoEnabled` to `true`. Then, set `ssoDiscoveryUrl` to the place where
-your `discovery.json` is located (This will often be the hostname of
-your database, appended by `/discovery.json`).
+== From upstream NeoDash
 
-____
-Note that SSO is only available when Standalone Mode is enabled.
-____
+Upstream NeoDash was configured in the browser, through `config.json` or environment variables of its nginx image: `ssoEnabled`, `standalone`, `standaloneHost`, `standaloneDashboardName` and so on. None of these apply here:
 
-== Auth Provider
-
-To set up NeoDash to use an external identity provider, you can add a
-/auth_provider resource to nginx (in `/conf/default.conf`):
-
-....
-location /auth_provider {
-        default_type application/json;
-        return 200 '{
-                        "auth_config" : {
-                            "oidc_providers" : [ ... ]
-                        }
-                    }';
-    }
-....
-
-For basic deployments it might suffice to route requests to
-`/auth_provider` on the https port of the neo4j database.
-
-== Configuring Standalone Mode
-
-Standalone mode, or reader-mode, overrides the functionality of NeoDash,
-allowing you to deploy a fixed dashboard to users. Standalone mode can
-be enabled by changing the `standalone` config parameter:
-
-* If standalone mode is `false`, all other configuration parameters are
-ignored. NeoDash will run in Editor mode, and require a manual sign-in.
-* If standalone mode is `true`, NeoDash will read all configuration
-parameters. A *predefined dashboard* will be auto-loaded, and no changes to
-the dashboard can be made. There are two types of valid standalone
-deployments:
-** A standalone deployment that *reads the fixed dashboard from Neo4j*.
-The `standaloneDashboardName` and `standaloneDashboardDatabase` config
-parameters are used to define these.
-** A standalone deployment that *reads the fixed dashboard from a URL*.
-The `standaloneDashboardURL` config parameter is used to define this.
-
-* Standalone mode can also be configured to allow users load a different
-dashboard after the predefined one is loaded (a `Load Dashboard` button
-will be displayed on the right side of dashboard title). 
-The `standaloneAllowLoad` and `standaloneLoadFromOtherDatabases` are used
-to define this.
-* When allowing users to load dashboards dyamically in standalone mode,
-they may also need to connect to different databases, depending on the
-specific dashboard bing loaded. this can be enabled setting 
-`standaloneMultiDatabase` to true and providing a comma separated list
-of the allowed database names in the`standaloneDatabaseList` parameter.
-
+- Sign-in is always through the OpenID Connect provider, and the backend holds the Neo4j credentials.
+- Standalone (reader) mode is replaced by the viewer role, in the same deployment as editors: see xref:developer-guide/roles-and-security.adoc[Roles, Security & Audit].
+- Users choose a dashboard on the start page or in the dashboards panel, and every dashboard has its own URL, instead of one fixed dashboard per deployment.
+- User activity is recorded in the audit log on stdout, not in a Neo4j database.

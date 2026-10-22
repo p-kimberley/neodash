@@ -1,60 +1,43 @@
-include::../banner.adoc[]
-
 = Style Configuration
 
-include::../banner.adoc[]
+The product name, logo and colours are set per deployment, with the Helm chart's `branding` values:
 
-When using a custom NeoDash deployment, there are several theme variables that
-can be configured. These mostly relate to css tokens for
-the Neo4j design system (Needle, `@neo4j-ndl/base` 4) and some other brand specific options. Colours are
-set per appearance as `--theme-light-color-…` and `--theme-dark-color-…`; the `--palette-light-…` /
-`--palette-dark-…` names with `"R, G, B"` values used before NeoDash 4 still work.
+[source,yaml]
+----
+branding:
+  appName: Acme Insights         # in the header and the browser tab
+  logo:
+    base64: ''                   # set with --set-file branding.logo.base64=logo.b64
+    fileName: logo.svg
+  style:
+    --theme-light-color-primary-bg-strong: '#005eb8'
+    --theme-dark-color-primary-bg-strong: '#78b4ff'
+----
 
-For a simple (non-Dockerized) deployment, these configuration parameters
-can be changed by modifying `dist/style.config.json` after you have built the
-application. When using the NeoDash Docker image, these can be passed as environment
-variables. For example:
+- `appName` replaces "NeoDash" in the header and the browser tab; the header's mark shows its initials.
+- `logo` replaces the mark with your logo, a PNG or SVG file encoded as base64 (`base64 -w0 logo.svg > logo.b64`). It's served from the pod, so it works offline.
+- `style` overrides colours of the Neo4j design system, per appearance: any `--theme-light-color-…` or `--theme-dark-color-…` token (see the https://neo4j.design/[design system's] colour tokens). The names used before NeoDash 4 (`--palette-light-…` / `--palette-dark-…` with `"R, G, B"` values) still work.
 
-....
-docker run -p 5005:5005 \
- -e DASHBOARD_HEADER_BRAND_LOGO=https://picsum.photos/500/100 \
- neo4jlabs/neodash
-....
+Changing these values restarts the pods. Users choose a light, dark or system-matching appearance themselves, from the header; their choice is kept in their browser.
 
-An example configuration for NeoDash
+== Without the chart
 
-....
+The chart writes these settings to `style.config.json`, which the app reads at start-up from its own address (`/style.config.json`, in the image at `/app/public/style.config.json`), with the logo next to it:
+
+[source,json]
+----
 {
-  "DASHBOARD_HEADER_BRAND_LOGO": "logo_lightsand.png",
-  "DASHBOARD_HEADER_COLOR" : "#F3F3F0",
-  "DASHBOARD_HEADER_BUTTON_COLOR" : "#009999",
-  "DASHBOARD_HEADER_TITLE_COLOR" : "#00C1B6",
-  "DASHBOARD_PAGE_LIST_COLOR" : "#F3F3F0",
-  "DASHBOARD_PAGE_LIST_ACTIVE_COLOR": "#009999",
   "style": {
-    "--theme-light-color-neutral-bg-weak" : "#f3f3f0"
+    "APP_NAME": "Acme Insights",
+    "DASHBOARD_HEADER_BRAND_LOGO": "brand/logo.svg",
+    "--theme-light-color-primary-bg-strong": "#005eb8",
+    "--theme-dark-color-primary-bg-strong": "#78b4ff"
   }
 }
-....
+----
 
-== Configuration Options
+To brand a deployment made another way, mount your own file (and logo) over those paths.
 
-[width="100%",cols="19%,17%,26%,38%",options="header",]
-|===
-|Name |Type |Default Value |Description
-|DASHBOARD_HEADER_BRAND_LOGO |string |undefined |This variable defines the name of the logo file located on the public folder of the Neodash deployment, if you want your own logo instead of the Neo4j one.
+== In the code
 
-|DASHBOARD_HEADER_COLOR |string |#0B297D |Determines the color of the header.
-
-|DASHBOARD_HEADER_BUTTON_COLOR |string |#FFFFFF22 |Determines the color of the header buttons.
-
-|DASHBOARD_HEADER_TITLE_COLOR |string |#FFFFFF |Determines the color of the header title.
-
-|DASHBOARD_PAGE_LIST_COLOR |string |#F0F0F0 |Determines the color of the page selector tabs.
-
-|DASHBOARD_PAGE_LIST_ACTIVE_COLOR |string |#FFFFFF |Determines the color of the page selector active tabs.
-
-|style |object |{} | Determines css needle tokens that should be overridden at the root level. Colors should be defined with an rgb comma separated string (e.g "243, 243, 240")
-
-
-|===
+The app's own colours, type sizes and spacing are CSS variables in `src/theme/tokens.css` (`--nd-…`), with a light set and a dark set (applied under `.ndl-theme-dark`, which the app sets on `<body>`). They are built on the design system's palette, and every text colour meets WCAG AA contrast on the surfaces it's used on. `src/theme/palette.ts` holds the same values for code that can't use CSS variables, such as canvas-drawn charts; keep the two in step. `src/theme/components.css` styles the app's own components with these variables.

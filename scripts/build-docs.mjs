@@ -38,7 +38,7 @@ const pageIds = walk(PAGES)
       .join('/')
       .replace(/\.adoc$/, '')
   )
-  // The banner is an include (a note pointing upstream users to the commercial product), not a page.
+  // The banner is an include (a note that this documents the fork), not a page.
   .filter((id) => id !== 'banner')
   .sort();
 const exists = new Set(pageIds);

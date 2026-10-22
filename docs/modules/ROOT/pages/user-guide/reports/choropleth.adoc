@@ -1,15 +1,15 @@
 
 = Choropleth
 
-include::../../banner.adoc[]
-
 link:../../extensions/advanced-visualizations[label:Advanced&nbsp;Visualization[]]
 
 A Choropleth chart will render geographical data in geoJson polygons
 layout. It takes two fields: 
 
-- *code*: String. This represents the Alpha-3 country code of region to be used. Alpha-2 it's not supported.
-- *value*:  Number. Cardinal data to be used on the chart.
+- *code*: String. The country code: ISO 3166 Alpha-3 by default; Alpha-2 or numeric codes can be chosen with the *Country code format* setting.
+- *value*: Number. The value to color the country by.
+
+The country shapes are bundled with NeoDash, so the chart works without internet access.
 
 == Examples
 
@@ -32,40 +32,45 @@ image::choropleth.png[Choropleth Chart]
 [width="100%",cols="15%,2%,26%,57%",options="header",]
 |===
 |Name |Type |Default Value |Description
-|Enable interactivity |on/off |on |If enabled, turn on animations when a
-user hovers over a polygon.
+|Country code format |List |iso_a3 |The ISO standard of the country codes: iso_a3 (three letters), iso_a2 (two letters) or iso_n3 (numeric).
 
-|Color Scheme |List | |The color scheme to use for the choropleth. Country colors
-will vary according their min to max ratio.
+|Background Color |Color |#fafafa |The background color of the visualization.
 
-|Polygon border width (px) |number |0 |The width of the border of each
-rectangle.
+|Enable Interactivity |on/off |on |If enabled, shows a tooltip and highlights a country when the mouse is over it.
 
-|Margin Left (px) |number |24 |The margin in pixels on the left side of
+|Show Legend |on/off |on |If enabled, shows a color legend.
+
+|Color Scheme |List |nivo |The color scheme to use for the choropleth. Country colors
+vary from the lowest to the highest value.
+
+|Polygon Border Width (px) |Number |0 |The width of the border of each
+country.
+
+|Margin Left (px) |Number |24 |The margin in pixels on the left side of
 the visualization.
 
-|Margin Right (px) |number |24 |The margin in pixels on the right side
+|Margin Right (px) |Number |24 |The margin in pixels on the right side
 of the visualization.
 
-|Margin Top (px) |number |24 |The margin in pixels on the top side of
+|Margin Top (px) |Number |24 |The margin in pixels on the top side of
 the visualization.
 
-|Margin Bottom (px) |number |40 |The margin in pixels on the bottom side
+|Margin Bottom (px) |Number |40 |The margin in pixels on the bottom side
 of the visualization.
 
-|Country Code Format |List |iso_a3 |ISO Standard used on country codes.
+|Projection Scale |Number |100 |The zoom level of the map.
 
+|Projection X translation |Number |0.5 |Moves the center of the map horizontally (0 to 1).
 
-|Projection Scale |number |100 |Projection Scale of the visualization
+|Projection Y translation |Number |0.5 |Moves the center of the map vertically (0 to 1).
 
-|Projection x translation |number |0.5 |This parameter will move the center of
-the visualization on the x axis
+|Tooltip Property |Text |properties.name |The property of the country shape shown in the tooltip, e.g. `properties.name` for the country's name.
 
-|Projection y translation |number |0.5 |This parameter will move the center of
-the visualization on the y axis
+|Override no data message |Text |Query returned no data. |Override the message displayed to the user when their query returns no data.
 
 |Auto-run query |on/off |on |When activated, automatically runs the
-query when the report is displayed. When set to `off', the query is
+query when the report is displayed. When set to off, the query is
 displayed and will need to be executed manually.
-|Report Description |markdown text | | When specified, adds another button the report header that opens a pop-up. This pop-up contains the rendered markdown from this setting. 
+
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 |===

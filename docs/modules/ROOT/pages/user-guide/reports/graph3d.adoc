@@ -1,13 +1,15 @@
 
 = 3D Graph
 
-include::../../banner.adoc[]
-
 link:../../extensions/advanced-visualizations[label:Advanced&nbsp;Visualization[]]
 
 The 3D graph report extends the default graph visualization with another dimension.
 It supports most of the features & customizations for the regular (2D) graph, including rule-based styling and report actions.
 Users can explore the 3D graph by zooming and panning through 3D space.
+
+A 2D graph report can also be switched to 3D (and back) with the cube button on the report.
+With more than 1,000 relationships, relationship labels, arrows and particles are left out in 3D, so large graphs stay responsive.
+3D graphs need WebGL in the browser; without it (e.g. on some remote desktops and virtual machines) they are drawn in 2D, with a short notice.
 
 
 == Examples
@@ -38,10 +40,10 @@ image::graph3dvirtual.png[Virtual 3D Graph]
 |===
 |Name |Type |Default Value |Description
 |Node Color Scheme |List |neodash |The color scheme to use for the node
-labels. Colors are assigned automatically (consequitevely) to the
+labels. Colors are assigned automatically (consecutively) to the
 different labels returned by the Cypher query.
 
-|Node Label Color |Text |black |The color of the labels drawn on the
+|Node Label Color |Color |black |The color of the labels drawn on the
 nodes.
 
 |Node Label Font Size |Number |3.5 |Size of the labels drawn on the
@@ -64,13 +66,13 @@ HTML color value.
 |Relationship Color |Text |#a0a0a0 |The color used for drawing the
 relationship arrows in the visualization.
 
-|Relationship Width |Text |1 |The (default) width of the relationship
+|Relationship Width |Number |1 |The (default) width of the relationship
 arrows in the visualization.
 
 |Relationship Label Color |Text |#a0a0a0 |The color of the labels
 (relationship type) drawn next to the relationship arrows.
 
-|Relationship Label Font Size |Text |2.75 |The font size of the labels
+|Relationship Label Font Size |Number |2.75 |The font size of the labels
 (relationship type) drawn next to the relationship arrows.
 
 |Relationship Color Property |Text |color |Optionally, the name of the
@@ -83,52 +85,53 @@ relationship property to map to the arrow width. This lets you define
 widths on a relationship-specific level, if you have a property that
 directly maps to the width value.
 
-|Animated Particles on Relationships |on/off |off |If enabled, draw
+|Animated particles on Relationships |on/off |off |If enabled, draw
 relationships with animated particles on them, moving in the direction
 of the relationship.
+
+|Speed of the particle animation |Number |0.005 |How fast the particles move.
 
 |Arrow head size |Number |3 |Use this to set the length of the arrow head, size is adjusted automatically.
 If 0, no arrow will be drawn.
 
-|Background Color |Text |#fafafa |The background color of the
+|Background Color |Color |#fafafa |The background color of the
 visualization.
 
-|Layout (experimental) |List |force-directed |tree-top-down |tree-bottom-up |tree-left-right |tree-right-left |radial | Use this to switch from
-the main (force-directed) layout to one of the experimental layouts
-(tree, radial). For the experimental layouts, make sure
+|Graph Layout (experimental) |List |force-directed |Use this to switch from
+the main (force-directed) layout to one of the experimental layouts:
+tree-top-down, tree-bottom-up, tree-left-right, tree-right-left or radial. For the experimental layouts, make sure
 your graph is a DAG (directed acyclic graph).
 
-| Graph Depth Separation | Number | 30 | Specify the level distance for the tree layout. 
-This setting controls the separation between different levels in the tree hierarchy. Adjusting this value impacts the overall spacing of the tree layout in your graph visualization.
+|Tree layout level distance |Number |30 |The distance between the levels of a tree layout.
 
-|Enable graph exploration |on/off |on |Enables basic exploration functionality for the graph. Exploration can be done by right clicking on a node, and choosing 'Expand' to choose a type to traverse. Data is retrieved real-time and not cached in the visualization.
+|Enable graph exploration |on/off |on |Lets editors expand nodes: right-click a node and choose *Expand...*, then a relationship type to traverse. Data is retrieved in real time and not cached in the visualization.
 
-|Enable graph editing |on/off |off |Enables editing of nodes and relationships in the graph from the right-click context menu. In addition, lets users create new relationships with existing types/property keys as present in the database.
+|Enable graph editing |on/off |off |Lets editors edit nodes and relationships from the right-click menu, and create new relationships with the relationship types and property keys in the database. Changes are written to the database.
 
-|Show pop-up on Hover |on/off |on |if enabled, shows a pop-up when a
+|Show pop-up on Hover |on/off |off |If enabled, shows a pop-up when a
 user hovers over one of the nodes/relationships in the visualization.
 The pop-up contains the label and properties of the node/relationship.
 
-|Show properties on Click |on/off |on |if enabled, opens up a window
-when a user clicks on one of the nodes/relationships in the
-visualization. The window contains the label and properties of the
-node/relationship.
+|Show properties on Click |on/off |on |If enabled, shows the label and properties of a node/relationship in a pop-up when a user clicks it.
 
-|Drilldown Link |Text (URL) |(no value) |Specifying a URL here will
+|Drilldown Icon Link |Text (URL) |(no value) |Specifying a URL here will
 display a floating button on the top right of the visualization. This
-button can be used to drilldown into a different tool (e.g. Bloom) so
+button can be used to drilldown into a different tool so
 that the graph can be explored further. Dynamic Dashboard Parameters
-(e.g. $neodash_person_name) can be used in these links as well.
+(e.g. $neodash_person_name) can be used in these links as well.
 
-|Hide Selections |on/off |off |If enabled, hides the property selector
-(footer of the visualization).
+|Enable CSV Download |on/off |off |Shows a button that downloads the query results as a CSV file.
+
+|Hide Property Selection |on/off |off |If enabled, hides the property selectors
+(below the visualization).
 
 |Override no data message |Text |Query returned no data. |Override the message displayed to the user when their query returns no data.
 
-|Auto-run query |on/off |on |when activated automatically runs the query
-when the report is displayed. When set to `off', the query is displayed
+|Auto-run query |on/off |on |When activated, automatically runs the query
+when the report is displayed. When set to off, the query is displayed
 and will need to be executed manually.
-|Report Description |markdown text | | When specified, adds another button the report header that opens a pop-up. This pop-up contains the rendered markdown from this setting. 
+
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 |===
 
 == Rule-Based Styling

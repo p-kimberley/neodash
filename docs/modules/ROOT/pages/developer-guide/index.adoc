@@ -1,43 +1,41 @@
-include::../banner.adoc[]
-
 = Developer Guide
 
-include::../banner.adoc[]
+This guide is for people who run, deploy or change this version of NeoDash: a fork of NeoDash 2.4 that runs as a shared service, with a backend between the browser and Neo4j.
 
+- xref:developer-guide/build-and-run.adoc[Build & Run]: the local dev stack, hot reload, building the image.
+- xref:developer-guide/deploy-a-build.adoc[Deploy]: installing on Kubernetes with the Helm chart.
+- xref:developer-guide/configuration.adoc[Configuration]: the backend's settings and their Helm values.
+- xref:developer-guide/roles-and-security.adoc[Roles, Security & Audit]: viewers and editors, what the backend enforces, URLs and audit logs.
+- xref:developer-guide/style-configuration.adoc[Style Configuration]: product name, logo and colours.
+- xref:developer-guide/component-overview.adoc[Component Overview] and xref:developer-guide/design.adoc[Design]: how the code is organised.
+- xref:developer-guide/adding-visualizations.adoc[Adding Visualizations], xref:developer-guide/state-management.adoc[State Management] and xref:developer-guide/session-storage.adoc[Session Storage].
+- xref:developer-guide/testing.adoc[Testing] and xref:developer-guide/contributing.adoc[Contributing].
 
-This guide contains information for developers looking to deploy NeoDash, or extend it for their own needs. 
+== How it fits together
 
-- link:build-and-run[Build & Run] 
-- link:configuration[Configuration]
-- link:standalone-mode[Standalone Mode] 
-- link:component-overview[Component Overview] 
-- link:design[Design]
-- link:style-configuration[Style Configuration]
-- link:adding-visualizations[Adding Visualizations] 
-- link:state-management[State Management] 
-- link:testing[Testing]
-- link:contributing[Contributing]
+NeoDash is one container: a Node.js backend that serves the web app, signs users in and runs every Neo4j query.
 
-== Prerequisites for extending NeoDash
+- *Browser*: the React app. It never connects to Neo4j and never sees its credentials; it calls the backend's `/api` (`src/api/client.ts`). Reports still receive Neo4j driver values, decoded from the backend's typed JSON (`src/api/ApiDriver.ts`, `src/api/neo4jValues.ts`).
+- *Backend* (`server/`): signs users in with OpenID Connect (e.g. Keycloak), takes their role (viewer or editor) from the identity token, stores dashboards in Neo4j as `_Neodash_Dashboard` nodes (the same format as NeoDash 2.4), runs queries (read-only, saved queries only, for viewers), writes JSON audit lines, and asks a language model for Text2Cypher if one is configured.
+- *Neo4j*: Community or Enterprise 5. It holds the dashboards and the data.
+- *Documentation*: these pages are built into the app by `scripts/build-docs.mjs` and served at `/docs`, so they can be read without internet access.
 
-NeoDash is a web application written in TypeScript. Knowledge of React &
-Redux is also highly recommended when extending the application.
-Concretely, the following languages and frameworks make up the core of
-NeoDash: 
+== What it's built with
 
-- https://reactjs.org/[React] 
-- https://redux.js.org/[Redux] 
-- https://redux.js.org/usage/writing-logic-thunks[Redux Thunks] 
-- https://www.cypress.io/[Cypress] 
-- https://mui.com/[Material UI] 
-- https://webpack.js.org/[Webpack]
+The web app is written in TypeScript:
 
-The following core libraries are used to build the visualizations for
-reports: 
+- https://react.dev/[React] 19 with https://redux.js.org/[Redux] 5 and https://redux.js.org/usage/writing-logic-thunks[thunks]
+- The https://neo4j.design/[Neo4j design system] (NDL 4, `@neo4j-ndl/react`) for buttons, menus, dialogs, form fields and the table (its data grid, on https://tanstack.com/table[TanStack Table])
+- https://webpack.js.org/[Webpack] and Tailwind (with NDL's `n-` prefixed classes)
 
-- https://github.com/vasturiano/react-force-graph[react-force-graph
-(Graph)] 
-- https://mui.com/components/data-grid/[@mui/datagrid (Table)]
-- https://echarts.apache.org/[Apache ECharts] (bar, line, pie, radar, sankey, sunburst, treemap, circle packing and choropleth charts)
-- https://maplibre.org/[MapLibre GL JS] (map and area map)
-- https://github.com/remarkjs/react-markdown[react-markdown (Markdown)]
+The visualizations use:
+
+- https://echarts.apache.org/[Apache ECharts]: bar, line, pie, radar, sankey, sunburst, treemap, circle packing, choropleth and gauge charts
+- https://github.com/vasturiano/react-force-graph[react-force-graph]: 2D and 3D graphs
+- https://maplibre.org/[MapLibre GL JS]: map and area map
+- Frappe Gantt (a copy in `src/extensions/advancedcharts/chart/gantt/frappe`): the Gantt chart
+- https://github.com/remarkjs/react-markdown[react-markdown]: markdown
+- CodeMirror (`@neo4j-cypher/react-codemirror`): the Cypher editor
+
+The backend uses https://fastify.dev/[Fastify], the official Neo4j JavaScript driver, `openid-client` and `zod`, on Node.js 22.
+Tests use https://playwright.dev/[Playwright] (browser) and https://vitest.dev/[Vitest] (backend).

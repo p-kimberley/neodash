@@ -1,8 +1,6 @@
 
 = Pie Chart
 
-include::../../banner.adoc[]
-
 A pie chart will draw categories and values in a circular disc layout.
 The pie chart will require you to choose the following selections:
 
@@ -49,51 +47,60 @@ the visualization.
 |Auto-sort slices by value |on/off |off |If enabled, automatically sorts
 the pie slices in order of size.
 
-|Show Values in Slices |on/off |off |If enabled, show the category
+|Show Values in slices |on/off |on |If enabled, shows the
 values inside the pie slices.
 
-|Labels font Size |Number |13 |Define the size of the font for internal and external labels on the pie.
+|Skip label if corresponding arc's angle is lower than provided value |Number |10 |Leaves out the value labels of slices smaller than this angle (degrees).
 
-|Show categories next to Slices |on/off |off |If enabled, show the
-category values next to the pie slices.
+|Labels font Size |Number |13 |The size of the font for the labels inside and next to the pie.
 
-|Enable interactivity |on/off |on |If enabled, turn on animations when a
-user hovers over a pie slice.
+|Show categories next to slices |on/off |on |If enabled, shows the
+category names next to the pie slices.
 
-|Color Scheme |List | |The color scheme to use for the slices. Colors
-are assigned automatically (consequitevely) to the different categories
+|Enable interactivity |on/off |on |Has no effect in this version (kept so that saved dashboards load unchanged).
+
+|Color Scheme |List |set2 |The color scheme to use for the slices. Colors
+are assigned automatically (consecutively) to the different categories
 returned by the Cypher query.
 
-|Pie inner radius |Number |0 |The radius of the ``donut hole'' inside
+|Pie Inner Radius (between 0 and 1) |Number |0 |The radius of the "donut hole" inside
 the pie. When set to zero, no hole is present, when set to 0.99, the pie
 will be almost completely visualized as a thin disc.
 
-|Slice padding angle (degrees) |number |0 |the angle between each pie
+|Slice padding angle (degrees) |Number |0 |The angle between each pie
 slice reserved for white space. For example, when set to 3.6, there will
 be 1/100th of the total circle space reserved between each slice.
 
-|Slice border with (px) |number |0 |The width of the border of each
+|Slice border width (px) |Number |0 |The width of the border of each
 slice.
 
-|Margin Left (px) |number |50 |The margin in pixels on the left side of
+|Extends active slice outer radius |Number |8 |How far a slice grows outwards when the mouse is over it (px).
+
+|Link offset from pie outer radius |Number |15 |The length of the lines from the slices to the category names (px).
+
+|Skip label if corresponding slice's angle is lower than provided value |Number |1 |Leaves out the category names of slices smaller than this angle (degrees).
+
+|Slice Corner Radius |Number |1 |Rounds the corners of the slices (px).
+
+|Margin Left (px) |Number |50 |The margin in pixels on the left side of
 the visualization.
 
-|Margin Right (px) |number |50 |The margin in pixels on the right side
+|Margin Right (px) |Number |50 |The margin in pixels on the right side
 of the visualization.
 
-|Margin Top (px) |number |50 |The margin in pixels on the top side of
+|Margin Top (px) |Number |50 |The margin in pixels on the top side of
 the visualization.
 
-|Margin Bottom (px) |number |50 |The margin in pixels on the bottom side
+|Margin Bottom (px) |Number |50 |The margin in pixels on the bottom side
 of the visualization.
 
-|Hide Selections |on/off |off |If enabled, hides the property selector
-(footer of the visualization).
+|Override no data message |Text |Query returned no data. |Override the message displayed to the user when their query returns no data.
 
-|Auto-run query |on/off |on |when activated automatically runs the query
-when the report is displayed. When set to `off', the query is displayed
+|Auto-run query |on/off |on |When activated, automatically runs the query
+when the report is displayed. When set to off, the query is displayed
 and will need to be executed manually.
-|Report Description |markdown text | | When specified, adds another button the report header that opens a pop-up. This pop-up contains the rendered markdown from this setting. 
+
+|Selector Description |Markdown text | |When specified, adds a button to the report header that opens a pop-up with the rendered markdown from this setting.
 |===
 
 == Rule-Based Styling
