@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { SINK, card, expectNoErrors, getDashboard, largestVisual, openPage, reportMenu, trackErrors } from './helpers.mjs';
+import { SINK, card, expectNoErrors, getDashboard, largestVisual, openPage, reportMenu, trackErrors, editReport } from './helpers.mjs';
 
 // Report types that draw a full-size visual; the rest (text, value, parameter selects) just need to show.
 const FILLS = [
@@ -93,7 +93,7 @@ test('a maximised report can open its settings', async ({ page }) => {
   const bar = dash.pages[1].reports.find((r) => r.type === 'bar');
   await card(page, bar.title).getByRole('button', { name: 'maximize' }).click();
   const dialog = page.locator('.nd-maximised');
-  await reportMenu(dialog, 'Settings');
+  await editReport(dialog);
   await expect(dialog.getByText('Advanced settings')).toBeVisible();
   const editor = await dialog.locator('.cm-editor, .CodeMirror').first().boundingBox();
   expect(editor.height).toBeGreaterThan(40);

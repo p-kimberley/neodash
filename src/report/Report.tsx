@@ -11,7 +11,7 @@ import { getReportTypes } from '../extensions/ExtensionUtils';
 import { SELECTION_TYPES } from '../config/CardConfig';
 import { LoadingSpinner, ReadOnlyTag } from '@neo4j-ndl/react';
 import { Tip } from '../component/text/Tip';
-import { Cog6ToothIconOutline, ExclamationTriangleIconSolid } from '@neo4j-ndl/react/icons';
+import { PencilIconOutline, ExclamationTriangleIconSolid } from '@neo4j-ndl/react/icons';
 import { connect } from 'react-redux';
 import { setPageNumberThunk } from '../settings/SettingsThunks';
 import { EXTENSIONS } from '../extensions/ExtensionConfig';
@@ -268,11 +268,11 @@ export const NeoReport = ({
   } else if (status == QueryStatus.NO_QUERY) {
     return (
       <div className={'n-text-neutral-text-default'} style={{ padding: 15 }}>
-        No query specified. Open{' '}
-        <ReadOnlyTag size='small' leadingVisual={<Cog6ToothIconOutline />}>
-          Settings
+        No query specified. Click{' '}
+        <ReadOnlyTag size='small' leadingVisual={<PencilIconOutline />}>
+          Edit
         </ReadOnlyTag>{' '}
-        from the report's ⋮ menu to get started.
+        at the top of the report to get started.
       </div>
     );
   } else if (status == QueryStatus.RUNNING) {

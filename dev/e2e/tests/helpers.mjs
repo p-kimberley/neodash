@@ -86,3 +86,8 @@ export const reportMenu = async (cardLocator, item) => {
   await cardLocator.getByRole('button', { name: 'Report actions' }).first().click();
   await cardLocator.page().getByRole('menuitem', { name: item }).click();
 };
+
+/** Opens a report's settings with its Edit button. */
+export const editReport = async (cardLocator) => {
+  await cardLocator.getByRole('button', { name: 'Edit', exact: true }).first().click();
+};

@@ -8,12 +8,18 @@ each of which expect different types of data. See the relevant
 documentation pages for more information.
 
 A report can be given a title, which is displayed at the top of the report.
-The *⋮* menu at the top right of a report holds its actions:
+
+Editors change a report with the *Edit* (pencil) button at its top right, which opens its settings
+(query, type and advanced settings). *Save* (tick) keeps the changes and runs the report; *Cancel*
+(cross) puts the report back as it was when you clicked Edit. Either way, the dashboard itself is
+only saved when you save it.
+
+The *⋮* menu next to it holds the report's other actions:
 
 * *View as table* shows the results behind a chart as a table (with a CSV download), and *View as
   chart* switches back. This only changes your own view, and isn't saved with the dashboard.
 * *Download as image*, when the report's settings allow it.
-* *Settings* (editors only) opens the report's settings, where you change its query.
+* *Duplicate*, *Help* (about the report type) and *Delete* (editors only).
 
 Every report also has a maximise button next to it, which shows the report
 over the whole window; Escape or a click outside it restores it.
@@ -37,8 +43,7 @@ A new report can be added to a page by clicking the large (+) button at
 the end of the page. By default, a report will have nothing defined, so
 you will need to set the query before any data is visualized.
 
-Reports can be deleted by opening the report settings, and clicking the
-bin icon at the top of the report. The icon next to it clones the report.
+Reports are deleted or duplicated from their *⋮* menu.
 
 == Re-order Reports
 

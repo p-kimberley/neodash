@@ -7,6 +7,7 @@ import { CARD_HEADER_HEIGHT } from '../../config/CardConfig';
 
 const NeoCardSettings = ({
   settingsOpen,
+  closingSettings = undefined, // { current: 'save' | 'cancel' }: how the settings are closing
   pagenumber,
   reportId,
   query,
@@ -27,6 +28,7 @@ const NeoCardSettings = ({
   onClonePressed,
   onReportSettingUpdate,
   onToggleCardSettings,
+  onCancelSettings = () => {},
   onTypeUpdate,
   setActive,
   onReportHelpButtonPressed,
@@ -47,12 +49,14 @@ const NeoCardSettings = ({
         setActive(reportSettings.autorun !== undefined ? reportSettings.autorun : true);
         onToggleCardSettings(e);
       }}
+      onCancelSettings={onCancelSettings}
     />
   );
 
   // TODO - instead of hiding everything based on settingsopen, only hide the components that slow down render (cypher editor)
   const cardSettingsContent = settingsOpen ? (
     <NeoCardSettingsContent
+      closingSettings={closingSettings}
       pagenumber={pagenumber}
       reportId={reportId}
       query={query}
@@ -75,6 +79,7 @@ const NeoCardSettings = ({
 
   const cardSettingsFooter = settingsOpen ? (
     <NeoCardSettingsFooter
+      closingSettings={closingSettings}
       type={type}
       fields={fields}
       schema={schema}

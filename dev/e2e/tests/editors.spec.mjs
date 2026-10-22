@@ -1,12 +1,12 @@
 // Report settings editors: text fields that suggest field, label and property names.
 import { test, expect } from '@playwright/test';
-import { SALES, SINK, card, expectNoErrors, openPage, reportMenu, trackErrors } from './helpers.mjs';
+import { SALES, SINK, card, expectNoErrors, openPage, reportMenu, trackErrors, editReport } from './helpers.mjs';
 
 test('style rules: the field name suggests the report fields', async ({ page }) => {
   const errors = trackErrors(page);
   await openPage(page, SALES);
   const report = card(page, 'Monthly revenue');
-  await reportMenu(report, 'Settings');
+  await editReport(report);
   await report.getByRole('button', { name: 'Set rule-based styling' }).click();
   const dialog = page.getByRole('dialog');
   if ((await dialog.getByRole('combobox', { name: 'Field name' }).count()) === 0) {
@@ -30,7 +30,7 @@ test('report actions: the value field suggests and takes typed text', async ({ p
   const errors = trackErrors(page);
   await openPage(page, SALES, 1);
   const report = card(page, 'Order history');
-  await reportMenu(report, 'Settings');
+  await editReport(report);
   await report.getByRole('button', { name: 'Set report actions' }).click();
   const dialog = page.getByRole('dialog');
   if ((await dialog.getByRole('combobox', { name: 'Value' }).count()) === 0) {
@@ -46,7 +46,7 @@ test('parameter report: the label is searched in the database and picked', async
   const errors = trackErrors(page);
   await openPage(page, SINK, 5);
   const report = card(page, 'Node property');
-  await reportMenu(report, 'Settings');
+  await editReport(report);
   const label = report.getByRole('combobox', { name: 'Node Label' });
   const before = await label.inputValue();
   await label.fill('Prod');
@@ -66,7 +66,7 @@ test('colour scheme select: names with swatches', async ({ page }) => {
   const errors = trackErrors(page);
   await openPage(page, SINK, 1);
   const report = card(page, 'Revenue by category and segment (grouped)');
-  await reportMenu(report, 'Settings');
+  await editReport(report);
   await report.getByText('Advanced settings').click();
   const select = report.getByRole('combobox', { name: 'Color Scheme' });
   await select.click();

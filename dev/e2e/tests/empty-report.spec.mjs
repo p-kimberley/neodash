@@ -22,7 +22,7 @@ test('an empty report offers Configure, which opens its settings', async ({ page
     await report.getByRole('button', { name: 'Configure' }).click();
     await expect(report.getByText('Advanced settings')).toBeVisible();
     // An empty report has nothing to show as a table.
-    await report.getByRole('button', { name: 'Run' }).click();
+    await report.getByRole('button', { name: 'Save' }).click();
     await report.getByRole('button', { name: 'Report actions' }).click();
     await expect(page.getByRole('menuitem', { name: 'View as table' })).toHaveCount(0);
     await page.keyboard.press('Escape');

@@ -6,6 +6,7 @@ import {
   SALES,
   card,
   deleteDashboard,
+  editReport,
   expectNoErrors,
   getDashboard,
   openPage,
@@ -33,7 +34,7 @@ test('build with AI: a question in English becomes a checked query that runs', a
   try {
     await openPage(page, uuid);
     const asked = card(page, 'Asked');
-    await reportMenu(asked, 'Settings');
+    await editReport(asked);
 
     // Switching to English describes the current query in plain English.
     await asked.getByRole('switch', { name: 'Write the query in English' }).click();
@@ -53,7 +54,7 @@ test('build with AI: a question in English becomes a checked query that runs', a
     await asked.getByRole('switch', { name: 'Write the query in English' }).click();
     await expect(asked.locator('.cm-content').first()).toContainText('Which movies came out most recently?');
     await asked.getByRole('switch', { name: 'Write the query in English' }).click();
-    await asked.getByRole('button', { name: 'Run' }).first().click();
+    await asked.getByRole('button', { name: 'Save' }).first().click();
     await expect(asked.getByRole('columnheader', { name: /title/ })).toBeVisible({ timeout: 30_000 });
   } finally {
     await deleteDashboard(page, uuid);

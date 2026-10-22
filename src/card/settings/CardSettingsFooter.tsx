@@ -15,6 +15,7 @@ import { Switch, CleanIconButton } from '@neo4j-ndl/react';
 const update = (state, mutations) => Object.assign({}, state, mutations);
 
 const NeoCardSettingsFooter = ({
+  closingSettings = undefined as { current: 'save' | 'cancel' } | undefined,
   type,
   fields = [],
   schema = [],
@@ -35,6 +36,17 @@ const NeoCardSettingsFooter = ({
   const actionsToCustomize = 'actionsRules';
 
   const debouncedReportSettingUpdate = useCallback(debounce(onReportSettingUpdate, 250), []);
+  // When the settings close, changes still on their way are kept (Save) or dropped (Cancel).
+  useEffect(
+    () => () => {
+      if (closingSettings?.current === 'cancel') {
+        debouncedReportSettingUpdate.cancel();
+      } else {
+        debouncedReportSettingUpdate.flush();
+      }
+    },
+    []
+  );
 
   const updateSpecificReportSetting = (field: string, value: unknown) => {
     const entry = {};

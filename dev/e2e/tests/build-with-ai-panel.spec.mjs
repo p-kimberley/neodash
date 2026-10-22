@@ -1,7 +1,7 @@
 // Build with AI inside an empty report: suggestions, building from a description, Undo. The dev
 // stack's stand-in model answers with reports for the seed data (dev/fake-llm).
 import { test, expect } from '@playwright/test';
-import { SALES, deleteDashboard, expectNoErrors, getDashboard, openPage, putDashboard, trackErrors } from './helpers.mjs';
+import { SALES, deleteDashboard, expectNoErrors, getDashboard, openPage, putDashboard, trackErrors, editReport } from './helpers.mjs';
 
 const setUp = async (page, suffix) => {
   await page.goto('/');
@@ -117,14 +117,13 @@ test('Ask AI in report settings changes the whole report; Undo restores it', asy
     await openPage(page, uuid);
     const report = page.locator('.nd-report-card').first();
     await expect(report.getByRole('columnheader', { name: 'name' })).toBeVisible();
-    await report.getByRole('button', { name: 'Report actions' }).click();
-    await page.getByRole('menuitem', { name: 'Settings' }).click();
+    await editReport(report);
     const ask = report.getByLabel('Ask AI');
     await ask.fill('top products as horizontal bars with a legend');
     await ask.press('Enter');
     await expect(page.getByText(/Changed the report/)).toBeVisible({ timeout: 30_000 });
     await expect(report.locator('.cm-content').first()).toContainText(':CONTAINS]->(p:Product)');
-    await report.getByRole('button', { name: 'Run' }).click();
+    await report.getByRole('button', { name: 'Save' }).click();
     await expect(report.locator('canvas').first()).toBeVisible({ timeout: 30_000 });
     // The title stays (it was set); Undo brings back the table.
     await expect(report.locator('input[aria-label="Report title"]')).toHaveValue('Customers');

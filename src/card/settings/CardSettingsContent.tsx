@@ -13,6 +13,7 @@ import { text2cypherAvailable } from '../../text2cypher/util/Util';
 import { AskAiBox } from '../../ai/AskAiBox';
 
 const NeoCardSettingsContent = ({
+  closingSettings = undefined as { current: 'save' | 'cancel' } | undefined,
   pagenumber,
   reportId,
   query,
@@ -33,6 +34,19 @@ const NeoCardSettingsContent = ({
   // State to manage the current database entry inside the form
   const [databaseText, setDatabaseText] = React.useState(database);
   const debouncedDatabaseUpdate = useCallback(debounce(onDatabaseChanged, 200), []);
+  // When the settings close, typing still on its way is kept (Save) or dropped (Cancel).
+  useEffect(
+    () => () => {
+      if (closingSettings?.current === 'cancel') {
+        debouncedQueryUpdate.cancel();
+        debouncedDatabaseUpdate.cancel();
+      } else {
+        debouncedQueryUpdate.flush();
+        debouncedDatabaseUpdate.flush();
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     // Reset text to the dashboard state when the page gets reorganized.

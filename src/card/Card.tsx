@@ -1,6 +1,7 @@
 import debounce from 'lodash/debounce';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import NeoCardSettings from './settings/CardSettings';
+import { restoreReportThunk, snapshotReport, type ReportSnapshot } from './ReportSnapshot';
 import NeoCardView from './view/CardView';
 import { connect } from 'react-redux';
 import {
@@ -46,6 +47,7 @@ const NeoCard = ({
   onGlobalParameterUpdate, // action to take when a report updates a dashboard parameter.
   onToggleCardSettings, // action to take when the card settings button is clicked.
   onToggleReportSettings, // action to take when the report settings (advanced settings) button is clicked.
+  onRestoreReport, // puts a report back as a snapshot has it (Cancel in the settings).
   onDatabaseChanged, // action to take when the user changes the database related to the card
   loadDatabaseListFromNeo4j, // Thunk to get the list of databases
   createNotification, // Thunk to create a global notification pop-up.
@@ -109,6 +111,17 @@ const NeoCard = ({
     setSettingsOpen(report.settingsOpen);
   }, [report.settingsOpen]);
 
+  // What the report was when its settings opened, so Cancel can discard the changes made since.
+  const editSnapshot = React.useRef<ReportSnapshot | undefined>(undefined);
+  // How the settings are closing: Save keeps changes still on their way from the editors; Cancel drops them.
+  const closingSettings = React.useRef<'save' | 'cancel'>('save');
+  useEffect(() => {
+    editSnapshot.current = settingsOpen ? snapshotReport(report) : undefined;
+    if (settingsOpen) {
+      closingSettings.current = 'save';
+    }
+  }, [settingsOpen]);
+
   // TODO - get rid of some of the props-drilling here...
   const component = (
     <div ref={observe} className='nd-report-card n-h-full'>
@@ -159,6 +172,7 @@ const NeoCard = ({
       <div className={`nd-card-face ${settingsOpen ? 'is-shown' : 'is-hidden'}`} aria-hidden={!settingsOpen}>
         <div className='nd-card-surface n-h-full'>
           <NeoCardSettings
+            closingSettings={closingSettings}
             pagenumber={dashboardSettings.pagenumber}
             reportId={id}
             settingsOpen={settingsOpen}
@@ -185,6 +199,14 @@ const NeoCard = ({
             onRemovePressed={() => onRemovePressed(id)}
             onClonePressed={() => onClonePressed(id)}
             onToggleCardSettings={() => {
+              setSettingsOpen(false);
+              debouncedOnToggleCardSettings(id, false);
+            }}
+            onCancelSettings={() => {
+              closingSettings.current = 'cancel';
+              if (editSnapshot.current) {
+                onRestoreReport(id, editSnapshot.current);
+              }
               setSettingsOpen(false);
               debouncedOnToggleCardSettings(id, false);
             }}
@@ -223,6 +245,9 @@ const mapStateToProps = (state, ownProps) => ({
 const mapDispatchToProps = (dispatch) => ({
   onTitleUpdate: (id: any, title: any) => {
     dispatch(updateReportTitleThunk(id, title));
+  },
+  onRestoreReport: (id: any, snapshot: ReportSnapshot) => {
+    dispatch(restoreReportThunk(id, snapshot));
   },
   onQueryUpdate: (id: any, query: any) => {
     dispatch(updateReportQueryThunk(id, query));

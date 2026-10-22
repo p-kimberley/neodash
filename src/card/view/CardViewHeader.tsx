@@ -10,11 +10,11 @@ import { ReportActionsMenu, reportEditItems } from '../ReportActionsMenu';
 import { Dialog } from '../../component/dialog/Dialog';
 import {
   DragIcon,
-  Cog6ToothIconOutline,
   ArrowPathIconOutline,
   ExpandIcon,
   ShrinkIcon,
   InformationCircleIconOutline,
+  PencilIconOutline,
   TableCellsIconOutline,
   PresentationChartBarIconOutline,
   PhotoIconOutline,
@@ -105,7 +105,7 @@ const NeoCardViewHeader = ({
   const descriptionEnabled = description && description.length > 0;
 
   // The ⋮ menu: switching between the chart and a table of its results and downloading an image; for
-  // editors, the report's settings, then duplicating, help and deleting.
+  // editors, duplicating, help and deleting. Editing is the button beside it.
   const menuButton = (
     <ReportActionsMenu
       groups={[
@@ -122,7 +122,6 @@ const NeoCardViewHeader = ({
             title: 'Download as image',
             onClick: onDownloadImage,
           },
-          editable && { key: 'settings', icon: <Cog6ToothIconOutline />, title: 'Settings', onClick: onToggleCardSettings },
         ],
         editable ? reportEditItems({ onClonePressed, onReportHelpButtonPressed, onRemovePressed }) : [],
       ]}
@@ -177,6 +176,13 @@ const NeoCardViewHeader = ({
           {expanded ? unMaximizeButton : maximizeButton}
           {descriptionEnabled ? descriptionButton : <></>}
           {refreshButtonEnabled ? refreshButton : <></>}
+          {editable ? (
+            <CleanIconButton description='Edit' onClick={onToggleCardSettings} size='medium'>
+              <PencilIconOutline />
+            </CleanIconButton>
+          ) : (
+            <></>
+          )}
           {menuButton}
         </div>
       </div>
