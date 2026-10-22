@@ -127,16 +127,23 @@ test('hierarchy drill-down and reset', async ({ page }) => {
 test('parameters: date picker sets its parameter', async ({ page }) => {
   const errors = trackErrors(page);
   await openPage(page, SINK, 5);
-  const field = card(page, 'Date picker').locator('.MuiPickersInputBase-root').first();
-  await field.click();
+  // The date field (the report title is an input too).
+  const dateInput = () => card(page, 'Date picker').locator('input:not(.nd-card-title)').first();
+  await dateInput().click();
+  // Typed without separators; shown as YYYY-MM-DD.
   await page.keyboard.type('20250314', { delay: 50 });
-  await page.keyboard.press('Tab');
+  await page.keyboard.press('Enter');
+  const url = () => decodeURIComponent(page.url());
   // Dates are kept in the URL as typed JSON.
-  await expect.poll(() => decodeURIComponent(page.url())).toContain('"year":2025,"month":3,"day":14');
+  await expect.poll(url).toContain('"year":2025,"month":3,"day":14');
   // ...and read back from it as a date when the link is opened again.
   await page.reload();
-  const input = card(page, 'Date picker').locator('.MuiPickersInputBase-root input').first();
-  await expect(input).toHaveValue('2025-03-14', { timeout: 20000 });
+  await expect(dateInput()).toHaveValue('2025-03-14', { timeout: 20000 });
+  // Clearing the field clears the parameter (it has no default).
+  await dateInput().fill('');
+  await page.keyboard.press('Tab');
+  await expect.poll(url).not.toContain('"year":2025');
+  await expect(dateInput()).toHaveValue('');
   await expectNoErrors(page, errors);
 });
 
