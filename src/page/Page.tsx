@@ -8,9 +8,21 @@ import { getDashboardIsEditable, getPageNumber } from '../settings/SettingsSelec
 import { getDashboardSettings } from '../dashboard/DashboardSelectors';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { GRID_COMPACTION_TYPE } from '../config/PageConfig';
+import { ReportDrawLayer, ReportDrawLayerHandle } from './ReportDrawLayer';
 
 /** Space between reports, and between them and the edges of the page area, in px. */
 const GRID_SPACING: [number, number] = [10, 10];
+const ROW_HEIGHT = 100;
+const BREAKPOINTS = { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 };
+const COLS = { lg: 24, md: 20, sm: 12, xs: 8, xxs: 4 };
+
+/** The grid's columns at a width, as react-grid-layout picks its breakpoint. */
+const colsForWidth = (width: number) => {
+  const name = Object.keys(BREAKPOINTS)
+    .sort((a, b) => BREAKPOINTS[b] - BREAKPOINTS[a])
+    .find((key) => width > BREAKPOINTS[key]);
+  return COLS[name ?? 'xxs'];
+};
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -48,6 +60,7 @@ export const NeoPage = ({
   const [layouts, setLayouts] = React.useState(defaultLayouts);
   const [lastElement, setLastElement] = React.useState(<div key={getReportKey(pagenumber, '999999')}></div>);
   const [animated, setAnimated] = React.useState(false); // To turn off animations when cards are dragged around.
+  const drawLayer = React.useRef<ReportDrawLayerHandle>(null);
 
   const availableHandles = () => {
     if (dashboardSettings.resizing && dashboardSettings.resizing == 'all') {
@@ -133,9 +146,14 @@ export const NeoPage = ({
       <div key={getReportKey(pagenumber, '999999')}>
         <NeoAddCard
           onCreatePressed={() => {
+            // A drag that started on the tile has already drawn the report.
+            if (drawLayer.current?.consumeClick()) {
+              return;
+            }
             const { x, y } = getAddCardButtonPosition();
             onCreatePressed(x, y, 6, 4);
           }}
+          onPointerDown={(e) => drawLayer.current?.armFrom(e)}
         />
       </div>
     );
@@ -146,15 +164,28 @@ export const NeoPage = ({
     recomputeLayout();
   }, [reports, dashboardSettings.resizing, pagenumber]);
 
+  // Rows the reports (and the Add report tile) take up, for the drawing layer.
+  const rows = Math.max(0, ...layouts.lg.map((item) => (item.y || 0) + (item.h || 0)));
+
   const content = (
-    <div>
+    <div className='nd-page-grid'>
+      {/* Editors draw new reports on empty space: press and drag. */}
+      {editable ? (
+        <ReportDrawLayer
+          ref={drawLayer}
+          geometry={{ colsForWidth, rowHeight: ROW_HEIGHT, margin: GRID_SPACING[0], rows }}
+          onDraw={(rect) => onCreatePressed(rect.x, rect.y, rect.w, rect.h)}
+        />
+      ) : (
+        <></>
+      )}
       <ResponsiveGridLayout
         draggableHandle='.drag-handle'
         layouts={layouts}
         className={`layout neodash-card-editable-${editable} ${animated ? 'animated' : 'not-animated'}`}
-        breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-        cols={{ lg: 24, md: 20, sm: 12, xs: 8, xxs: 4 }}
-        rowHeight={100}
+        breakpoints={BREAKPOINTS}
+        cols={COLS}
+        rowHeight={ROW_HEIGHT}
         // The same space between reports, across and down, as around them.
         margin={GRID_SPACING}
         containerPadding={GRID_SPACING}

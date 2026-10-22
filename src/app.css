@@ -377,3 +377,88 @@ body {
   background: color-mix(in srgb, var(--theme-color-primary-bg-weak) 40%, transparent);
   outline: none;
 }
+
+.add-report-card {
+  touch-action: none;
+}
+
+.add-report-card-hint {
+  font-size: 12px;
+  color: var(--theme-color-neutral-text-weaker);
+}
+
+/* ---------- Drawing new reports on the page grid ---------- */
+
+/* The grid sits above the drawing layer but lets presses on empty space through to it; reports
+   themselves still take theirs. */
+/* The drawing layer and the grid share one cell, so the page is as tall as the taller of them (the
+   layer reaches a few rows below the reports, to draw there). */
+.nd-page-grid {
+  display: grid;
+}
+
+.nd-page-grid > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.nd-page-grid > .react-grid-layout {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.nd-page-grid > .react-grid-layout > .react-grid-item {
+  pointer-events: auto;
+}
+
+.nd-draw-layer {
+  position: relative;
+  z-index: 0;
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+}
+
+.nd-draw-cell {
+  position: absolute;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--theme-color-neutral-border-weak) 45%, transparent);
+}
+
+.nd-draw-outline,
+.nd-draw-hint {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--app-radius);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.nd-draw-outline {
+  border: 2px dashed var(--theme-color-primary-border-strong);
+  background: color-mix(in srgb, var(--theme-color-primary-bg-weak) 55%, transparent);
+  color: var(--theme-color-primary-text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.nd-draw-hint {
+  border: 1px dashed var(--theme-color-neutral-border-strong);
+  color: var(--theme-color-neutral-text-weak);
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .nd-draw-hint {
+    animation: nd-draw-hint-in 0.15s ease-out;
+  }
+}
+
+@keyframes nd-draw-hint-in {
+  from {
+    opacity: 0;
+  }
+}
