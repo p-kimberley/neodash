@@ -14,7 +14,9 @@ describe('CookieSealer', () => {
   it('rejects tampered, expired, foreign-key and wrong-purpose cookies', () => {
     const s = new CookieSealer(SECRET, 'session');
     const sealed = s.seal({ user: 'ann', expiresAt: future() });
-    const flipped = sealed.slice(0, -2) + (sealed.endsWith('A') ? 'B' : 'A') + sealed.slice(-1);
+    // Change a character in the middle: the last ones can be base64 padding bits, which change nothing.
+    const middle = Math.floor(sealed.length / 2);
+    const flipped = sealed.slice(0, middle) + (sealed[middle] === 'A' ? 'B' : 'A') + sealed.slice(middle + 1);
     expect(s.unseal(flipped)).toBeNull();
     expect(s.unseal(s.seal({ user: 'ann', expiresAt: Math.floor(Date.now() / 1000) - 1 }))).toBeNull();
     expect(new CookieSealer('y'.repeat(40), 'session').unseal(sealed)).toBeNull();
