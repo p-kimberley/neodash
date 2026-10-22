@@ -113,6 +113,54 @@ test('typing asks for options when it pauses (corrected on the server when the f
   await expectNoErrors(page, errors);
 });
 
+test('the box starts one line high and grows; while options are worked out a halo circles it, and Stop brings back the earlier ones', async ({
+  page,
+}) => {
+  const errors = trackErrors(page);
+  const uuid = await setUp(page, '5');
+  try {
+    const report = page.locator('.nd-report-card').first();
+    await report.getByRole('button', { name: 'Build with AI' }).click();
+    const panel = report.getByRole('region', { name: 'Build with AI' });
+    const prompt = panel.locator('.nd-ai-prompt');
+    await expect(options(panel)).toHaveCount(3, { timeout: 30_000 });
+    await expect(prompt).not.toHaveClass(/is-asking/);
+
+    // One line; Shift+Enter adds another, and the box grows.
+    const box = panel.getByLabel('Describe the report');
+    const oneLine = (await box.boundingBox()).height;
+    expect(oneLine).toBeLessThan(48);
+    await box.fill('orders per channel');
+    await box.press('Shift+Enter');
+    await box.pressSequentially('as bars');
+    await expect(box).toHaveValue('orders per channel\nas bars');
+    expect((await box.boundingBox()).height).toBeGreaterThan(oneLine + 10);
+
+    // Enter asks (no new line). "slowly" holds the stand-in model's answer back.
+    await box.fill('slowly: orders per channel');
+    await box.press('Enter');
+    await expect(box).toHaveValue('slowly: orders per channel');
+    await expect(prompt).toHaveClass(/is-asking/);
+    await expect(panel.locator('.nd-ai-option-loading').first()).toBeVisible();
+    await panel.getByRole('button', { name: 'Stop' }).click();
+    await expect(prompt).not.toHaveClass(/is-asking/);
+    await expect(options(panel)).toHaveCount(3);
+    await expect(options(panel).first()).toContainText('Orders by channel');
+    await expect(panel.getByRole('button', { name: 'Suggest options' })).toBeVisible();
+
+    // Escape stops too.
+    await box.press('Enter');
+    await expect(prompt).toHaveClass(/is-asking/);
+    await box.press('Escape');
+    await expect(prompt).not.toHaveClass(/is-asking/);
+    await expect(options(panel)).toHaveCount(3);
+    await expect(panel).toBeVisible();
+  } finally {
+    await deleteDashboard(page, uuid);
+  }
+  await expectNoErrors(page, errors);
+});
+
 test('without a language model there is only Configure', async ({ page }) => {
   await page.route('**/api/config', async (route) => {
     const response = await route.fetch();

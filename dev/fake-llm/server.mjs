@@ -131,36 +131,44 @@ http
       return send(res, 404, { error: { message: 'Not found' } });
     let raw = '';
     req.on('data', (chunk) => (raw += chunk));
-    req.on('end', () => {
-      const { messages = [] } = JSON.parse(raw || '{}');
-      // Describing a query in English (the report editor's English mode).
-      const system = String(messages.find((m) => m.role === 'system')?.content ?? '');
-      if (system.startsWith('You explain')) {
-        const query = String(messages.at(-1)?.content ?? '');
-        const text = /Movie/.test(query)
-          ? 'The 10 most recently released movies, newest first.'
-          : /Order/.test(query)
-            ? 'Orders with their dates and totals, newest first.'
-            : 'How many nodes have each label, most first.';
-        console.log(`describe: ${query.slice(0, 60)} -> ${text}`);
-        return send(res, 200, { choices: [{ index: 0, message: { role: 'assistant', content: text } }] });
-      }
-      const built = builderAnswer(messages);
-      if (built) {
-        console.log(`builder: ${JSON.stringify(built).slice(0, 100)}`);
-        return send(res, 200, {
-          choices: [{ index: 0, message: { role: 'assistant', content: JSON.stringify(built) } }],
-        });
-      }
-      // The question is the first line of the last message from the user.
-      const question = String([...messages].reverse().find((m) => m.role === 'user')?.content ?? '').split('\n')[0];
-      const retry = /^That query fails/.test(question);
-      const answer = retry ? FALLBACK : (ANSWERS.find(([pattern]) => pattern.test(question))?.[1] ?? FALLBACK);
-      console.log(`${retry ? 'retry' : 'question'}: ${question.slice(0, 80)} -> ${answer.slice(0, 60)}`);
-      // Wrapped in a code fence, as real models often do despite being asked not to.
-      send(res, 200, {
-        choices: [{ index: 0, message: { role: 'assistant', content: '```cypher\n' + answer + '\n```' } }],
-      });
+    // A request that goes away before its answer (the caller stopped it).
+    res.on('close', () => {
+      if (!res.writableFinished) console.log('stopped by the caller');
     });
+    // "slowly" in a description holds the answer back for a while, so a request can be stopped.
+    req.on('end', () => setTimeout(() => respond(raw, res), /slowly/i.test(raw) ? 8000 : 0));
   })
   .listen(8000, () => console.log('fake LLM on :8000'));
+
+function respond(raw, res) {
+  if (res.destroyed) return;
+  const { messages = [] } = JSON.parse(raw || '{}');
+  // Describing a query in English (the report editor's English mode).
+  const system = String(messages.find((m) => m.role === 'system')?.content ?? '');
+  if (system.startsWith('You explain')) {
+    const query = String(messages.at(-1)?.content ?? '');
+    const text = /Movie/.test(query)
+      ? 'The 10 most recently released movies, newest first.'
+      : /Order/.test(query)
+        ? 'Orders with their dates and totals, newest first.'
+        : 'How many nodes have each label, most first.';
+    console.log(`describe: ${query.slice(0, 60)} -> ${text}`);
+    return send(res, 200, { choices: [{ index: 0, message: { role: 'assistant', content: text } }] });
+  }
+  const built = builderAnswer(messages);
+  if (built) {
+    console.log(`builder: ${JSON.stringify(built).slice(0, 100)}`);
+    return send(res, 200, {
+      choices: [{ index: 0, message: { role: 'assistant', content: JSON.stringify(built) } }],
+    });
+  }
+  // The question is the first line of the last message from the user.
+  const question = String([...messages].reverse().find((m) => m.role === 'user')?.content ?? '').split('\n')[0];
+  const retry = /^That query fails/.test(question);
+  const answer = retry ? FALLBACK : (ANSWERS.find(([pattern]) => pattern.test(question))?.[1] ?? FALLBACK);
+  console.log(`${retry ? 'retry' : 'question'}: ${question.slice(0, 80)} -> ${answer.slice(0, 60)}`);
+  // Wrapped in a code fence, as real models often do despite being asked not to.
+  send(res, 200, {
+    choices: [{ index: 0, message: { role: 'assistant', content: '```cypher\n' + answer + '\n```' } }],
+  });
+}

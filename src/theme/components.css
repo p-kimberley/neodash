@@ -430,20 +430,71 @@ body {
   gap: 8px;
 }
 
-/* The description box, with the button that asks for options in its bottom-right corner. */
+/* The description box, with the button that asks for options (or stops) in its bottom-right corner.
+   It starts one line high and grows with its text (AiOptions sets the height). */
 .nd-ai-prompt {
   position: relative;
 }
 
 .nd-ai-prompt textarea {
+  min-height: 0;
   padding-right: 36px;
+  resize: none;
+  overflow-y: auto;
 }
 
 .ndl-icon-btn.nd-ai-prompt-ask {
   position: absolute;
-  right: 6px;
-  bottom: 6px;
+  right: 5px;
+  bottom: 5px;
   color: var(--theme-color-primary-icon);
+}
+
+/* While options are worked out, a halo of colour circles the box. */
+@property --nd-halo-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.nd-ai-prompt .ndl-text-area-wrapper {
+  isolation: isolate;
+}
+
+.nd-ai-prompt.is-asking .ndl-text-area-wrapper::before,
+.nd-ai-prompt.is-asking .ndl-text-area-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  border-radius: 6px;
+  background: conic-gradient(from var(--nd-halo-angle), #2a78d6, #6250d6, #e87ba4, #eda100, #2a78d6);
+  animation: nd-halo-turn 2.4s linear infinite;
+  pointer-events: none;
+}
+
+/* A soft glow beneath the ring. */
+.nd-ai-prompt.is-asking .ndl-text-area-wrapper::after {
+  z-index: -2;
+  filter: blur(6px);
+  opacity: 0.55;
+}
+
+.nd-ai-prompt.is-asking textarea {
+  border-color: transparent;
+}
+
+@keyframes nd-halo-turn {
+  to {
+    --nd-halo-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nd-ai-prompt.is-asking .ndl-text-area-wrapper::before,
+  .nd-ai-prompt.is-asking .ndl-text-area-wrapper::after {
+    animation: none;
+  }
 }
 
 .nd-ai-option-list {

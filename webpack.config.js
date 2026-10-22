@@ -107,6 +107,15 @@ module.exports = (env) => {
         {
           context: ['/api', '/auth', '/healthz', '/readyz'],
           target: process.env.BACKEND_URL || 'http://localhost:3000',
+          // A request the browser drops (e.g. Stop in Build with AI) is dropped on the backend too,
+          // so the backend stops its work.
+          onProxyReq: (proxyReq, req, res) => {
+            res.on('close', () => {
+              if (!res.writableFinished) {
+                proxyReq.destroy();
+              }
+            });
+          },
         },
       ],
       client: {

@@ -41,7 +41,7 @@ export interface TranslateRequest {
 export class Text2CypherError extends Error {
   constructor(
     message: string,
-    public readonly code: 'model_unavailable' | 'translation_failed' | 'schema_unavailable',
+    public readonly code: 'model_unavailable' | 'translation_failed' | 'schema_unavailable' | 'stopped',
     public readonly lastAnswer?: string
   ) {
     super(message);
@@ -290,7 +290,7 @@ export class Text2Cypher {
   }
 
   /** One chat completion: the model's answer text. `extra` adds request fields (e.g. response_format). */
-  async chat(messages: ChatMessage[], extra: Record<string, unknown> = {}): Promise<string> {
+  async chat(messages: ChatMessage[], extra: Record<string, unknown> = {}, stop?: AbortSignal): Promise<string> {
     const url = `${this.config.baseUrl.replace(/\/+$/, '')}/chat/completions`;
     let response: Response;
     let body: any;
@@ -309,9 +309,13 @@ export class Text2Cypher {
             ...(this.config.maxTokens && !this.unsupported.has('max_tokens') ? { max_tokens: this.config.maxTokens } : {}),
             ...extra,
           }),
-          signal: AbortSignal.timeout(this.config.timeoutSeconds * 1000),
+          // The request's time limit, or the caller stopping (e.g. the browser went away).
+          signal: stop
+            ? AbortSignal.any([AbortSignal.timeout(this.config.timeoutSeconds * 1000), stop])
+            : AbortSignal.timeout(this.config.timeoutSeconds * 1000),
         });
       } catch (e) {
+        if (stop?.aborted) throw new Text2CypherError('Stopped', 'stopped');
         throw new Text2CypherError(
           `The language model could not be reached: ${(e as Error).message}`,
           'model_unavailable'

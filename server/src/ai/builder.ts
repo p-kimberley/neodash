@@ -57,6 +57,11 @@ export class BuildError extends Error {
 
 const PROBE_ROWS = 25;
 
+/** Ends the work when its caller has stopped it. */
+function stopped(stop?: AbortSignal) {
+  if (stop?.aborted) throw new Text2CypherError('Stopped', 'stopped');
+}
+
 /** The kind of a value returned by Neo4j. */
 export function kindOf(value: unknown): ValueKind | undefined {
   if (value === null || value === undefined) return undefined;
@@ -375,7 +380,7 @@ export class ReportBuilder {
   }
 
   /** One answer as JSON, using the strongest structured output the endpoint accepts. */
-  private async chatJson(messages: ChatMessage[], schema: object): Promise<string> {
+  private async chatJson(messages: ChatMessage[], schema: object, stop?: AbortSignal): Promise<string> {
     for (;;) {
       const extra =
         this.jsonMode === 'schema'
@@ -384,7 +389,7 @@ export class ReportBuilder {
             ? { response_format: { type: 'json_object' } }
             : {};
       try {
-        return await this.llm.chat(messages, extra);
+        return await this.llm.chat(messages, extra, stop);
       } catch (e) {
         // Endpoints that don't know response_format (or this form of it) say so; ask without it.
         const unsupported =
@@ -518,8 +523,10 @@ export class ReportBuilder {
     catalogue: Catalogue;
     context: BuildContext;
     start?: unknown;
+    /** Stops the work (between steps, and the model call in progress). */
+    stop?: AbortSignal;
   }): Promise<{ report: ReportSpec; attempts: number; warnings: string[] }> {
-    const { database, catalogue } = request;
+    const { database, catalogue, stop } = request;
     const context = contextSchema.parse(request.context ?? {});
     const names = await this.llm.schemaNames(database);
     const system = await this.systemPrompt(
@@ -540,11 +547,12 @@ export class ReportBuilder {
     let previous = '';
     const warnings: string[] = [];
     for (let attempt = 1; attempt <= this.options.maxAttempts; attempt++) {
+      stopped(stop);
       attempts = attempt;
       answer =
         attempt === 1 && request.start !== undefined
           ? JSON.stringify(request.start)
-          : await this.chatJson(messages, coreJsonSchema(catalogue));
+          : await this.chatJson(messages, coreJsonSchema(catalogue), stop);
       ({ spec, problems } = await this.checkCore(
         parseJson(answer),
         catalogue,
@@ -579,13 +587,19 @@ export class ReportBuilder {
     // Settings: only those the request asks for, from this report type's own settings.
     const type = findType(catalogue, spec.type)!;
     if (request.prompt.trim() && type.settings.length) {
-      const settings = await this.chooseSettings(request.prompt, spec, type, warnings);
+      const settings = await this.chooseSettings(request.prompt, spec, type, warnings, stop);
       spec.settings = { ...spec.settings, ...settings };
     }
     return { report: spec, attempts, warnings };
   }
 
-  private async chooseSettings(prompt: string, spec: ReportSpec, type: ReportTypeDef, warnings: string[]) {
+  private async chooseSettings(
+    prompt: string,
+    spec: ReportSpec,
+    type: ReportTypeDef,
+    warnings: string[],
+    stop?: AbortSignal
+  ) {
     const messages: ChatMessage[] = [
       {
         role: 'system',
@@ -600,7 +614,7 @@ export class ReportBuilder {
     ];
     let valid: Record<string, unknown> = {};
     for (let attempt = 1; attempt <= this.options.maxAttempts; attempt++) {
-      const answer = await this.chatJson(messages, settingsJsonSchema(type));
+      const answer = await this.chatJson(messages, settingsJsonSchema(type), stop);
       const parsed = parseJson(answer) as { settings?: unknown } | undefined;
       const { settings, problems } = checkSettings(parsed?.settings ?? parsed ?? {}, type);
       valid = { ...valid, ...settings };
@@ -628,8 +642,10 @@ export class ReportBuilder {
     prompt: string;
     catalogue: Catalogue;
     context: BuildContext;
+    /** Stops the work (between steps, and the model call in progress). */
+    stop?: AbortSignal;
   }): Promise<ReportSpec[]> {
-    const { database, catalogue } = request;
+    const { database, catalogue, stop } = request;
     const context = contextSchema.parse(request.context ?? {});
     const names = await this.llm.schemaNames(database);
     const prompt = request.prompt.trim();
@@ -674,7 +690,8 @@ export class ReportBuilder {
     let previous = '';
     const attempts = Math.min(3, this.options.maxAttempts);
     for (let attempt = 1; attempt <= attempts; attempt++) {
-      const answer = await this.chatJson(messages, schema);
+      stopped(stop);
+      const answer = await this.chatJson(messages, schema, stop);
       const parsed = parseJson(answer) as { options?: unknown[]; suggestions?: unknown[] } | undefined;
       const items = (
         Array.isArray(parsed?.options) ? parsed!.options : Array.isArray(parsed?.suggestions) ? parsed!.suggestions : []

@@ -443,16 +443,21 @@ export async function buildApp({ config, driver, oidc, llmFetch, cypherChecks }:
       return reply.code(429).send(errorBody('busy', 'A Build with AI request is already running for you'));
     }
     aiBusy.add(user);
+    // The browser gone (closed, or the user stopped the request): stop the work and the model call.
+    const stop = new AbortController();
+    reply.raw.on('close', () => {
+      if (!reply.raw.writableFinished) stop.abort();
+    });
     const started = performance.now();
     const auditBase = { database, prompt: body.prompt, report: body.context.report.title, dashboard: body.context.dashboard.title };
     try {
       if (kind === 'suggest') {
-        const suggestions = await builder.suggest({ ...body, database });
+        const suggestions = await builder.suggest({ ...body, database, stop: stop.signal });
         const durationMs = Math.round(performance.now() - started);
         audit(request, 'ai.suggest', { ...auditBase, outcome: 'ok', suggestions: suggestions.map((s) => ({ type: s.type, query: s.query })), durationMs });
         return { suggestions, model: builder.model, durationMs };
       }
-      const result = await builder.build({ ...body, database, start: body.suggestion });
+      const result = await builder.build({ ...body, database, start: body.suggestion, stop: stop.signal });
       const durationMs = Math.round(performance.now() - started);
       audit(request, 'ai.build', { ...auditBase, outcome: 'ok', type: result.report.type, query: result.report.query, attempts: result.attempts, durationMs });
       return { ...result, model: builder.model, durationMs };
@@ -461,6 +466,10 @@ export async function buildApp({ config, driver, oidc, llmFetch, cypherChecks }:
       if (e instanceof BuildError) {
         audit(request, `ai.${kind}`, { ...auditBase, outcome: 'error', errorCode: 'build_failed', problems: e.problems, durationMs });
         return reply.code(422).send(errorBody('build_failed', e.message, { problems: e.problems, lastAnswer: e.lastAnswer }));
+      }
+      if (stop.signal.aborted) {
+        audit(request, `ai.${kind}`, { ...auditBase, outcome: 'cancelled', durationMs });
+        return reply.code(499).send(errorBody('stopped', 'Stopped'));
       }
       const err = e instanceof Text2CypherError ? e : new Text2CypherError((e as Error).message, 'translation_failed');
       audit(request, `ai.${kind}`, { ...auditBase, outcome: 'error', errorCode: err.code, error: err.message, durationMs });

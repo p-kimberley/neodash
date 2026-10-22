@@ -444,6 +444,22 @@ describe('suggesting options', () => {
     expect(editing.requests[0].messages[0].content).toMatch(/Each option changes the report described below/);
     expect(editing.requests[0].messages[0].content).toMatch(/It is now a table report with this query/);
   });
+
+  it('stops when asked, before the next model call', async () => {
+    const stop = new AbortController();
+    const checks = fakeChecks();
+    const explain = checks.explain;
+    checks.explain = async (...args) => {
+      stop.abort();
+      return explain(...args);
+    };
+    const { builder, requests } = makeBuilder([{ options: [{ ...OTHER, query: 'SELECT 1' }] }, { options: [DESCRIBED] }], checks);
+    const asked = { database: 'neo4j', prompt: 'x', catalogue: CATALOGUE, context: {} as any };
+    await expect(builder.suggest({ ...asked, stop: stop.signal })).rejects.toMatchObject({ code: 'stopped' });
+    expect(requests).toHaveLength(1);
+    await expect(builder.build({ ...asked, stop: stop.signal })).rejects.toMatchObject({ code: 'stopped' });
+    expect(requests).toHaveLength(1);
+  });
 });
 
 describe('the API', () => {
