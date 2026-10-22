@@ -14,6 +14,7 @@ interface Extension {
   image: string;
   enabled: boolean;
   description: string;
+  /** The extension's page in the in-app documentation. */
   link: string;
   reducerPrefix?: string;
   reducerObject?: any;
@@ -54,7 +55,7 @@ export const EXTENSIONS: Record<string, Extension> = {
     enabled: true,
     description:
       'Report actions let dashboard builders add extra interactivity into dashboards. For example, setting parameter values when a cell in a table or a node in a graph is clicked.',
-    link: 'https://neo4j.com/professional-services/',
+    link: docsUrl('user-guide/extensions/report-actions'),
   },
   'query-translator': {
     name: 'query-translator',
@@ -70,7 +71,7 @@ export const EXTENSIONS: Record<string, Extension> = {
     settingsMenuButton: QueryTranslatorButton,
     description:
       "Write a report's query as a question in English: a language model set up for this server turns it into Cypher, using the database schema and the report's type. NeoDash checks each query against the database before using it.",
-    link: 'https://neo4j.com/professional-services/',
+    link: docsUrl('user-guide/extensions/natural-language-queries'),
   },
   forms: {
     name: 'forms',
@@ -80,7 +81,7 @@ export const EXTENSIONS: Record<string, Extension> = {
     enabled: true,
     description:
       'Forms let you craft Cypher queries with multiple inputs, that are fired on demand. Using parameters from the dashboard, or form specific input, you will be able to trigger custom logic with forms.',
-    link: 'https://neo4j.com/professional-services/',
+    link: docsUrl('user-guide/extensions/forms'),
   },
 };
 

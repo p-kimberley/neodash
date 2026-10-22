@@ -5,7 +5,7 @@ import { createNotificationThunk } from '../page/PageThunks';
 import { getDashboardExtensions } from '../dashboard/DashboardSelectors';
 import { setExtensionEnabled } from '../dashboard/DashboardActions';
 import { setExtensionReducerEnabled } from './state/ExtensionActions';
-import { TextLink, Typography, Checkbox, IconButton, StatusLabel } from '@neo4j-ndl/react';
+import { TextLink, Typography, Checkbox, IconButton } from '@neo4j-ndl/react';
 import { Dialog } from '../component/dialog/Dialog';
 import { PuzzlePieceIconSolid } from '@neo4j-ndl/react/icons';
 import { Section, SectionContent } from '../modal/ModalUtils';
@@ -75,11 +75,6 @@ const NeoExtensionsModal = ({
                                 <td>
                                   <div className='n-flex n-flex-row n-gap-token-8 n-items-center'>
                                     <Typography variant='subheading-large'>{e.label}</Typography>
-                                    {e.enabled && e.author == 'Neo4j Professional Services' && (
-                                      <StatusLabel variant='info' fill='outlined'>
-                                        Expert
-                                      </StatusLabel>
-                                    )}
                                   </div>
                                 </td>
                                 <td style={{ width: 50 }}></td>
@@ -128,9 +123,9 @@ const NeoExtensionsModal = ({
                                   )}
                                   <br />
                                   <p>
-                                    Author:{' '}
+                                    By {e.author} ·{' '}
                                     <TextLink href={e.link} target='_blank' type='external'>
-                                      {e.author}
+                                      Documentation
                                     </TextLink>
                                   </p>
                                 </td>
