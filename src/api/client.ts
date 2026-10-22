@@ -110,6 +110,18 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 // Start-up requests give up rather than leave the app on its loading spinner if the server never answers.
 const STARTUP_TIMEOUT_MS = 20_000;
 
+/**
+ * How long to wait for a query's answer. The server stops a query at its time limit (the report's,
+ * at most the server's maximum), so an answer later than that, plus time to send a large result,
+ * was lost on the way: the report then shows an error instead of loading forever.
+ */
+const ANSWER_MARGIN_SECONDS = 30;
+const answerDeadlineSeconds = (timeoutSeconds?: number) => {
+  const limits = session.config?.limits;
+  const requested = timeoutSeconds ?? limits?.defaultTimeoutSeconds ?? 20;
+  return Math.min(requested, limits?.maxTimeoutSeconds ?? requested) + ANSWER_MARGIN_SECONDS;
+};
+
 export const api = {
   me: () => request<Me>('/api/me', { signal: AbortSignal.timeout(STARTUP_TIMEOUT_MS) }),
   config: () => request<BackendConfig>('/api/config', { signal: AbortSignal.timeout(STARTUP_TIMEOUT_MS) }),
@@ -132,10 +144,24 @@ export const api = {
 
   /** Runs a query and returns Neo4j driver Records, so existing chart code works unchanged. */
   async query(req: QueryRequest) {
-    const response = await request<QueryResponse>('/api/query', {
-      method: 'POST',
-      body: JSON.stringify({ ...req, parameters: encodeParameters(req.parameters ?? {}) }),
-    });
+    const seconds = answerDeadlineSeconds(req.timeoutSeconds);
+    let response: QueryResponse;
+    try {
+      response = await request<QueryResponse>('/api/query', {
+        method: 'POST',
+        body: JSON.stringify({ ...req, parameters: encodeParameters(req.parameters ?? {}) }),
+        signal: AbortSignal.timeout(seconds * 1000),
+      });
+    } catch (e: any) {
+      if (e?.name === 'TimeoutError') {
+        throw new ApiError(
+          0,
+          'no_answer',
+          `No answer from the server after ${seconds} seconds: the connection may have dropped. Refresh the report to try again.`
+        );
+      }
+      throw e;
+    }
     const records = response.records.map(
       (row) =>
         new Neo4jRecord(

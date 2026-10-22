@@ -279,3 +279,32 @@ test('branding: legacy design-system colour overrides still apply', async ({ pag
   const expected = info.project.name === 'dark' ? 'rgb(255, 120, 120)' : 'rgb(200, 0, 0)';
   await expect.poll(() => button.evaluate((b) => getComputedStyle(b).backgroundColor)).toBe(expected);
 });
+
+// A query whose answer never arrives (e.g. a dropped connection) ends in an error after the report's
+// time limit plus a margin, instead of the report loading forever.
+test('a report whose answer never arrives shows an error', async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto('/');
+  const dash = await getDashboard(page, SALES);
+  const uuid = `dddd0000-0000-4000-8000-00000000a0${test.info().project.name === 'dark' ? 'dd' : 'ee'}`;
+  const held = dash.pages[0].reports.find((r) => r.title === 'Orders');
+  await putDashboard(page, uuid, {
+    ...dash,
+    title: 'e2e lost answer',
+    settings: { ...dash.settings, queryTimeLimit: 1 },
+    pages: [dash.pages[0]],
+  });
+  try {
+    // Never answer the Orders report's query; let the others through.
+    await page.route('**/api/query', (route) =>
+      JSON.parse(route.request().postData() ?? '{}').query === held.query ? undefined : route.continue()
+    );
+    await page.goto(`/dashboards/${uuid}`);
+    const orders = card(page, 'Orders');
+    await expect(card(page, 'Revenue')).not.toContainText('No answer from the server');
+    await expect(orders).toContainText('No answer from the server after 31 seconds', { timeout: 60_000 });
+  } finally {
+    await page.unrouteAll({ behavior: 'ignoreErrors' });
+    await deleteDashboard(page, uuid);
+  }
+});
