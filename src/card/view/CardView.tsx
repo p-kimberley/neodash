@@ -45,6 +45,9 @@ const NeoCardView = ({
   onToggleCardExpand,
   viewAsTable = false,
   onToggleViewAsTable = () => {},
+  onRemovePressed = () => {},
+  onClonePressed = () => {},
+  onReportHelpButtonPressed = () => {},
 }) => {
   // With field selectors below, the report stops where they start (they end 12px above the card's
   // edge); without, it fills the card down to its border.
@@ -125,6 +128,9 @@ const NeoCardView = ({
       canViewAsTable={active && canViewAsTable(type, reportTypes)}
       viewAsTable={tableView}
       onToggleViewAsTable={onToggleViewAsTable}
+      onRemovePressed={onRemovePressed}
+      onClonePressed={onClonePressed}
+      onReportHelpButtonPressed={onReportHelpButtonPressed}
       parameters={getLocalParameters(title)}
     ></NeoCardViewHeader>
   );

@@ -141,6 +141,9 @@ const NeoCard = ({
             onToggleCardExpand={onToggleCardExpand}
             viewAsTable={viewAsTable}
             onToggleViewAsTable={() => setViewAsTable(!viewAsTable)}
+            onRemovePressed={() => onRemovePressed(id)}
+            onClonePressed={() => onClonePressed(id)}
+            onReportHelpButtonPressed={() => onReportHelpButtonPressed()}
             onGlobalParameterUpdate={onGlobalParameterUpdate}
             onSelectionUpdate={(selectable, field) => onSelectionUpdate(id, selectable, field)}
             onTitleUpdate={(title) => onTitleUpdate(id, title)}

@@ -1,14 +1,7 @@
 import React from 'react';
 import { IconButton, CleanIconButton } from '@neo4j-ndl/react';
-import {
-  ExpandIcon,
-  ShrinkIcon,
-  DragIcon,
-  QuestionMarkCircleIconOutline,
-  TrashIconOutline,
-  DocumentDuplicateIconOutline,
-  PlayCircleIconSolid,
-} from '@neo4j-ndl/react/icons';
+import { ExpandIcon, ShrinkIcon, DragIcon, PlayCircleIconSolid } from '@neo4j-ndl/react/icons';
+import { ReportActionsMenu, reportEditItems } from '../ReportActionsMenu';
 
 const NeoCardSettingsHeader = ({
   onRemovePressed,
@@ -36,15 +29,6 @@ const NeoCardSettingsHeader = ({
         <CleanIconButton description='Move report' size='medium' className='drag-handle'>
           <DragIcon aria-label={'Move Report'} />
         </CleanIconButton>
-        <CleanIconButton description='Help' onClick={onReportHelpButtonPressed} size='medium'>
-          <QuestionMarkCircleIconOutline aria-label={'Help'} />
-        </CleanIconButton>
-        <CleanIconButton description='Delete' variant='danger' onClick={onRemovePressed} size='medium'>
-          <TrashIconOutline aria-label={'Delete'} />
-        </CleanIconButton>
-        <CleanIconButton description='Clone' style={{ color: 'green' }} onClick={onClonePressed} size='medium'>
-          <DocumentDuplicateIconOutline aria-label={'Clone'} />
-        </CleanIconButton>
       </div>
       <div className='nd-card-bar-title' />
       <div className='nd-card-bar-actions'>
@@ -59,6 +43,8 @@ const NeoCardSettingsHeader = ({
         >
           <PlayCircleIconSolid />
         </CleanIconButton>
+        {/* Duplicate, help and delete, as in the report's menu on its front. */}
+        <ReportActionsMenu groups={[reportEditItems({ onClonePressed, onReportHelpButtonPressed, onRemovePressed })]} />
       </div>
     </div>
   );

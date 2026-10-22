@@ -5,7 +5,8 @@ import ReactMarkdown from 'react-markdown';
 import gfm from 'remark-gfm';
 import { replaceDashboardParameters } from '../../chart/ChartUtils';
 
-import { CleanIconButton, Menu } from '@neo4j-ndl/react';
+import { CleanIconButton } from '@neo4j-ndl/react';
+import { ReportActionsMenu, reportEditItems } from '../ReportActionsMenu';
 import { Dialog } from '../../component/dialog/Dialog';
 import {
   DragIcon,
@@ -14,7 +15,6 @@ import {
   ExpandIcon,
   ShrinkIcon,
   InformationCircleIconOutline,
-  EllipsisVerticalIconOutline,
   TableCellsIconOutline,
   PresentationChartBarIconOutline,
   PhotoIconOutline,
@@ -37,13 +37,15 @@ const NeoCardViewHeader = ({
   canViewAsTable = false,
   viewAsTable = false,
   onToggleViewAsTable = () => {},
+  onClonePressed = () => {},
+  onRemovePressed = () => {},
+  onReportHelpButtonPressed = () => {},
   parameters,
 }) => {
   const [text, setText] = React.useState(title);
   const [parsedText, setParsedText] = React.useState(title);
   const [editing, setEditing] = React.useState(false);
   const [descriptionModalOpen, setDescriptionModalOpen] = React.useState(false);
-  const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
 
   function replaceParamsOnString(s, p) {
     let parsed: string;
@@ -102,57 +104,29 @@ const NeoCardViewHeader = ({
 
   const descriptionEnabled = description && description.length > 0;
 
-  // The ⋮ menu: switching between the chart and a table of its results, downloading an image, and
-  // (for editors) the report's settings.
-  const closeMenuAnd = (action: () => void) => () => {
-    setMenuAnchor(null);
-    action();
-  };
-  const menuItems = [
-    canViewAsTable && (
-      <Menu.Item
-        key='table'
-        leadingVisual={viewAsTable ? <PresentationChartBarIconOutline /> : <TableCellsIconOutline />}
-        title={viewAsTable ? 'View as chart' : 'View as table'}
-        onClick={closeMenuAnd(onToggleViewAsTable)}
-      />
-    ),
-    downloadImageEnabled && (
-      <Menu.Item
-        key='image'
-        leadingVisual={<PhotoIconOutline />}
-        title='Download as image'
-        onClick={closeMenuAnd(onDownloadImage)}
-      />
-    ),
-    editable && (
-      <Menu.Item
-        key='settings'
-        leadingVisual={<Cog6ToothIconOutline />}
-        title='Settings'
-        onClick={closeMenuAnd(onToggleCardSettings)}
-      />
-    ),
-  ].filter(Boolean);
-
+  // The ⋮ menu: switching between the chart and a table of its results and downloading an image; for
+  // editors, the report's settings, then duplicating, help and deleting.
   const menuButton = (
-    <>
-      <CleanIconButton
-        description='Report actions'
-        onClick={(e) => setMenuAnchor(e.currentTarget)}
-        size='medium'
-        isActive={Boolean(menuAnchor)}
-      >
-        <EllipsisVerticalIconOutline />
-      </CleanIconButton>
-      <Menu
-        anchorRef={{ current: menuAnchor }}
-        isOpen={Boolean(menuAnchor)}
-        onClose={() => setMenuAnchor(null)}
-        placement='bottom-end-top-end'      >
-        <Menu.Items>{menuItems}</Menu.Items>
-      </Menu>
-    </>
+    <ReportActionsMenu
+      groups={[
+        [
+          canViewAsTable && {
+            key: 'table',
+            icon: viewAsTable ? <PresentationChartBarIconOutline /> : <TableCellsIconOutline />,
+            title: viewAsTable ? 'View as chart' : 'View as table',
+            onClick: onToggleViewAsTable,
+          },
+          downloadImageEnabled && {
+            key: 'image',
+            icon: <PhotoIconOutline />,
+            title: 'Download as image',
+            onClick: onDownloadImage,
+          },
+          editable && { key: 'settings', icon: <Cog6ToothIconOutline />, title: 'Settings', onClick: onToggleCardSettings },
+        ],
+        editable ? reportEditItems({ onClonePressed, onReportHelpButtonPressed, onRemovePressed }) : [],
+      ]}
+    />
   );
 
   const refreshButton = (
@@ -203,7 +177,7 @@ const NeoCardViewHeader = ({
           {expanded ? unMaximizeButton : maximizeButton}
           {descriptionEnabled ? descriptionButton : <></>}
           {refreshButtonEnabled ? refreshButton : <></>}
-          {menuItems.length > 0 ? menuButton : <></>}
+          {menuButton}
         </div>
       </div>
     </>

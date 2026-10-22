@@ -1,6 +1,17 @@
 // The report actions menu (⋮): view a chart's results as a table and back, settings for editors.
 import { test, expect } from '@playwright/test';
-import { SALES, SINK, card, expectNoErrors, openPage, reportMenu, trackErrors } from './helpers.mjs';
+import {
+  SALES,
+  SINK,
+  card,
+  deleteDashboard,
+  expectNoErrors,
+  getDashboard,
+  openPage,
+  putDashboard,
+  reportMenu,
+  trackErrors,
+} from './helpers.mjs';
 
 const BAR = 'Revenue by category and segment (grouped)';
 
@@ -35,6 +46,34 @@ test('tables and text reports offer no table view; editors get settings', async 
   await expectNoErrors(page, errors);
 });
 
+test('duplicate, help and delete are in the menu on both faces', async ({ page }) => {
+  const errors = trackErrors(page);
+  await page.goto('/');
+  const dash = await getDashboard(page, SALES);
+  const report = { ...dash.pages[0].reports.find((r) => r.type === 'value'), title: 'Menu me', x: 0, y: 0, width: 6, height: 3 };
+  const uuid = `dddd0000-0000-4000-8000-0000000me${test.info().project.name === 'dark' ? 'dd' : 'ee'}`.slice(0, 36);
+  await putDashboard(page, uuid, { ...dash, title: 'e2e menu', pages: [{ title: 'Menu', reports: [report] }] });
+  try {
+    await openPage(page, uuid);
+    const cards = page.locator('.nd-report-card');
+    await reportMenu(card(page, 'Menu me'), 'Duplicate');
+    await expect(cards).toHaveCount(2);
+
+    // The settings face has the same actions in its menu (and no longer as buttons in its top row).
+    const first = cards.first();
+    await reportMenu(first, 'Settings');
+    await expect(first.getByRole('button', { name: 'Delete' })).toHaveCount(0);
+    await reportMenu(first, 'Help');
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await reportMenu(first, 'Delete');
+    await expect(cards).toHaveCount(1);
+  } finally {
+    await deleteDashboard(page, uuid);
+  }
+  await expectNoErrors(page, errors);
+});
+
 test.describe('viewer', () => {
   test.use({ storageState: './.auth/viewer.json' });
 
@@ -45,6 +84,7 @@ test.describe('viewer', () => {
     await report.getByRole('button', { name: 'Report actions' }).click();
     await expect(page.getByRole('menuitem', { name: 'View as table' })).toBeVisible();
     await expect(page.getByRole('menuitem', { name: 'Settings' })).toHaveCount(0);
+    await expect(page.getByRole('menuitem', { name: 'Delete' })).toHaveCount(0);
     await page.getByRole('menuitem', { name: 'View as table' }).click();
     await expect(report.locator('.ndl-data-grid-root')).toBeVisible();
     // Text reports have no menu at all for viewers.
