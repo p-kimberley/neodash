@@ -11,7 +11,6 @@ import {
   getDashboard,
   openPage,
   putDashboard,
-  reportMenu,
   trackErrors,
 } from './helpers.mjs';
 

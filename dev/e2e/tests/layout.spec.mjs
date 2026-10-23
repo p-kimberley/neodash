@@ -1,6 +1,6 @@
 // Dialogs close on a click outside them; a card's top row is centred on one line on both faces.
 import { test, expect } from '@playwright/test';
-import { SALES, card, expectNoErrors, openPage, reportMenu, trackErrors, editReport } from './helpers.mjs';
+import { SALES, card, expectNoErrors, openPage, trackErrors, editReport } from './helpers.mjs';
 
 test('dialogs close on a click outside them, not on a drag out of them', async ({ page }) => {
   const errors = trackErrors(page);

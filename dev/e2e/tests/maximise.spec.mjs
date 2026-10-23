@@ -1,5 +1,14 @@
 import { test, expect } from '@playwright/test';
-import { SINK, card, expectNoErrors, getDashboard, largestVisual, openPage, reportMenu, trackErrors, editReport } from './helpers.mjs';
+import {
+  SINK,
+  card,
+  expectNoErrors,
+  getDashboard,
+  largestVisual,
+  openPage,
+  trackErrors,
+  editReport,
+} from './helpers.mjs';
 
 // Report types that draw a full-size visual; the rest (text, value, parameter selects) just need to show.
 const FILLS = [

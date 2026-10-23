@@ -1,6 +1,6 @@
 // Report settings editors: text fields that suggest field, label and property names.
 import { test, expect } from '@playwright/test';
-import { SALES, SINK, card, expectNoErrors, openPage, reportMenu, trackErrors, editReport } from './helpers.mjs';
+import { SALES, SINK, card, expectNoErrors, openPage, trackErrors, editReport } from './helpers.mjs';
 
 test('style rules: the field name suggests the report fields', async ({ page }) => {
   const errors = trackErrors(page);
