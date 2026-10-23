@@ -1,3 +1,41 @@
+## NeoDash 3.5.0 - Build with AI, clearer charts, reports drawn on the page
+Existing dashboards keep working: report types, settings and saved layouts are unchanged, except where noted under **Upgrading**. Chart 2.6.0.
+
+**Upgrading.**
+- Text2Cypher is now called **Build with AI** and is part of the app (no extension to turn on). Its settings are renamed: Helm `text2cypher.*` is now `ai.*` (`ai.enabled`, default `true`, turns it off while keeping the model settings), and the environment variables `TEXT2CYPHER_*` are now `AI_*`. The old names are still read for now (a new name wins) and the server logs a warning naming them; please move to the new ones.
+- The API endpoint `/api/text2cypher` is now `/api/ai/query`, `/api/config` reports `ai` instead of `text2cypher`, and the audit event `text2cypher` is now `ai.query` (new events: `ai.describe`, `ai.suggest`, `ai.build`).
+- Reports with no colour scheme, or the old default `set2`, use the new default colours; graphs and maps with no node colour scheme, or the old default `neodash`, do too. Any other chosen scheme keeps its colours.
+- The report's settings cog is replaced by an **Edit** (pencil) button and a **⋮** menu. In settings, Run is now **Save** (a tick), and the new **Cancel** (a cross) discards the changes.
+
+**Build with AI.** Editors can build or change whole reports from a description, when the server has a language model (any OpenAI-compatible API, such as vLLM or Anthropic's).
+- Empty reports show **Configure** and **Build with AI**; viewers see "No content yet". Build with AI first suggests up to three reports for the dashboard, then options for what you describe.
+- In a report's settings, **Change with AI** (beside Type and Database) changes the report as described.
+- Each option is a complete report (type, title, query, fields and settings), with a small preview drawn from its data, a plain description of what it creates and a note on any settings it sets; the first is recommended. Clicking one applies it, with Undo.
+- Options are asked for only with Enter or the sparkles button. The box starts one line high (Shift+Enter for a new line); while it works, a halo circles it and **Stop** (or Escape) cancels the request, on the server too.
+- Nothing the model writes is used until the server has checked it: the report type, fields and settings against what the dashboard allows, the query with `EXPLAIN` (read-only, known labels, relationship types and properties), and a short read-only trial run (rows, the right kind of values for each field, and what graphs, maps and Sankey diagrams need to draw). Problems go back to the model with the allowed values until it is right, up to four times (`AI_BUILD_MAX_ATTEMPTS`; trial runs stop after `AI_PROBE_TIMEOUT_SECONDS`, 5 by default).
+- The model sees the database schema, the dashboard's titles and queries, and the column names and value kinds of trial runs; query results are not sent to it.
+- The report editor keeps its **Cypher / English** switch for help with the query alone. AI-written Cypher is laid out one clause per line, and switching to English describes the current query.
+- Models that refuse `temperature` or `max_tokens` (such as some Claude models) work: the setting is left out and the request sent again.
+
+**Charts.**
+- A new default colour scheme with separate light and dark versions, checked for colour-blind separation and contrast against the card. Choropleths default to one blue ramp, gauges to status colours.
+- Quieter axes (muted labels, hairline grid, compact numbers such as 8M with full values in tooltips); thinner bars with rounded ends and gaps; lines with a crosshair tooltip; pie, sunburst and treemap slices with gaps and readable labels. Charts without custom margins fill their card.
+- Graph and map nodes use the new default colours; graph captions sit under their node and read in both appearances.
+
+**Reports.**
+- The ⋮ menu has **View as table** (a chart's results as a table, with CSV download; **View as chart** switches back), **Download as image**, and for editors **Duplicate**, **Help** and **Delete**.
+- Editors can draw a new report: press on empty space (or the Add report tile) and drag. The outline snaps to the grid and shows its size, and the page scrolls near the window's edge for tall reports. Escape cancels.
+- "Advanced settings" opens and closes like an accordion, instead of a switch that looked as if it turned the settings off.
+- "Set report actions" has its own icon (a clicking cursor) instead of the sparkles.
+
+**Fixes.**
+- The Color Scheme select shows scheme names again, not "[object Object]".
+- Menus opened from a maximised report, including the graph's right-click menu, show above it.
+
+**Documentation.** New page: Build with AI (replacing Text2Cypher). The reports, configuration and security pages describe the new menu, Edit, Save and Cancel, drawing reports and the `AI_*` settings.
+
+**Development.** The dev stack's stand-in model answers Build with AI (`dev/compose.fake-llm.yaml` switches the backend to it), and a real model's key can go in the git-ignored `dev/secrets/ai-api-key.txt`.
+
 ## NeoDash 3.4.0 - One design system, Text2Cypher on the server, documentation for the fork
 Existing dashboards keep working: report types, settings and saved layouts are unchanged, except where noted under **Upgrading**. Chart 2.5.0.
 
