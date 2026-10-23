@@ -76,7 +76,8 @@ describe.skipIf(!process.env.INTEGRATION)('Text2Cypher against Neo4j', () => {
     });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toMatchObject({
-      query: 'MATCH (m:Movie) RETURN m.title AS title LIMIT 5',
+      // Laid out one clause per line.
+      query: 'MATCH (m:Movie)\nRETURN m.title AS title\nLIMIT 5',
       attempts: 2,
       model: 'test-model',
     });

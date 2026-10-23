@@ -4,7 +4,7 @@ import type { Driver } from 'neo4j-driver';
 import { Text2Cypher } from '../src/text2cypher.js';
 import { BuildError, ReportBuilder, parseJson, type CypherChecks } from '../src/ai/builder.js';
 import type { Catalogue } from '../src/ai/catalogue.js';
-import { checkColumns, checkSettings, checkSpec, closest } from '../src/ai/validate.js';
+import { checkColumns, checkSettings, checkSpec, closest, type ProbeResult } from '../src/ai/validate.js';
 import { makeApp, testConfig } from './helpers.js';
 
 // Build with AI's report builder, with a scripted model and stubbed database checks.
@@ -537,7 +537,7 @@ describe('report types that draw nodes and relationships', () => {
   const node = (label: string, extra = {}) => ({ node: label, id: label, ...extra });
   /** Trial runs that return what the query's text says: suppliers and their SUPPLIES relationships, names, or cities. */
   const graphChecks = fakeChecks({
-    probe: async (_db, query) => {
+    probe: async (_db, query): Promise<ProbeResult> => {
       if (/RETURN s, r, p/.test(query)) {
         return {
           columns: ['s', 'r', 'p'],
