@@ -407,10 +407,11 @@ export const NeoTableChart = (props: ChartProps) => {
     if (!canSaveWidths || !visibleSpecs.some((c) => columnSizing[c.field] !== baseSizing[c.field])) {
       return;
     }
-    // One width per returned column, as the setting lists them (hidden columns keep theirs).
+    // One width per returned column, as the setting lists them (hidden columns keep theirs). In brackets,
+    // which builds before comma-separated lists were read also understand.
     const widths = columnSpecs.map((c) => Math.round(columnSizing[c.field] ?? (relativeWidths ? 100 : c.width)));
     props.updateReportSetting?.('columnWidthsType', 'Fixed (px)');
-    props.updateReportSetting?.('columnWidths', widths.join(', '));
+    props.updateReportSetting?.('columnWidths', `[${widths.join(', ')}]`);
   };
   const saveRef = React.useRef(saveWidths);
   saveRef.current = saveWidths;

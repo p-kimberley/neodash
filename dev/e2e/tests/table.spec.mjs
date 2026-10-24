@@ -319,7 +319,9 @@ test('table: dragging a column edge saves fixed widths', async ({ page }) => {
       await editReport(report);
       await report.getByText('Advanced settings').click();
       await expect(report.getByRole('combobox', { name: 'Column Widths Specification' })).toContainText('Fixed (px)');
-      await expect(report.getByRole('textbox', { name: 'Relative/Fixed Column Sizes' })).toHaveValue(after.join(', '));
+      await expect(report.getByRole('textbox', { name: 'Relative/Fixed Column Sizes' })).toHaveValue(
+        `[${after.join(', ')}]`
+      );
     }
   );
   await expectNoErrors(page, errors);
