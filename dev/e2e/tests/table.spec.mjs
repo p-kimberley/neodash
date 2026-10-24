@@ -4,6 +4,7 @@ import {
   SALES,
   card,
   deleteDashboard,
+  editReport,
   expectNoErrors,
   getDashboard,
   openPage,
@@ -289,6 +290,36 @@ test('table: wrapped content breaks between words and keeps the column widths', 
       );
       expect(cellWidths).toEqual([120, 80]);
       expect(await columnWidths(report)).toEqual([120, 80]);
+    }
+  );
+  await expectNoErrors(page, errors);
+});
+
+test('table: dragging a column edge saves fixed widths', async ({ page }) => {
+  const errors = trackErrors(page);
+  await withDashboard(
+    page,
+    'af',
+    [{ title: 'Drag', query: "RETURN 'one' AS first, 'two' AS second, 'three' AS third" }],
+    async () => {
+      const report = card(page, 'Drag');
+      const before = await columnWidths(report);
+      const resizer = report.getByRole('columnheader').nth(0).locator('.ndl-data-grid-resizer');
+      const box = await resizer.boundingBox();
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width / 2 + 30, box.y + box.height / 2, { steps: 5 });
+      await page.mouse.move(box.x + box.width / 2 + 60, box.y + box.height / 2, { steps: 5 });
+      await page.mouse.up();
+      const after = await columnWidths(report);
+      expect(Math.abs(after[0] - (before[0] + 60)), `${before} -> ${after}`).toBeLessThanOrEqual(2);
+      expect(after.slice(1)).toEqual(before.slice(1));
+
+      // The report now has fixed widths: the ones dragged to.
+      await editReport(report);
+      await report.getByText('Advanced settings').click();
+      await expect(report.getByRole('combobox', { name: 'Column Widths Specification' })).toContainText('Fixed (px)');
+      await expect(report.getByRole('textbox', { name: 'Relative/Fixed Column Sizes' })).toHaveValue(after.join(', '));
     }
   );
   await expectNoErrors(page, errors);

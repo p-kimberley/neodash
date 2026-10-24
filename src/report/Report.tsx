@@ -74,6 +74,7 @@ export const NeoReport = ({
   getCustomDispatcher = () => {},
   ChartType = NeoTableChart, // The report component to render with the query results.
   viewAsTable = false, // Whether to show the results as a table instead ("View as table").
+  editable = false, // Whether the dashboard can be edited (charts may then save changes made in them).
   prepopulateExtensionName,
   deletePrepopulationReportFunction,
   theme,
@@ -306,6 +307,7 @@ export const NeoReport = ({
           setGlobalParameter={setGlobalParameter}
           getGlobalParameter={getGlobalParameter}
           updateReportSetting={chartUpdateReportSetting}
+          editable={editable && !viewAsTable}
           fields={fields}
           setFields={setFields}
           theme={theme}
@@ -350,6 +352,7 @@ export const NeoReport = ({
           setGlobalParameter={setGlobalParameter}
           getGlobalParameter={getGlobalParameter}
           updateReportSetting={chartUpdateReportSetting}
+          editable={editable && !viewAsTable}
           fields={fields}
           setFields={setFields}
         />

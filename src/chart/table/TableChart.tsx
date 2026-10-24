@@ -392,7 +392,7 @@ export const NeoTableChart = (props: ChartProps) => {
   const baseSizing: ColumnSizingState = Object.fromEntries(visibleSpecs.map((c, i) => [c.field, visibleWidths[i]]));
 
   // Widths the user dragged (or set with the keyboard) apply until the width settings or the columns
-  // change.
+  // change; on an editable dashboard they are saved as the report's fixed widths, which then apply.
   const sizingKey = JSON.stringify([
     columnWidthsType,
     props.settings?.columnWidths ?? null,
@@ -401,6 +401,21 @@ export const NeoTableChart = (props: ChartProps) => {
   const [resized, setResized] = useState<{ key: string; sizing: ColumnSizingState } | null>(null);
   const columnSizing: ColumnSizingState =
     resized && resized.key === sizingKey ? { ...baseSizing, ...resized.sizing } : baseSizing;
+  const canSaveWidths = Boolean(props.editable && props.updateReportSetting);
+
+  const saveWidths = () => {
+    if (!canSaveWidths || !visibleSpecs.some((c) => columnSizing[c.field] !== baseSizing[c.field])) {
+      return;
+    }
+    // One width per returned column, as the setting lists them (hidden columns keep theirs).
+    const widths = columnSpecs.map((c) => Math.round(columnSizing[c.field] ?? (relativeWidths ? 100 : c.width)));
+    props.updateReportSetting?.('columnWidthsType', 'Fixed (px)');
+    props.updateReportSetting?.('columnWidths', widths.join(', '));
+  };
+  const saveRef = React.useRef(saveWidths);
+  saveRef.current = saveWidths;
+  const saveTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(saveTimer.current), []);
 
   const columns: ColumnDef<Row>[] = columnSpecs.map((spec) => {
     const { type, render } = columnRendering(spec.sample, actionableFields.includes(spec.header));
@@ -466,6 +481,11 @@ export const NeoTableChart = (props: ChartProps) => {
     onColumnSizingChange: (updater) => {
       const next = typeof updater === 'function' ? updater(columnSizing) : updater;
       setResized({ key: sizingKey, sizing: next });
+      // A drag is saved when it ends (below); a keyboard resize once the keys stop.
+      if (!table.getState().columnSizingInfo.isResizingColumn) {
+        clearTimeout(saveTimer.current);
+        saveTimer.current = setTimeout(() => saveRef.current(), 600);
+      }
     },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function' ? updater(pagination) : updater;
@@ -491,6 +511,17 @@ export const NeoTableChart = (props: ChartProps) => {
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
+
+  // Save the widths when a drag of a column's edge ends.
+  const resizingColumn = table.getState().columnSizingInfo.isResizingColumn;
+  const wasResizing = React.useRef(resizingColumn);
+  useEffect(() => {
+    if (wasResizing.current && !resizingColumn) {
+      clearTimeout(saveTimer.current);
+      saveRef.current();
+    }
+    wasResizing.current = resizingColumn;
+  }, [resizingColumn]);
 
   // Back to the first page when the data changes or a filter narrows the rows.
   useEffect(() => {
@@ -633,7 +664,9 @@ export const NeoTableChart = (props: ChartProps) => {
       <DataGrid
         className={scope}
         tableInstance={table}
-        isResizable={!relativeWidths}
+        // Designers can drag any column's edge (saving fixed widths); viewers only those of a fixed-width
+        // table, for as long as they look at it.
+        isResizable={canSaveWidths || !relativeWidths}
         isAutoResizingColumns={false}
         styling={{ isCompact: compact, borderStyle: 'horizontal', headerStyle: 'clean', hasHoverEffects: true }}
         components={components}

@@ -48,6 +48,7 @@ export const NeoReportWrapper = ({
   extensions,
   ChartType,
   viewAsTable = false,
+  editable = false,
 }) => {
   return (
     <ErrorBoundary resetTrigger={disabled}>
@@ -74,6 +75,7 @@ export const NeoReportWrapper = ({
         extensions={extensions}
         ChartType={ChartType}
         viewAsTable={viewAsTable}
+        editable={editable}
       />
     </ErrorBoundary>
   );

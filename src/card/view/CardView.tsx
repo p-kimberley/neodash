@@ -244,6 +244,7 @@ const NeoCardView = ({
           type={type}
           ChartType={reportTypes[type] && reportTypes[type].component}
           viewAsTable={tableView}
+          editable={editable}
           setGlobalParameter={onGlobalParameterUpdate}
           getGlobalParameter={getGlobalParameter}
           updateReportSetting={updateReportSetting}
