@@ -1,7 +1,8 @@
-import React, { useEffect, useId, useMemo, useState } from 'react';
+import React, { useEffect, useId, useLayoutEffect, useMemo, useState } from 'react';
 import {
   type ColumnDef,
   type ColumnFiltersState,
+  type ColumnSizingState,
   type RowSelectionState,
   type SortingState,
   getCoreRowModel,
@@ -65,6 +66,8 @@ const storePageSize = (reportId: string | undefined, configured: number, pageSiz
   }
 };
 const HIDDEN_COLUMN_PREFIX = '__';
+const MIN_COLUMN_WIDTH = 40;
+const SELECT_COLUMN_WIDTH = 48;
 
 /**
  * The column sizes setting as numbers: a comma-separated list ("2, 1, 1"), with or without brackets
@@ -83,6 +86,36 @@ export const parseColumnWidths = (text): (number | undefined)[] | null => {
     return Number.isFinite(width) && width > 0 ? width : undefined;
   });
   return widths.some((w) => w !== undefined) ? widths : null;
+};
+
+/**
+ * Shares `total` px between columns in proportion to their weights, giving no column less than `min`
+ * (those that would get less are set to `min` and the rest share what's left). Whole pixels that add
+ * up to `total`, unless the minimums alone don't fit.
+ */
+export const shareWidth = (total: number, weights: number[], min: number): number[] => {
+  const sizes = weights.map(() => min);
+  // Lightest first: if the lightest column's share reaches the minimum, all the others' do too. Lifting
+  // a column to the minimum leaves less for the rest, so the next lightest is checked again.
+  const free = weights.map((_, i) => i).sort((a, b) => weights[a] - weights[b]);
+  let remaining = total;
+  let weight = weights.reduce((sum, w) => sum + w, 0);
+  while (free.length > 0 && (remaining * weights[free[0]]) / weight < min) {
+    const lifted = free.shift() as number;
+    remaining -= min;
+    weight -= weights[lifted];
+  }
+  if (free.length === 0) {
+    return sizes;
+  }
+  free.sort((a, b) => a - b);
+  free.forEach((i) => (sizes[i] = Math.floor((remaining * weights[i]) / weight)));
+  // The pixels lost to rounding go to the first columns.
+  let left = remaining - free.reduce((sum, i) => sum + sizes[i], 0);
+  for (let k = 0; left > 0; k = (k + 1) % free.length, left--) {
+    sizes[free[k]] += 1;
+  }
+  return sizes;
 };
 const fallbackRenderer = (value) => {
   return JSON.stringify(value);
@@ -328,6 +361,47 @@ export const NeoTableChart = (props: ChartProps) => {
     checkboxes ? getCheckboxes(actionsRules, rows, props.getGlobalParameter).map((id) => [`${id}`, true]) : []
   );
 
+  // Column widths are worked out here rather than by the grid (whose sizing only follows a resize of
+  // the report). Relative widths share out the grid's width between the visible columns, so together
+  // they fill it; fixed widths are the pixels given. Measured from the grid's scrolling area, which
+  // leaves out a vertical scrollbar.
+  const wrapper = React.useRef<HTMLDivElement>(null);
+  const [gridWidth, setGridWidth] = useState(0);
+  useLayoutEffect(() => {
+    const scrollable = wrapper.current?.querySelector('.ndl-data-grid-scrollable');
+    if (!scrollable) {
+      return undefined;
+    }
+    setGridWidth(scrollable.clientWidth);
+    if (typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+    const observer = new ResizeObserver(([entry]) => setGridWidth(Math.floor(entry.contentRect.width)));
+    observer.observe(scrollable);
+    return () => observer.disconnect();
+  }, [hasData]);
+
+  const visibleSpecs = columnSpecs.filter((c) => !c.field.startsWith(HIDDEN_COLUMN_PREFIX));
+  const visibleWidths = relativeWidths
+    ? shareWidth(
+        Math.max(0, gridWidth - (checkboxes ? SELECT_COLUMN_WIDTH : 0)),
+        visibleSpecs.map((c) => c.width),
+        MIN_COLUMN_WIDTH
+      )
+    : visibleSpecs.map((c) => Math.max(MIN_COLUMN_WIDTH, Math.round(c.width)));
+  const baseSizing: ColumnSizingState = Object.fromEntries(visibleSpecs.map((c, i) => [c.field, visibleWidths[i]]));
+
+  // Widths the user dragged (or set with the keyboard) apply until the width settings or the columns
+  // change.
+  const sizingKey = JSON.stringify([
+    columnWidthsType,
+    props.settings?.columnWidths ?? null,
+    visibleSpecs.map((c) => c.field),
+  ]);
+  const [resized, setResized] = useState<{ key: string; sizing: ColumnSizingState } | null>(null);
+  const columnSizing: ColumnSizingState =
+    resized && resized.key === sizingKey ? { ...baseSizing, ...resized.sizing } : baseSizing;
+
   const columns: ColumnDef<Row>[] = columnSpecs.map((spec) => {
     const { type, render } = columnRendering(spec.sample, actionableFields.includes(spec.header));
     return {
@@ -335,9 +409,8 @@ export const NeoTableChart = (props: ChartProps) => {
       accessorFn: (row) => row[spec.field],
       header: spec.header,
       cell: (info) => <span className='nd-table-cell-value'>{render(info.getValue())}</span>,
-      // Relative widths are weights (the grid shares out the width in proportion); fixed ones are px.
-      size: relativeWidths ? Math.max(1, Number(spec.width) || 1) * 100 : Math.max(40, Number(spec.width) || 100),
-      minSize: relativeWidths ? 1 : 40,
+      size: baseSizing[spec.field] ?? MIN_COLUMN_WIDTH,
+      minSize: MIN_COLUMN_WIDTH,
       sortingFn: (a, b, id) => compareValues(a.getValue(id), b.getValue(id)),
       filterFn: (row, id, text) => filterText(row.getValue(id)).toLowerCase().includes(`${text}`.toLowerCase()),
       meta: {
@@ -377,9 +450,10 @@ export const NeoTableChart = (props: ChartProps) => {
         onChange={row.getToggleSelectedHandler()}
       />
     ),
-    size: 48,
-    minSize: 48,
-    maxSize: 48,
+    size: SELECT_COLUMN_WIDTH,
+    minSize: SELECT_COLUMN_WIDTH,
+    maxSize: SELECT_COLUMN_WIDTH,
+    enableResizing: false,
     enableSorting: false,
     enableColumnFilter: false,
   };
@@ -388,7 +462,11 @@ export const NeoTableChart = (props: ChartProps) => {
     data: rows,
     columns: checkboxes ? [selectColumn, ...columns] : columns,
     getRowId: (row) => `${row.id}`,
-    state: { pagination, sorting, columnFilters, columnVisibility, rowSelection },
+    state: { pagination, sorting, columnFilters, columnVisibility, rowSelection, columnSizing },
+    onColumnSizingChange: (updater) => {
+      const next = typeof updater === 'function' ? updater(columnSizing) : updater;
+      setResized({ key: sizingKey, sizing: next });
+    },
     onPaginationChange: (updater) => {
       const next = typeof updater === 'function' ? updater(pagination) : updater;
       if (next.pageSize !== pagination.pageSize) {
@@ -550,13 +628,13 @@ export const NeoTableChart = (props: ChartProps) => {
   const filterValue = filterOpen ? ((table.getColumn(filterOpen.column)?.getFilterValue() as string) ?? '') : '';
 
   return (
-    <div className={`nd-table ${wrapContent ? 'nd-table-wrap' : 'nd-table-nowrap'}`}>
+    <div ref={wrapper} className={`nd-table ${wrapContent ? 'nd-table-wrap' : 'nd-table-nowrap'}`}>
       {ruleCss ? <style>{ruleCss}</style> : <></>}
       <DataGrid
         className={scope}
         tableInstance={table}
         isResizable={!relativeWidths}
-        isAutoResizingColumns={relativeWidths}
+        isAutoResizingColumns={false}
         styling={{ isCompact: compact, borderStyle: 'horizontal', headerStyle: 'clean', hasHoverEffects: true }}
         components={components}
       />

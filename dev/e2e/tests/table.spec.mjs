@@ -198,3 +198,51 @@ test('table: transposed and fixed-width tables', async ({ page }) => {
   );
   await expectNoErrors(page, errors);
 });
+
+/** Rounded widths of a table's column headers, and the width of its grid's scrolling area. */
+const columnWidths = (report) =>
+  report.getByRole('columnheader').evaluateAll((hs) => hs.map((h) => Math.round(h.getBoundingClientRect().width)));
+const gridWidth = (report) => report.locator('.ndl-data-grid-scrollable').evaluate((s) => s.clientWidth);
+const sum = (xs) => xs.reduce((a, b) => a + b, 0);
+
+test('table: relative, percentage, default and fixed column widths', async ({ page }) => {
+  const errors = trackErrors(page);
+  await withDashboard(
+    page,
+    'ad',
+    [
+      // Comma-separated, as the setting is described; the hidden column takes no width.
+      {
+        title: 'Relative',
+        query: "RETURN 'a' AS a, 'b' AS b, 'c' AS c, 1 AS __h",
+        settings: { columnWidths: '2, 1, 1' },
+      },
+      { title: 'Percent', query: "RETURN 'a' AS a, 'b' AS b, 'c' AS c", settings: { columnWidths: '50%, 25%, 25%' } },
+      { title: 'Default', query: 'RETURN 1 AS x, 2 AS y, 3 AS __hidden' },
+      {
+        title: 'Fixed',
+        query: "RETURN 'left' AS l, 'right' AS r",
+        settings: { columnWidthsType: 'Fixed (px)', columnWidths: '150px, 300' },
+      },
+    ],
+    async () => {
+      for (const title of ['Relative', 'Percent']) {
+        const report = card(page, title);
+        const widths = await columnWidths(report);
+        expect(widths, title).toHaveLength(3);
+        // 2 : 1 : 1, filling the grid.
+        expect(Math.abs(widths[0] - 2 * widths[1]), `${title} ${widths}`).toBeLessThanOrEqual(2);
+        expect(Math.abs(widths[1] - widths[2]), `${title} ${widths}`).toBeLessThanOrEqual(1);
+        expect(sum(widths), title).toBe(await gridWidth(report));
+      }
+      // By default the visible columns share the whole width equally.
+      const defaults = card(page, 'Default');
+      const widths = await columnWidths(defaults);
+      expect(widths).toHaveLength(2);
+      expect(Math.abs(widths[0] - widths[1])).toBeLessThanOrEqual(1);
+      expect(sum(widths)).toBe(await gridWidth(defaults));
+      expect(await columnWidths(card(page, 'Fixed'))).toEqual([150, 300]);
+    }
+  );
+  await expectNoErrors(page, errors);
+});
