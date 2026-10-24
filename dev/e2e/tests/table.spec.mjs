@@ -246,3 +246,50 @@ test('table: relative, percentage, default and fixed column widths', async ({ pa
   );
   await expectNoErrors(page, errors);
 });
+
+test('table: wrapped content breaks between words and keeps the column widths', async ({ page }) => {
+  const errors = trackErrors(page);
+  await withDashboard(
+    page,
+    'ae',
+    [
+      {
+        title: 'Wrapped',
+        query:
+          "RETURN 'alpha bravo charlie delta echo foxtrot golf' AS words, 'supercalifragilisticexpialidocious' AS long",
+        settings: { wrapContent: true, columnWidthsType: 'Fixed (px)', columnWidths: '120, 80' },
+      },
+    ],
+    async () => {
+      const report = card(page, 'Wrapped');
+      const cells = report.locator('.ndl-data-grid-tbody .ndl-data-grid-td');
+      // The text wraps onto several lines, and no word is split across two.
+      const lines = await cells.first().evaluate((td) => {
+        const text = td.querySelector('.nd-table-cell-value');
+        const walker = document.createTreeWalker(text, NodeFilter.SHOW_TEXT);
+        const node = walker.nextNode();
+        const result = { tops: new Set(), split: [] };
+        for (const match of node.textContent.matchAll(/\S+/g)) {
+          const range = document.createRange();
+          range.setStart(node, match.index);
+          range.setEnd(node, match.index + match[0].length);
+          const rects = [...range.getClientRects()].filter((r) => r.width > 0);
+          if (rects.length !== 1) {
+            result.split.push(match[0]);
+          }
+          rects.forEach((r) => result.tops.add(Math.round(r.top)));
+        }
+        return { lines: result.tops.size, split: result.split };
+      });
+      expect(lines.split).toEqual([]);
+      expect(lines.lines).toBeGreaterThan(1);
+      // A word longer than its column is broken rather than widening the cell.
+      const cellWidths = await cells.evaluateAll((tds) =>
+        tds.map((td) => Math.round(td.getBoundingClientRect().width))
+      );
+      expect(cellWidths).toEqual([120, 80]);
+      expect(await columnWidths(report)).toEqual([120, 80]);
+    }
+  );
+  await expectNoErrors(page, errors);
+});

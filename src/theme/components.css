@@ -1620,8 +1620,15 @@ body:has(.nd-maximised) .ndl-menu {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Wrapping happens between words; a word longer than the column is broken only as a last resort. The
+   cells don't grow to fit a long word, so they keep their column's width. */
 .nd-table-wrap .ndl-data-grid-root .ndl-div-table .ndl-data-grid-td {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
+  min-width: 0;
+}
+.nd-table-wrap .nd-table-cell-value {
+  min-width: 0;
 }
 
 /* Numbers line up on the right, as in a spreadsheet. */

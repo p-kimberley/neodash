@@ -50,7 +50,7 @@ from Neo4j will be shown as a column instead of a row.
 
 |Compact Table |on/off |off |When activated, shows the rows at a smaller height (32px).
 
-|Wrap overflowing content |on/off |off |When activated, long values wrap onto several lines. Otherwise each row is one line high and long values end in an ellipsis.
+|Wrap overflowing content |on/off |off |When activated, long values wrap onto several lines, between words where possible (a word longer than the column is broken). Otherwise each row is one line high and long values end in an ellipsis.
 
 |Column Widths Specification |Relative (%) / Fixed (px) |Relative (%) |How *Relative/Fixed Column Sizes* is read: as relative weights, or as widths in pixels. Relative widths always fill the table's width. Columns with fixed widths can also be resized by dragging the edge of their header.
 
