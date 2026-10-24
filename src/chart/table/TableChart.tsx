@@ -65,6 +65,25 @@ const storePageSize = (reportId: string | undefined, configured: number, pageSiz
   }
 };
 const HIDDEN_COLUMN_PREFIX = '__';
+
+/**
+ * The column sizes setting as numbers: a comma-separated list ("2, 1, 1"), with or without brackets
+ * ("[2, 1, 1]", as older dashboards store it), tolerating units ("30%", "150px"). Unreadable or
+ * non-positive entries are left out (undefined), so those columns get the default width.
+ */
+export const parseColumnWidths = (text): (number | undefined)[] | null => {
+  if (text === undefined || text === null) {
+    return null;
+  }
+  const parts = (Array.isArray(text) ? text.map(String) : String(text).replace(/[[\]]/g, '').split(/[,;]/)).map((p) =>
+    p.trim()
+  );
+  const widths = parts.map((p) => {
+    const width = parseFloat(p);
+    return Number.isFinite(width) && width > 0 ? width : undefined;
+  });
+  return widths.some((w) => w !== undefined) ? widths : null;
+};
 const fallbackRenderer = (value) => {
   return JSON.stringify(value);
 };
@@ -207,12 +226,9 @@ export const NeoTableChart = (props: ChartProps) => {
   const columnWidthsType =
     props.settings && props.settings.columnWidthsType ? props.settings.columnWidthsType : 'Relative (%)';
   const relativeWidths = columnWidthsType == 'Relative (%)';
-  let columnWidths = null;
-  try {
-    columnWidths = props.settings && props.settings.columnWidths && JSON.parse(props.settings.columnWidths);
-  } catch (e) {
-    // do nothing
-  }
+  const columnWidths = parseColumnWidths(props.settings?.columnWidths);
+  const defaultWidth = relativeWidths ? 1 : 100;
+  const widthAt = (i: number) => (columnWidths && columnWidths[i]) || defaultWidth;
 
   const { records } = props;
   const hasData = !(records == null || records.length == 0 || records[0].keys == null);
@@ -227,13 +243,13 @@ export const NeoTableChart = (props: ChartProps) => {
           field: generateSafeColumnKey(`${String(key)}_${i}`),
           header: generateSafeColumnKey(key),
           sample: key,
-          width: columnWidths && i < columnWidths.length ? columnWidths[i] : relativeWidths ? 1 : 100,
+          width: widthAt(i),
         }))
       : records[0].keys.map((key, i) => ({
           field: generateSafeColumnKey(key),
           header: generateSafeColumnKey(key),
           sample: records[0].get(key),
-          width: columnWidths && i < columnWidths.length ? columnWidths[i] : relativeWidths ? 1 : 100,
+          width: widthAt(i),
         }));
 
   // Rows per page: the report's setting (default 25), unless this browser picked another size for this

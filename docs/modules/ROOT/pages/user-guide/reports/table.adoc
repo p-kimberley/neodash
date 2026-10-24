@@ -54,9 +54,9 @@ from Neo4j will be shown as a column instead of a row.
 
 |Column Widths Specification |Relative (%) / Fixed (px) |Relative (%) |How *Relative/Fixed Column Sizes* is read: as relative weights, or as widths in pixels. Columns with fixed widths can also be resized by dragging the edge of their header.
 
-|Relative/Fixed Column Sizes |List of numbers |[1, 1, 1, …] |The width of each of the columns in the table. With relative widths, if the
+|Relative/Fixed Column Sizes |List of numbers |1, 1, 1, … |The width of each column, as a comma-separated list in the order the query returns them (hidden `__` columns included). With relative widths, if the
 first column should be twice the width of the 2nd and 3rd, this will be
-set to `[2, 1, 1]`. With fixed widths, the numbers are pixels, e.g. `[200, 100, 100]`.
+set to `2, 1, 1` (percentages such as `50%, 25%, 25%` work the same way). With fixed widths, the numbers are pixels, e.g. `200, 100, 100`. Brackets are optional (`[2, 1, 1]` also works), and columns left out get the default width. A fixed width is at least 40px.
 
 |Enable CSV Download |on/off |off |When activated, displays a button in
 the table footer. This button lets the user download

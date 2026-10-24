@@ -65,7 +65,7 @@ const _REPORT_TYPES = {
       columnWidths: {
         label: 'Relative/Fixed Column Sizes',
         type: SELECTION_TYPES.TEXT,
-        default: '[1, 1, 1, ...]',
+        default: '1, 1, 1, ...',
       },
       allowDownload: {
         label: 'Enable CSV Download',
