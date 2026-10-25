@@ -61,3 +61,37 @@ test("a card's top row is centred on one line, at the same height on both faces"
   expect(Math.max(...settings) - Math.min(...settings)).toBeLessThanOrEqual(1);
   expect(Math.abs(settings[0] - view[0])).toBeLessThanOrEqual(1);
 });
+
+test('open settings fill the card: no taller than the report, and longer settings scroll inside', async ({ page }) => {
+  const errors = trackErrors(page);
+  await openPage(page, SALES);
+  const report = card(page, 'Monthly revenue');
+  /** The card's height, the shown face's height, and its scrolling area (client and content heights). */
+  const sizes = () =>
+    report.evaluate((c) => {
+      const face = c.querySelector('.nd-card-face.is-shown');
+      const scroller = face.querySelector('.card-view') ?? face;
+      return {
+        card: Math.round(c.getBoundingClientRect().height),
+        face: Math.round(face.getBoundingClientRect().height),
+        client: scroller.clientHeight,
+        content: scroller.scrollHeight,
+      };
+    });
+  const shown = await sizes();
+
+  await editReport(report);
+  await expect(report.getByRole('button', { name: 'Save' })).toBeVisible();
+  const settings = await sizes();
+  expect(settings.card).toBe(shown.card);
+  expect(settings.face, JSON.stringify({ shown, settings })).toBe(shown.face);
+
+  // With the advanced settings open there is more than fits: it scrolls inside the card.
+  await report.getByText('Advanced settings').click();
+  await expect(report.locator('.nd-card-face.is-shown').getByText('Background Color').first()).toBeAttached();
+  const advanced = await sizes();
+  expect(advanced.face).toBe(shown.face);
+  expect(advanced.content).toBeGreaterThan(advanced.client);
+  await report.getByRole('button', { name: 'Cancel' }).click();
+  await expectNoErrors(page, errors);
+});

@@ -36,7 +36,9 @@ const NeoCardSettings = ({
   expanded,
   onToggleCardExpand,
 }) => {
-  const reportHeight = heightPx - CARD_HEADER_HEIGHT + 19;
+  // The settings fill the card below the header exactly (the 8px offsets the container being pulled up
+  // by -n-mt-2); anything taller scrolls inside the card.
+  const reportHeight = heightPx - CARD_HEADER_HEIGHT + 8;
 
   const cardSettingsHeader = (
     <NeoCardSettingsHeader

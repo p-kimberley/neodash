@@ -169,7 +169,7 @@ const NeoCard = ({
         </div>
       </div>
       {/* The back of the card, referred to as the 'settings' */}
-      <div className={`nd-card-face ${settingsOpen ? 'is-shown' : 'is-hidden'}`} aria-hidden={!settingsOpen}>
+      <div className={`nd-card-face n-h-full ${settingsOpen ? 'is-shown' : 'is-hidden'}`} aria-hidden={!settingsOpen}>
         <div className='nd-card-surface n-h-full'>
           <NeoCardSettings
             closingSettings={closingSettings}
