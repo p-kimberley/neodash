@@ -191,7 +191,8 @@ export const NeoReport = ({
         type,
         extensions,
         (result) => {
-          executeQuery(result);
+          // Without a question to translate, the query it has.
+          executeQuery(result ?? query);
         }
       );
       deletePrepopulationReportFunction(id);

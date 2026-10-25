@@ -61,6 +61,44 @@ test('build with AI: a question in English becomes a checked query that runs', a
   await expectNoErrors(page, errors);
 });
 
+test('build with AI: a question saved without Translate is translated when the report runs', async ({ page }) => {
+  const errors = trackErrors(page);
+  await page.goto('/');
+  const config = await (await page.request.get('/api/config')).json();
+  test.skip(!config.ai?.enabled, 'the backend has no language model configured');
+
+  const dash = await getDashboard(page, SALES);
+  const report = { ...dash.pages[0].reports[0], title: 'Unsent', type: 'table', query: 'RETURN 1 AS placeholder' };
+  const uuid = `dddd0000-0000-4000-8000-0000000t2u${test.info().project.name === 'dark' ? 'dd' : 'ee'}`.slice(0, 36);
+  await putDashboard(page, uuid, {
+    ...dash,
+    title: 'e2e build with ai unsent',
+    pages: [{ title: 'Ask', reports: [{ ...report, x: 0, y: 0, width: 12, height: 5 }] }],
+    extensions: {},
+  });
+  try {
+    await openPage(page, uuid);
+    const unsent = card(page, 'Unsent');
+    await editReport(unsent);
+    await unsent.getByRole('switch', { name: 'Write the query in English' }).click();
+    const english = unsent.locator('.cm-content').first();
+    await expect(english).toContainText('How many nodes have each label', { timeout: 30_000 });
+    await english.click();
+    await page.keyboard.press('ControlOrMeta+a');
+    await page.keyboard.type('Which movies came out most recently?');
+    await page.waitForTimeout(500);
+    // Saved without pressing Translate: the question is translated as the report runs.
+    await unsent.getByRole('button', { name: 'Save' }).first().click();
+    await expect(unsent.getByRole('columnheader', { name: /title/ })).toBeVisible({ timeout: 30_000 });
+    await editReport(unsent);
+    await expect(unsent.locator('.cm-content').first()).toContainText('MATCH (m:Movie)');
+    await unsent.getByRole('button', { name: 'Cancel' }).click();
+  } finally {
+    await deleteDashboard(page, uuid);
+  }
+  await expectNoErrors(page, errors);
+});
+
 test('build with AI is part of the app, not an extension', async ({ page }) => {
   await page.goto('/');
   const config = await (await page.request.get('/api/config')).json();
