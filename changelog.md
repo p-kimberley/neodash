@@ -1,3 +1,25 @@
+## NeoDash 3.6.0 - Table column widths that apply, Markdown filled from a Cypher query
+Existing dashboards keep working: report types, settings and saved layouts are unchanged. Chart 2.7.0.
+
+**Tables.**
+- *Relative/Fixed Column Sizes* takes a comma-separated list, as described: `2, 1, 1`, `50%, 25%, 25%` or `150px, 300`. Brackets are optional, so saved `[2, 1, 1]` values read as before. Before, anything but a bracketed list was silently ignored and every column got the default width.
+- Column widths now apply straight away and keep applying: changing the widths, switching between Relative and Fixed, or a query returning other columns no longer leaves the old widths in place until the report is resized.
+- Relative widths (and the default) fill the table's whole width; hidden `__` columns no longer take a share of it.
+- *Wrap overflowing content* breaks lines between words; a word longer than its column is broken only as a last resort, and no longer widens its cell.
+- While editing a dashboard, drag the edge of a column's header to resize it: the report switches to *Fixed (px)* and saves the widths, e.g. `[208, 150, 150]` (a form older versions read too). Viewers can still drag the columns of fixed-width tables, without saving.
+
+**Markdown reports.** A Markdown report can have a Cypher query, written above the Markdown where other reports have theirs.
+- The query's first row fills `{{column}}` placeholders in the Markdown; `{{column.property}}` reads a property of a node or map, and lists show comma-separated. A placeholder naming no column is left as written; with no rows, placeholders are left empty.
+- The query takes dashboard parameters and runs again when they change. Viewers see the filled-in text: the server runs the query saved in the dashboard, as for any report.
+- The *Cypher / English* switch and *Translate* work on the query, never the Markdown.
+- Saved as a new `cypherQuery` report setting; the Markdown stays where it was, so reports without a query are unchanged, and older versions show the placeholders as written.
+
+**Fixes.**
+- A report's settings no longer run past the bottom of its card (by 11px, or much more with Advanced settings open); longer settings scroll inside the card.
+- A question written in English and saved without pressing Translate is translated when the report runs, instead of the report staying on "Writing the query..." for good.
+
+**Documentation.** The Markdown report page covers filling the Markdown from a query; the table page describes the column width formats and dragging.
+
 ## NeoDash 3.5.0 - Build with AI, clearer charts, reports drawn on the page
 Existing dashboards keep working: report types, settings and saved layouts are unchanged, except where noted under **Upgrading**. Chart 2.6.0.
 
