@@ -1,9 +1,10 @@
-# Points the backend at the stand-in model (fake-llm), e.g. for the browser tests, when dev/compose.yaml
-# has been set to a real one:
+# Points the backend at the stand-in model (fake-llm) whatever dev/.env or the shell sets, e.g. for the
+# browser tests:
 #   docker compose -f dev/compose.yaml -f dev/compose.fake-llm.yaml up -d backend
-# Without this file, `docker compose -f dev/compose.yaml up -d backend` goes back to dev/compose.yaml's model.
+# Without this file, `docker compose -f dev/compose.yaml up -d backend` goes back to the model dev/.env sets.
 services:
   backend:
     environment:
       AI_BASE_URL: http://fake-llm:8000/v1
       AI_MODEL: fake-cypher
+      AI_API_KEY: ''

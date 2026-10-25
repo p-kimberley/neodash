@@ -52,6 +52,20 @@ http://localhost:5005/?share&type=database&id=<uuid>&dashboardDatabase=neo4j&cre
 (Putting credentials in a URL is one of the legacy behaviours the rebuild removes; it is fine for a
 local dev database.)
 
+### Build with AI
+
+By default the backend uses `fake-llm`, a stand-in that answers with fixed queries for the seed
+data. To try a real OpenAI-compatible model, copy [`.env.example`](.env.example) to `dev/.env`
+(git-ignored), set `AI_BASE_URL`, `AI_MODEL` and `AI_API_KEY`, and recreate the backend with
+`docker compose -f dev/compose.yaml up -d backend`. Values exported in the shell override the file.
+
+The browser tests expect the stand-in. Add `-f dev/compose.fake-llm.yaml` to use it whatever
+`dev/.env` says, then leave it out again to go back to your model:
+
+```sh
+docker compose -f dev/compose.yaml -f dev/compose.fake-llm.yaml up -d backend
+```
+
 ## Test users (Keycloak realm `neodash`)
 
 All passwords are `password`.

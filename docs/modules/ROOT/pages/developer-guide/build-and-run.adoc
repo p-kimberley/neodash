@@ -17,7 +17,7 @@ docker compose -f dev/compose.yaml up -d --build
 |`neo4j` |http://localhost:7474, `bolt://localhost:7687` |Neo4j 5 Community with APOC. User `neo4j`, password `devpassword`.
 |`keycloak` |http://localhost:8080 |Realm `neodash` with the test users below. Admin console: `admin` / `admin`.
 |`backend` |http://localhost:3000 |NeoDash itself: the image built from this repository (UI and backend).
-|`fake-llm` |– |A stand-in for an OpenAI-compatible model, so Build with AI works locally.
+|`fake-llm` |– |A stand-in for an OpenAI-compatible model, so Build with AI works locally. To use a real model, set `AI_BASE_URL`, `AI_MODEL` and `AI_API_KEY` in `dev/.env` (see `dev/.env.example`) or in the shell.
 |`seed` |– |A one-off job that loads the sample data and example dashboards, then checks every report query.
 |`neodash-legacy` |http://localhost:5005 |Unchanged NeoDash 2.4.11, for comparison.
 |===

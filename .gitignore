@@ -39,5 +39,5 @@ jspm_packages
 # Sentry Auth Token
 .env.sentry-build-plugin
 
-# A real language model API key for the dev stack (Build with AI)
-dev/secrets/ai-api-key.txt
+# A real language model and its API key for the dev stack (Build with AI)
+dev/.env

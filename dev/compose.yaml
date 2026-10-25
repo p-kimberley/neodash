@@ -95,9 +95,11 @@ services:
       OIDC_CLIENT_SECRET_FILE: /run/secrets/oidc_client_secret
       OIDC_ALLOW_INSECURE_HTTP: 'true'
       SESSION_SECRET_FILE: /run/secrets/session_secret
-      # Build with AI with the stand-in model below; point these at a real one (e.g. vLLM) to try it.
-      AI_BASE_URL: http://fake-llm:8000/v1
-      AI_MODEL: fake-cypher
+      # Build with AI uses the stand-in model below unless these are set in the shell or in the
+      # git-ignored dev/.env (see dev/.env.example), e.g. to try a real OpenAI-compatible model.
+      AI_BASE_URL: ${AI_BASE_URL:-http://fake-llm:8000/v1}
+      AI_MODEL: ${AI_MODEL:-fake-cypher}
+      AI_API_KEY: ${AI_API_KEY:-}
     secrets:
       - neo4j_auth
       - session_secret
