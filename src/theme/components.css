@@ -1571,6 +1571,14 @@ body:has(.nd-maximised) .ndl-menu {
   margin-right: 0;
 }
 
+/* A Markdown report's Markdown, under its Cypher query. */
+.nd-markdown-label {
+  margin: 16px 0 6px;
+  font-size: var(--nd-text-sm);
+  font-weight: 600;
+  color: var(--nd-text-secondary);
+}
+
 /* Suggestions under a text field (SuggestInput). */
 .nd-suggest-list {
   min-width: 200px;

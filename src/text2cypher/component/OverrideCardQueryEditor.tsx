@@ -41,6 +41,11 @@ export const NeoOverrideCardQueryEditor = ({
   deletePrepopulationReportFunction,
   history = [],
   database,
+  // For a query that isn't the report's own (a Markdown report's Cypher query): its editor's language,
+  // placeholder and the text under it.
+  language: editorLanguage = undefined as string | undefined,
+  placeholder = 'Enter Cypher here...',
+  helperText = undefined as React.ReactNode,
 }) => {
   enum Language {
     ENGLISH,
@@ -64,14 +69,15 @@ export const NeoOverrideCardQueryEditor = ({
   }, [lastMessage]);
 
   const reportTypes = getReportTypes(extensions);
+  const helper = helperText ?? reportTypes[reportType]?.helperText;
 
   const cypherEditor = (
     <NeoCodeEditorComponent
       value={cypherQuery}
       editable={true}
-      language={reportTypes[reportType]?.inputMode || 'cypher'}
+      language={editorLanguage || reportTypes[reportType]?.inputMode || 'cypher'}
       onChange={(value) => updateCypherQuery(value)}
-      placeholder={`Enter Cypher here...`}
+      placeholder={placeholder}
     />
   );
 
@@ -80,7 +86,7 @@ export const NeoOverrideCardQueryEditor = ({
     return (
       <div>
         {cypherEditor}
-        <div style={DEFAULT_CARD_SETTINGS_HELPER_TEXT_STYLE}>{reportTypes[reportType]?.helperText}</div>
+        <div style={DEFAULT_CARD_SETTINGS_HELPER_TEXT_STYLE}>{helper}</div>
       </div>
     );
   }
@@ -240,17 +246,13 @@ export const NeoOverrideCardQueryEditor = ({
             {language == Language.ENGLISH ? (
               <>
                 For best results, use a descriptive question. See also the{' '}
-                <a
-                  target='_blank'
-                  style={{ textDecoration: 'underline' }}
-                  href={docsUrl('user-guide/build-with-ai')}
-                >
+                <a target='_blank' style={{ textDecoration: 'underline' }} href={docsUrl('user-guide/build-with-ai')}>
                   documentation
                 </a>
                 .
               </>
             ) : (
-              reportTypes[reportType]?.helperText
+              helper
             )}
           </div>
         </>

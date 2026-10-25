@@ -7,6 +7,7 @@
 //   Cypher it has stored. A query that is not part of the dashboard is refused for viewers.
 
 import { api, ApiError, isEditor, session as apiSession } from './client';
+import { savedCypherOf } from '../chart/markdown/MarkdownQuery';
 
 export interface DashboardLookup {
   /** The dashboard currently open in the UI (Redux state). */
@@ -25,13 +26,16 @@ interface ReportMatch {
   index: number;
 }
 
-/** Finds the report whose saved query is exactly this one, preferring the current page. */
+/**
+ * Finds the report whose saved Cypher is exactly this one (for a Markdown report, its Cypher query
+ * setting), preferring the current page.
+ */
 function findReportByQuery(dashboard: any, query: string): ReportMatch | null {
   const pages: any[] = dashboard?.pages ?? [];
   const current = dashboard?.settings?.pagenumber ?? 0;
   const order = [current, ...pages.keys()].filter((p, i, all) => p < pages.length && all.indexOf(p) === i);
   for (const page of order) {
-    const index = (pages[page]?.reports ?? []).findIndex((r: any) => r?.query === query);
+    const index = (pages[page]?.reports ?? []).findIndex((r: any) => savedCypherOf(r) === query);
     if (index >= 0) {
       return { id: pages[page].reports[index].id, page, index };
     }

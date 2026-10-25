@@ -17,6 +17,7 @@ import { REPORT_TYPES } from '../../config/ReportConfig';
 import { EmptyReport, isUnconfigured } from './EmptyReport';
 import { AiBuilderPanel } from '../../ai/AiBuilderPanel';
 import { text2cypherAvailable } from '../../text2cypher/util/Util';
+import { MARKDOWN_QUERY_SETTING } from '../../chart/markdown/MarkdownQuery';
 
 const NeoCardView = ({
   id,
@@ -158,7 +159,13 @@ const NeoCardView = ({
     <></>
   );
 
-  const localParameters = { ...getLocalParameters(query), ...getLocalParameters(settings.drilldownLink) };
+  // A Markdown report's Cypher query (a setting) uses parameters too.
+  const markdownQuery = type === 'text' ? settings[MARKDOWN_QUERY_SETTING] : undefined;
+  const localParameters = {
+    ...getLocalParameters(query),
+    ...getLocalParameters(settings.drilldownLink),
+    ...getLocalParameters(markdownQuery),
+  };
   const reportTypeHasNoFooter = reportTypes[type] && reportTypes[type].withoutFooter;
   // The table view has no use for the chart's field selectors.
   const withoutFooter =
@@ -187,18 +194,19 @@ const NeoCardView = ({
 
   useEffect(() => {
     setSelectorChange(true);
-  }, [query, type, database, JSON.stringify(settingsSelector)]);
+  }, [query, markdownQuery, type, database, JSON.stringify(settingsSelector)]);
 
-  // A query or type changed while the report is showing (Build with AI, or its Undo) runs it again;
-  // changes made in the settings run when the settings close, as before.
-  const shownQuery = React.useRef({ query, type });
+  // A query or type changed while the report is showing (Build with AI, or its Undo, or typing that
+  // reached the report just after its settings closed) runs it again; changes made in the settings run
+  // when the settings close, as before.
+  const shownQuery = React.useRef({ query, type, markdownQuery });
   useEffect(() => {
     const before = shownQuery.current;
-    shownQuery.current = { query, type };
-    if (!settingsOpen && (before.query !== query || before.type !== type)) {
+    shownQuery.current = { query, type, markdownQuery };
+    if (!settingsOpen && (before.query !== query || before.type !== type || before.markdownQuery !== markdownQuery)) {
       setLastRunTimestamp(Date.now());
     }
-  }, [query, type]);
+  }, [query, type, markdownQuery]);
 
   const cardContentStyle = {
     paddingBottom: '0px',

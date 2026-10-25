@@ -4,6 +4,7 @@ import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import URI from 'urijs';
 import { replaceDashboardParameters } from '../ChartUtils';
+import { fillQueryPlaceholders } from './MarkdownQuery';
 
 // Sanitizes URIs
 const transformUri = (uri: string): string | undefined => {
@@ -36,15 +37,17 @@ const NeoMarkdownChart = (props: ChartProps) => {
     a: CustomATag,
   };
 
-  // Records are overridden to be a single element array with a field called 'input'.
+  // Records are overridden to be a single element array with a field called 'input' (the Markdown), and
+  // 'rows' (the Cypher query's result) when the report has a query.
   const { records } = props;
   const parameters = props.parameters ? props.parameters : {};
   const replaceGlobalParameters =
     props.settings && props.settings.replaceGlobalParameters !== undefined
       ? props.settings.replaceGlobalParameters
       : true;
-  const markdown = records[0].input;
-  const modifiedMarkdown = replaceGlobalParameters ? replaceDashboardParameters(markdown, parameters) : markdown;
+  const { input: markdown, rows } = records[0] as any;
+  const withParameters = replaceGlobalParameters ? replaceDashboardParameters(markdown, parameters) : markdown;
+  const modifiedMarkdown = rows ? fillQueryPlaceholders(withParameters, rows) : withParameters;
   return (
     <div
       className='markdown-widget'

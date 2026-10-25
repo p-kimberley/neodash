@@ -118,13 +118,23 @@ export class DashboardStore {
   }
 }
 
+/**
+ * The Cypher a report runs. A Markdown ("text") report keeps its Markdown in "query"; its Cypher, if it
+ * has any, is the "cypherQuery" setting (src/chart/markdown/MarkdownQuery.ts in the app).
+ */
+function cypherOf(report: any): string {
+  if (report.type !== 'text') return report.query;
+  const query = report.settings?.cypherQuery;
+  return typeof query === 'string' ? query : '';
+}
+
 /** Finds a report in dashboard JSON by id, falling back to its position. */
 export function findReport(content: any, ref: ReportRef): ResolvedReport | null {
   const pages: any[] = Array.isArray(content?.pages) ? content.pages : [];
   const describe = (report: any, page: number, index: number): ResolvedReport | null =>
     report && typeof report.query === 'string'
       ? {
-          query: report.query,
+          query: cypherOf(report),
           type: report.type,
           title: report.title ?? '',
           database: typeof report.database === 'string' && report.database ? report.database : undefined,

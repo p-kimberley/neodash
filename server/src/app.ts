@@ -28,8 +28,8 @@ const SESSION_COOKIE = 'neodash_session';
 // Browsers reject cookies over 4096 bytes (name, value and attributes); leave room for the rest.
 const MAX_SESSION_COOKIE_LENGTH = 3800;
 const LOGIN_COOKIE = 'neodash_login';
-// Report types whose "query" is not Cypher.
-const NON_CYPHER_REPORTS = new Set(['text', 'iframe']);
+// Report types without Cypher. (A Markdown report's Cypher, if any, is a setting: see findReport.)
+const NON_CYPHER_REPORTS = new Set(['iframe']);
 
 export interface AppDeps {
   config: Config;
@@ -507,7 +507,7 @@ export async function buildApp({ config, driver, oidc, llmFetch, cypherChecks }:
       if (!dashboard) return reply.code(404).send(errorBody('not_found', 'Dashboard not found'));
       const report = findReport(dashboard.content, body.report!);
       if (!report) return reply.code(404).send(errorBody('not_found', 'Report not found in the saved dashboard'));
-      if (NON_CYPHER_REPORTS.has(report.type)) {
+      if (NON_CYPHER_REPORTS.has(report.type) || !report.query.trim()) {
         return reply.code(400).send(errorBody('invalid_request', `Reports of type "${report.type}" have no query`));
       }
       query = report.query;

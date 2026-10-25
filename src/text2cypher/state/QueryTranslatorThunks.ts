@@ -1,4 +1,5 @@
-import { updateReportQueryThunk } from '../../card/CardThunks';
+import { updateReportQueryThunk, updateReportSettingThunk } from '../../card/CardThunks';
+import { MARKDOWN_QUERY_SETTING } from '../../chart/markdown/MarkdownQuery';
 import { getDatabase } from '../../settings/SettingsSelectors';
 import { api } from '../../api/client';
 import { updateLastMessage, updateMessageHistory } from './QueryTranslatorActions';
@@ -46,7 +47,12 @@ export const queryTranslationThunk =
         context: { dashboard: state.dashboard?.uuid, page: pagenumber, report: cardId },
       });
       dispatch(updateMessageHistory([...history, { question: message, query }], pagenumber, cardId));
-      dispatch(updateReportQueryThunk(cardId, query));
+      // A Markdown report's query is a setting (its own query is the Markdown).
+      dispatch(
+        reportType === 'text'
+          ? updateReportSettingThunk(cardId, MARKDOWN_QUERY_SETTING, query)
+          : updateReportQueryThunk(cardId, query)
+      );
       onComplete(query);
     } catch (e: any) {
       onError(e?.message ?? String(e));

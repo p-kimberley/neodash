@@ -125,6 +125,12 @@ const REPORT_SHAPES: Record<string, { description: string; example: string }> = 
     example: 'MATCH (p:Person)-[r:RATES]->(m:Movie) RETURN p, r, m (with labelProperty "rating")',
   },
   gauge: { description: 'A single number in a single column.', example: 'MATCH (c:CPU {id: 1}) RETURN c.load * 100' },
+  // A Markdown report's Cypher query: its first row fills {{column}} placeholders in the Markdown.
+  text: {
+    description:
+      'One row (only the first is used), with a named column for each value the text shows; collect() lists into one row.',
+    example: 'MATCH (p:Person) RETURN count(p) AS people, collect(p.name)[..5] AS some_names',
+  },
 };
 
 // Report type ids (and the labels older clients sent) for the shapes above.

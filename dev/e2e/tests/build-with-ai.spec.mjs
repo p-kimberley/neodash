@@ -99,6 +99,98 @@ test('build with AI: a question saved without Translate is translated when the r
   await expectNoErrors(page, errors);
 });
 
+test("build with AI: a Markdown report's query is written in English, not its Markdown", async ({ page }) => {
+  const errors = trackErrors(page);
+  await page.goto('/');
+  const config = await (await page.request.get('/api/config')).json();
+  test.skip(!config.ai?.enabled, 'the backend has no language model configured');
+
+  const dash = await getDashboard(page, SALES);
+  const report = {
+    ...dash.pages[0].reports[0],
+    title: 'Noted',
+    type: 'text',
+    query: 'Latest: [{{title}}]',
+    settings: {},
+  };
+  const uuid = `dddd0000-0000-4000-8000-0000000t2m${test.info().project.name === 'dark' ? 'dd' : 'ee'}`.slice(0, 36);
+  await putDashboard(page, uuid, {
+    ...dash,
+    title: 'e2e build with ai markdown',
+    pages: [{ title: 'Ask', reports: [{ ...report, x: 0, y: 0, width: 12, height: 6 }] }],
+    extensions: {},
+  });
+  try {
+    await openPage(page, uuid);
+    const noted = card(page, 'Noted');
+    await editReport(noted);
+    const editors = noted.locator('.cm-content');
+    // The switch (and Translate) work on the query above; the Markdown below stays as it is.
+    await noted.getByRole('switch', { name: 'Write the query in English' }).click();
+    await editors.first().click();
+    await page.keyboard.type('Which movies came out most recently?');
+    await expect(editors.nth(1)).toContainText('Latest: [{{title}}]');
+    await noted.getByRole('button', { name: 'Translate' }).click();
+    await expect(editors.first()).toContainText('MATCH (m:Movie)', { timeout: 30_000 });
+    await expect(editors.nth(1)).toContainText('Latest: [{{title}}]');
+    await noted.getByRole('button', { name: 'Save' }).first().click();
+    // The query ran: its first row's title (if any) fills the placeholder.
+    await expect
+      .poll(() => noted.locator('.markdown-widget').innerText(), { timeout: 30_000 })
+      .toMatch(/^Latest: \[[^{]*\]$/);
+  } finally {
+    await deleteDashboard(page, uuid);
+  }
+  await expectNoErrors(page, errors);
+});
+
+test("build with AI: a Markdown report's English question saved without Translate is translated when it runs", async ({
+  page,
+}) => {
+  const errors = trackErrors(page);
+  await page.goto('/');
+  const config = await (await page.request.get('/api/config')).json();
+  test.skip(!config.ai?.enabled, 'the backend has no language model configured');
+
+  const dash = await getDashboard(page, SALES);
+  const report = {
+    ...dash.pages[0].reports[0],
+    title: 'Saved',
+    type: 'text',
+    query: 'Latest: [{{title}}]',
+    settings: {},
+  };
+  const uuid = `dddd0000-0000-4000-8000-0000000t2s${test.info().project.name === 'dark' ? 'dd' : 'ee'}`.slice(0, 36);
+  await putDashboard(page, uuid, {
+    ...dash,
+    title: 'e2e build with ai markdown run',
+    pages: [{ title: 'Ask', reports: [{ ...report, x: 0, y: 0, width: 12, height: 6 }] }],
+    extensions: {},
+  });
+  try {
+    await openPage(page, uuid);
+    const saved = card(page, 'Saved');
+    await editReport(saved);
+    await saved.getByRole('switch', { name: 'Write the query in English' }).click();
+    await saved.locator('.cm-content').first().click();
+    await page.keyboard.type('Which movies came out most recently?');
+    await page.waitForTimeout(500);
+    await saved.getByRole('button', { name: 'Save' }).first().click();
+    // Translated as the report runs: the placeholder is filled from the query's result.
+    await expect
+      .poll(() => saved.locator('.markdown-widget').innerText(), { timeout: 30_000 })
+      .toMatch(/^Latest: \[[^{]*\]$/);
+    // ...and the translation is kept as the report's query, not in its Markdown.
+    await editReport(saved);
+    await expect(saved.locator('.cm-content').first()).toContainText('MATCH (m:Movie)');
+    await expect(saved.locator('.cm-content').nth(1)).toContainText('Latest: [{{title}}]');
+    await saved.getByRole('button', { name: 'Cancel' }).click();
+  } finally {
+    await deleteDashboard(page, uuid);
+  }
+  await expectNoErrors(page, errors);
+});
+
 test('build with AI is part of the app, not an extension', async ({ page }) => {
   await page.goto('/');
   const config = await (await page.request.get('/api/config')).json();

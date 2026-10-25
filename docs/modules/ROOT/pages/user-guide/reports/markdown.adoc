@@ -16,6 +16,44 @@ Then, include a variable surrounded by backticks inside the markdown string. For
 My variable is equal to `$neodash_person_object['name']`
 ```
 
+== Filling the Markdown from a Cypher query
+
+A Markdown report can also have a Cypher query, written in the box above the Markdown (where other reports have
+theirs). The query's first row fills placeholders in the Markdown: write a column name between double braces,
+`{{column}}`, and it is replaced by that column's value.
+
+Query:
+
+....
+MATCH (p:Person)
+RETURN count(p) AS people, collect(p.name)[..3] AS some_names, max(p.born) AS youngest
+....
+
+Markdown:
+
+....
+## {{people}} people
+
+Including {{some_names}}. The youngest was born in {{youngest}}.
+....
+
+* Only the first row is used. To show several values, gather them into one row, e.g. with `collect()`.
+* Lists are shown comma-separated. A node or map is shown as its properties; to show one property, write
+  `{{column.property}}`, e.g. `{{p.name}}` for `RETURN p`.
+* Values are inserted as they are, so a value can itself be Markdown (a link or a list built by the query).
+* A placeholder that names no column is left as written, so a typo shows. When the query returns no rows,
+  all placeholders are left empty.
+* The query can use dashboard parameters (`$neodash_...`) like any other report's query, and it runs again
+  when they change. It runs against the default database.
+* Without a query, the Markdown is shown as written: double braces are not special.
+* When a language model is configured, the query can be written in English with the *Cypher / English*
+  switch above it, and *Translate* turns it into Cypher. The Markdown is never translated.
+
+Viewers can see the filled-in Markdown: like any report's query, the server runs the query saved in the
+dashboard. The query is stored in the report's `cypherQuery` setting, and the Markdown stays in the report's
+`query`, as before, so dashboards without a query are unchanged. Older NeoDash versions ignore the setting and
+show the Markdown with its placeholders.
+
 
 == Examples
 

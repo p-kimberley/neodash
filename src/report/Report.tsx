@@ -23,6 +23,7 @@ import { getPrepopulateReportExtension } from '../extensions/state/ExtensionSele
 import { deleteSessionStoragePrepopulationReportFunction } from '../extensions/state/ExtensionActions';
 import { updateFieldsThunk } from '../card/CardThunks';
 import { getDashboardTheme } from '../dashboard/DashboardSelectors';
+import { MARKDOWN_QUERY_SETTING } from '../chart/markdown/MarkdownQuery';
 
 /**
  * What can fill in a report's query before it runs: extensions, and Build with AI (part of the app), which
@@ -101,8 +102,60 @@ export const NeoReport = ({
     const reportTypes = getReportTypes(extensions);
 
     if (reportTypes[type].textOnly) {
-      setStatus(QueryStatus.COMPLETE);
-      setRecords([{ input: query, parameters: parameters }]);
+      // A Markdown report can also have a Cypher query (a setting); its first row fills the Markdown's
+      // {{column}} placeholders.
+      const runMarkdownQuery = (markdownQuery) => {
+        if (typeof markdownQuery !== 'string' || markdownQuery.trim() === '') {
+          setStatus(QueryStatus.COMPLETE);
+          setRecords([{ input: query, parameters: parameters }]);
+          return;
+        }
+        setLoadingIcon(REPORT_LOADING_ICON);
+        setStatus(QueryStatus.RUNNING);
+        setRecords([{ input: query, parameters: parameters, rows: [] }]);
+        (debounced ? debouncedRunCypherQuery : runCypherQuery)(
+          driver,
+          database,
+          markdownQuery,
+          parameters,
+          1,
+          // Only the first row is used, and without rows the placeholders are left empty: neither is an
+          // error for Markdown.
+          (status) =>
+            setStatus(
+              status === QueryStatus.NO_DATA || status === QueryStatus.COMPLETE_TRUNCATED
+                ? QueryStatus.COMPLETE
+                : status
+            ),
+          (rows) => setRecords(rows[0]?.error !== undefined ? rows : [{ input: query, parameters: parameters, rows }]),
+          () => {},
+          [],
+          false,
+          false,
+          HARD_ROW_LIMITING,
+          queryTimeLimit
+        );
+      };
+      // A question written in English but not yet translated is translated first, as for other reports.
+      const textPrepopulator =
+        type === 'text' && prepopulateExtensionName ? PREPOPULATORS[prepopulateExtensionName] : undefined;
+      if (textPrepopulator?.prepopulateReportFunction) {
+        setLoadingIcon(textPrepopulator.customLoadingIcon ?? REPORT_LOADING_ICON);
+        setStatus(QueryStatus.RUNNING);
+        textPrepopulator.prepopulateReportFunction(
+          driver,
+          getCustomDispatcher(),
+          pagenumber,
+          id,
+          type,
+          extensions,
+          // Without a question to translate, the query it has.
+          (result) => runMarkdownQuery(result ?? settings?.[MARKDOWN_QUERY_SETTING])
+        );
+        deletePrepopulationReportFunction(id);
+        return;
+      }
+      runMarkdownQuery(type === 'text' ? settings?.[MARKDOWN_QUERY_SETTING] : undefined);
       return;
     }
 

@@ -27,6 +27,24 @@ describe('findReport', () => {
     expect(findReport(dashboard, { id: 'r-deleted', page: 0, index: 0 })).toBeNull();
   });
 
+  it("gives a Markdown report's Cypher query setting, not its Markdown", () => {
+    const markdown = {
+      pages: [
+        {
+          reports: [
+            { id: 'm1', type: 'text', query: '# {{people}} people', settings: { cypherQuery: 'RETURN 4 AS people' } },
+            { id: 'm2', type: 'text', query: '# Notes', settings: {} },
+            { id: 'm3', type: 'text', query: '# Old', settings: { cypherQuery: 42 } },
+          ],
+        },
+      ],
+    };
+    expect(findReport(markdown, { id: 'm1' })).toMatchObject({ query: 'RETURN 4 AS people', type: 'text' });
+    // Without a query (or with one that isn't text) there is no Cypher to run.
+    expect(findReport(markdown, { id: 'm2' })).toMatchObject({ query: '' });
+    expect(findReport(markdown, { id: 'm3' })).toMatchObject({ query: '' });
+  });
+
   it('returns null for missing reports and malformed dashboards', () => {
     expect(findReport(dashboard, { page: 5, index: 0 })).toBeNull();
     expect(findReport({}, { id: 'r1' })).toBeNull();
