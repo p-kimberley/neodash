@@ -3,6 +3,7 @@ import { Menu } from '@neo4j-ndl/react';
 import {
   ArrowUturnLeftIconOutline,
   CloudArrowUpIconOutline,
+  CodeBracketIconOutline,
   DocumentTextIconOutline,
   InformationCircleIconOutline,
   ShareIconOutline,
@@ -19,7 +20,7 @@ export const NeoDashboardSidebarDashboardMenu = ({
   handleInfoClicked,
   handleSaveClicked,
   handleDiscardClicked,
-  handleLoadClicked,
+  handleEditJsonClicked,
   handleExportClicked,
   handleShareClicked,
   handleDeleteClicked,
@@ -30,8 +31,8 @@ export const NeoDashboardSidebarDashboardMenu = ({
       {!draft ? (
         <Menu.Items>
           <Menu.Item onClick={handleInfoClicked} leadingVisual={<InformationCircleIconOutline />} title='Info' />
-          <Menu.Item onClick={handleLoadClicked} leadingVisual={<CloudArrowUpIconOutline />} title='Load' />
           {/* <Menu.Item onClick={() => {}} leadingVisual={<DocumentDuplicateIconOutline />} title='Clone' /> */}
+          <Menu.Item onClick={handleEditJsonClicked} leadingVisual={<CodeBracketIconOutline />} title='Edit JSON' />
           <Menu.Item onClick={handleExportClicked} leadingVisual={<DocumentTextIconOutline />} title='Export' />
           <Menu.Item onClick={handleShareClicked} leadingVisual={<ShareIconOutline />} title='Share' />
           <Menu.Item onClick={handleDeleteClicked} leadingVisual={<TrashIconOutline />} title='Delete' />
@@ -39,6 +40,7 @@ export const NeoDashboardSidebarDashboardMenu = ({
       ) : (
         <Menu.Items>
           <Menu.Item onClick={handleSaveClicked} leadingVisual={<CloudArrowUpIconOutline />} title='Save' />
+          <Menu.Item onClick={handleEditJsonClicked} leadingVisual={<CodeBracketIconOutline />} title='Edit JSON' />
           <Menu.Item
             onClick={handleDiscardClicked}
             leadingVisual={<ArrowUturnLeftIconOutline />}

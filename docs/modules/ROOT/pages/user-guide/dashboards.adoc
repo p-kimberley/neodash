@@ -27,12 +27,13 @@ list, next to the dashboard. Choosing a dashboard there opens it and closes the 
 editors, each dashboard in the panel has a *⋮* menu:
 
 - *Info*: its ID, title, author, when it was last saved, and its format version.
-- *Load*: open it (the same as clicking it).
+- *Edit JSON*: edit it as JSON (see below).
 - *Export*: show its JSON, to copy or save as a file.
 - *Share*: a link to it (see below).
 - *Delete*: remove it from Neo4j. This can't be undone.
 
-With unsaved changes in the open dashboard, its menu offers *Save* and *Discard Draft* instead.
+With unsaved changes in the open dashboard, its menu offers *Save*, *Edit JSON* and *Discard Draft*
+instead.
 
 If the server is set up with more than one Neo4j database, the database button at the top of the
 panel switches the database whose dashboards are listed.
@@ -51,8 +52,21 @@ dashboard while you have unsaved changes, NeoDash asks whether to discard them f
 
 A NeoDash dashboard is, simply put, a JSON document. *Export* shows it, to copy or download as
 `dashboard.json`. *Import* takes such a document, pasted or picked from a file, and opens it as a
-new draft, which you can then save. Dashboards exported from other NeoDash 2.x installations can
-be imported too.
+new draft, which you can then save. Importing always makes a new dashboard, even from the export of
+one that still exists. Dashboards exported from other NeoDash 2.x installations can be imported too.
+
+*Edit JSON* changes an existing dashboard as JSON instead: edit it in place, or *Download* it, make
+bulk changes elsewhere (in an editor or a script) and *Replace from file*. The editor highlights the JSON,
+numbers its lines and marks a syntax error where it is (hover the mark for the parser's message);
+drag its bottom-right corner to make it taller or shorter. *Apply* opens the result
+as unsaved changes to the same dashboard, so *Save* overwrites it. On the open dashboard with
+unsaved changes, *Edit JSON* starts from those changes.
+
+*Verify*, in both *Import* and *Edit JSON*, checks the JSON without using it: that it parses, that
+its version is one NeoDash can open, and that every page and report is complete (a known report
+type, its extension enabled, a unique ID, numeric positions and sizes). It lists every problem it
+finds, or how many pages and reports the dashboard has. *Import* and *Apply* run the same checks,
+and only go ahead when they pass.
 
 As an example, a small dashboard looks like this:
 

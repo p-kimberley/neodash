@@ -1385,6 +1385,79 @@ body:has(.nd-maximised) .ndl-menu {
   overflow-x: auto;
 }
 
+/* Dashboard JSON in the import, export and edit dialogs: a code editor of fixed height that scrolls,
+   coloured like the read-only code blocks (the .tok-* classes). */
+.nd-code-editor.nd-json-editor {
+  display: flex;
+  flex-direction: column;
+  /* Taller or shorter by its bottom-right corner. */
+  resize: vertical;
+  min-height: 160px;
+  max-height: 80vh;
+}
+.nd-json-editor .ndl-cypher-editor {
+  flex: 1;
+  min-height: 0;
+}
+.nd-json-editor .cm-editor {
+  height: 100%;
+}
+.nd-json-editor .cm-scroller {
+  overflow: auto;
+}
+/* Two gutters (syntax errors, line numbers): each as wide as it needs. The design system makes a
+   gutter 100% wide, which only works for one. */
+.nd-json-editor .ndl-cypher-editor .cm-editor .cm-gutter {
+  width: auto;
+}
+/* A syntax error's message, shown over its mark or gutter dot. */
+.nd-json-editor .cm-editor .cm-tooltip {
+  background: var(--nd-surface-raised);
+  color: var(--nd-text);
+  border: 1px solid var(--nd-border);
+  border-radius: var(--nd-radius-sm);
+  box-shadow: var(--nd-shadow-raised);
+  font-size: var(--nd-text-sm);
+}
+.nd-code-editor.nd-json-editor.has-error {
+  border-color: var(--theme-color-danger-border-strong);
+}
+.nd-code-editor .tok-property {
+  color: var(--nd-code-property);
+}
+.nd-code-editor .tok-string {
+  color: var(--nd-code-string);
+}
+.nd-code-editor .tok-number,
+.nd-code-editor .tok-literal {
+  color: var(--nd-code-number);
+}
+.nd-code-editor .tok-punctuation {
+  color: var(--nd-code-punctuation);
+}
+
+/* The result of verifying dashboard JSON, under its editor. */
+.nd-json-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: var(--nd-text-sm);
+}
+.nd-json-message-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+}
+.nd-json-message ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  max-height: 160px;
+  overflow-y: auto;
+  list-style: disc;
+}
+
 /* Properties of a node or relationship (graph popup, tooltip and inspector). */
 .nd-props-table {
   width: 100%;

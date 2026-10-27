@@ -41,6 +41,8 @@ import NeoDashboardSidebarCreateMenu from './menu/DashboardSidebarCreateMenu';
 import NeoDashboardSidebarImportModal from './modal/DashboardSidebarImportModal';
 import { createUUID } from '../../utils/uuid';
 import NeoDashboardSidebarExportModal from './modal/DashboardSidebarExportModal';
+import NeoDashboardSidebarEditJsonModal from './modal/DashboardSidebarEditJsonModal';
+import { withDashboardUuid } from './modal/DashboardJson';
 import NeoDashboardSidebarDeleteModal from './modal/DashboardSidebarDeleteModal';
 import NeoDashboardSidebarInfoModal from './modal/DashboardSidebarInfoModal';
 import NeoDashboardSidebarShareModal from './modal/DashboardSidebarShareModal';
@@ -61,7 +63,7 @@ enum Modal {
   EXPORT = 2,
   DELETE = 3,
   SHARE = 4,
-
+  EDIT_JSON = 5,
   INFO = 6,
   LOAD = 7,
   SAVE = 8,
@@ -251,9 +253,32 @@ export const NeoDashboardSidebar = ({
           setModalOpen(Modal.NONE);
           setDraft(true);
           setSelectedDashboardIndex(UNSAVED_DASHBOARD_INDEX);
-          loadDashboard(createUUID(), text);
+          // Always a new dashboard: an exported file keeps its uuid, and saving must not overwrite that one.
+          const uuid = createUUID();
+          loadDashboard(uuid, withDashboardUuid(text, uuid));
         }}
         handleClose={() => setModalOpen(Modal.NONE)}
+      />
+
+      <NeoDashboardSidebarEditJsonModal
+        open={modalOpen == Modal.EDIT_JSON}
+        dashboard={cachedDashboard}
+        discardsDraft={draft && selectedDashboardIndex != inspectedIndex}
+        onApply={(text) => {
+          // The edited JSON replaces the dashboard it came from: saving it overwrites that one.
+          const editingOpen = draft && selectedDashboardIndex == inspectedIndex;
+          const uuid = editingOpen ? (dashboard.uuid ?? createUUID()) : dashboards[inspectedIndex].uuid;
+          setModalOpen(Modal.NONE);
+          setCachedDashboard('');
+          closePanel();
+          loadDashboard(uuid, withDashboardUuid(text, uuid));
+          setDraft(true);
+          setSelectedDashboardIndex(inspectedIndex);
+        }}
+        handleClose={() => {
+          setModalOpen(Modal.NONE);
+          setCachedDashboard('');
+        }}
       />
 
       <NeoDashboardSidebarInfoModal
@@ -319,18 +344,18 @@ export const NeoDashboardSidebar = ({
                 setMenuOpen(Menu.NONE);
                 setModalOpen(Modal.SAVE);
               }}
-              handleLoadClicked={() => {
+              handleEditJsonClicked={() => {
                 setMenuOpen(Menu.NONE);
-                if (draft) {
-                  setModalOpen(Modal.LOAD);
+                if (draft && selectedDashboardIndex == inspectedIndex) {
+                  // The open dashboard's unsaved changes are what gets edited.
+                  setCachedDashboard(dashboard);
                 } else {
-                  closePanel();
                   const d = dashboards[inspectedIndex];
-                  loadDashboardFromNeo4j(driver, dashboardDatabase, d.uuid, (file) => {
-                    loadDashboard(d.uuid, file);
-                    setSelectedDashboardIndex(inspectedIndex);
+                  loadDashboardFromNeo4j(driver, dashboardDatabase, d.uuid, (text) => {
+                    setCachedDashboard(JSON.parse(text));
                   });
                 }
+                setModalOpen(Modal.EDIT_JSON);
               }}
               handleExportClicked={() => {
                 setMenuOpen(Menu.NONE);

@@ -1,10 +1,13 @@
 import React, { useRef } from 'react';
-import { PlayIconSolid, DocumentPlusIconOutline } from '@neo4j-ndl/react/icons';
-import { FilledButton, OutlinedButton, TextArea } from '@neo4j-ndl/react';
+import { PlayIconSolid, DocumentPlusIconOutline, ShieldCheckIconOutline } from '@neo4j-ndl/react/icons';
+import { FilledButton, OutlinedButton } from '@neo4j-ndl/react';
 import { Dialog } from '../../../component/dialog/Dialog';
+import { verifyDashboardJson } from './DashboardJson';
+import { DashboardJsonEditor, JsonVerification } from './DashboardJsonEditor';
 
 export const NeoDashboardSidebarImportModal = ({ open, onImport, handleClose }) => {
   const [text, setText] = React.useState('');
+  const [verification, setVerification] = React.useState<JsonVerification>(undefined);
   const loadFromFile = useRef(null);
 
   const onSelectFileClick = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -18,6 +21,13 @@ export const NeoDashboardSidebarImportModal = ({ open, onImport, handleClose }) 
     const text = await file.text();
 
     setText(text);
+    setVerification(undefined);
+  };
+
+  const verify = () => {
+    const result = verifyDashboardJson(text);
+    setVerification(result);
+    return result.problems.length == 0;
   };
 
   return (
@@ -28,13 +38,15 @@ export const NeoDashboardSidebarImportModal = ({ open, onImport, handleClose }) 
         <br />
         <b>Importing will discard your current draft, if any.</b>
         <br /> <br />
-        <TextArea
-          isFluid
-          className='nd-json-text'
-          ariaLabel='Dashboard JSON'
+        <DashboardJsonEditor
           value={text}
+          onChange={(value) => {
+            setText(value);
+            setVerification(undefined);
+          }}
+          verification={verification}
           placeholder='Paste a dashboard JSON file here...'
-          htmlAttributes={{ rows: 10, spellCheck: false, onChange: (e) => setText(e.target.value) }}
+          height={260}
         />
       </Dialog.Content>
       <Dialog.Actions>
@@ -50,10 +62,19 @@ export const NeoDashboardSidebarImportModal = ({ open, onImport, handleClose }) 
           Select From File
           <DocumentPlusIconOutline className='btn-icon-base-r' />
         </OutlinedButton>
+        <OutlinedButton onClick={verify} isDisabled={text.length == 0} isFloating variant='neutral'>
+          Verify
+          <ShieldCheckIconOutline className='btn-icon-base-r' />
+        </OutlinedButton>
         <FilledButton
           onClick={() => {
+            // Only a dashboard that verifies is imported.
+            if (!verify()) {
+              return;
+            }
             onImport(text);
             setText('');
+            setVerification(undefined);
             handleClose();
           }}
           isDisabled={text.length == 0}
