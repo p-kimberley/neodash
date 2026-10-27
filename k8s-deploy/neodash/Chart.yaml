@@ -3,9 +3,9 @@ name: neodash
 description: NeoDash dashboards for Neo4j, with OIDC sign-in and role-based access. One stateless Deployment serves the UI and API.
 type: application
 # Chart version: bump on every chart change (SemVer).
-version: 2.7.0
+version: 2.8.0
 # NeoDash image version; the default image tag.
-appVersion: "3.6.0"
+appVersion: "3.7.0"
 kubeVersion: ">=1.25.0-0"
 keywords:
   - neo4j

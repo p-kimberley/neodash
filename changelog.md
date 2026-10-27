@@ -1,3 +1,19 @@
+## NeoDash 3.7.0 - Edit a dashboard as JSON, verified imports
+Existing dashboards keep working: report types, settings and saved layouts are unchanged. Chart 2.8.0.
+
+**Edit JSON.** A dashboard's *⋮* menu in the dashboards panel has *Edit JSON*, for changing a saved dashboard as JSON, e.g. bulk changes made outside NeoDash.
+- Edit the JSON in place, or *Download* it, change it elsewhere (in an editor or a script) and *Replace from file*.
+- *Apply* opens the result as unsaved changes to the same dashboard; *Save* then overwrites it. On the open dashboard with unsaved changes, *Edit JSON* starts from those changes.
+- The editor highlights the JSON, numbers its lines and marks a syntax error where it is (hover the mark for the parser's message). Drag its bottom-right corner to make it taller or shorter. *Import* and *Export* use the same editor.
+
+**Verify.** *Import* and *Edit JSON* have a *Verify* button that checks the JSON without using it: that it parses, that its version is one NeoDash can open, and that every page and report is complete (a known report type with its extension enabled, a unique ID, numeric positions and sizes). It lists every problem it finds, or how many pages and reports the dashboard has. *Import* and *Apply* run the same checks and only go ahead when they pass, so invalid JSON no longer reaches a dashboard.
+
+**Changed.**
+- *Load* is gone from a dashboard's *⋮* menu: it did the same as clicking the dashboard, and read as "replace from a file". Click a dashboard to open it.
+- *Import* always makes a new dashboard. Before, an exported file kept its dashboard's ID, so importing it and saving overwrote the original. To change an existing dashboard from a file, use *Edit JSON*.
+
+**Documentation.** The dashboards page covers *Edit JSON* and *Verify*.
+
 ## NeoDash 3.6.0 - Table column widths that apply, Markdown filled from a Cypher query
 Existing dashboards keep working: report types, settings and saved layouts are unchanged. Chart 2.7.0.
 
